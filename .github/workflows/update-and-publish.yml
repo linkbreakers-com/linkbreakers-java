@@ -82,6 +82,7 @@ jobs:
 
           # Remove old generated code
           rm -rf src/main/java/com/linkbreakers 2>/dev/null || true
+          rm -rf src/main/java/org/openapitools 2>/dev/null || true
 
           # Generate SDK using OpenAPI Generator with java generator
           openapi-generator-cli generate \
@@ -90,7 +91,7 @@ jobs:
             -o . \
             --skip-validate-spec \
             --global-property apiTests=false,modelTests=false,apiDocs=false,modelDocs=false \
-            --additional-properties=groupId=com.linkbreakers,artifactId=linkbreakers-sdk,artifactVersion=$NEW_VERSION,library=okhttp-gson,dateLibrary=java8,hideGenerationTimestamp=true
+            --additional-properties=groupId=com.linkbreakers,artifactId=linkbreakers-sdk,artifactVersion=$NEW_VERSION,invokerPackage=com.linkbreakers,apiPackage=com.linkbreakers.api,modelPackage=com.linkbreakers.model,library=okhttp-gson,dateLibrary=java8,hideGenerationTimestamp=true
 
           # Restore custom pom.xml (contains publishing config)
           cp .backup/pom.xml . 2>/dev/null || true
