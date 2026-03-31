@@ -96,8 +96,9 @@ jobs:
           cp .backup/pom.xml . 2>/dev/null || true
           cp .backup/README.md . 2>/dev/null || true
 
-          # Update version in pom.xml
-          sed -i "s|<version>.*</version>|<version>$NEW_VERSION</version>|" pom.xml | head -1
+          # Update ONLY the project version in pom.xml (not plugin versions)
+          # This targets the <version> tag that comes right after <artifactId>linkbreakers-sdk</artifactId>
+          sed -i "/<artifactId>linkbreakers-sdk<\/artifactId>/!b;n;s|<version>.*</version>|<version>$NEW_VERSION</version>|" pom.xml
 
           # Clean up
           rm -rf .backup
