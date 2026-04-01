@@ -31,7 +31,7 @@ To deploy it to a remote Maven repository instead, configure the settings of the
 mvn clean deploy
 ```
 
-Refer to the [OSSRH Guide](http://central.sonatype.org/pages/ossrh-guide.html) for more information.
+Refer to the [Sonatype Central Portal Maven publishing guide](https://central.sonatype.org/publish/publish-portal-maven/) for more information.
 
 ### Maven users
 
@@ -487,6 +487,5 @@ Authentication schemes defined for the API:
 It's recommended to create an instance of `ApiClient` per thread in a multithreaded environment to avoid any potential issues.
 
 ## Author
-
 
 
