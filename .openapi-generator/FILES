@@ -190,6 +190,7 @@ src/main/java/com/linkbreakers/model/ListPageThemesResponse.java
 src/main/java/com/linkbreakers/model/ListQrcodeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/ListResponse.java
 src/main/java/com/linkbreakers/model/ListTagsResponse.java
+src/main/java/com/linkbreakers/model/ListVisitorAttributeKeysResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsCsvResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsJsonResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsResponse.java
@@ -283,6 +284,10 @@ src/main/java/com/linkbreakers/model/VisitTypeConditionPayload.java
 src/main/java/com/linkbreakers/model/VisitTypeConditionTraceData.java
 src/main/java/com/linkbreakers/model/VisitTypeConditionTraceOption.java
 src/main/java/com/linkbreakers/model/Visitor.java
+src/main/java/com/linkbreakers/model/VisitorDataConditionOption.java
+src/main/java/com/linkbreakers/model/VisitorDataConditionPayload.java
+src/main/java/com/linkbreakers/model/VisitorDataConditionTraceData.java
+src/main/java/com/linkbreakers/model/VisitorDataConditionTraceOption.java
 src/main/java/com/linkbreakers/model/VisitorEvent.java
 src/main/java/com/linkbreakers/model/VisitorInput.java
 src/main/java/com/linkbreakers/model/VisitorLink.java
