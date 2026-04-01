@@ -24,22 +24,18 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- * - WEBHOOK_STATUS_UNSPECIFIED: Webhook status not specified  - WEBHOOK_STATUS_ACTIVE: Webhook is active and receiving events  - WEBHOOK_STATUS_DISABLED: Webhook is disabled due to repeated failures  - WEBHOOK_STATUS_PAUSED: Webhook is paused by user action
+ * - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directory_id is set, returns links in that directory. When directory_id is empty, returns root-level links (no directory).
  */
-@JsonAdapter(WebhookStatus.Adapter.class)
-public enum WebhookStatus {
+@JsonAdapter(LinkView.Adapter.class)
+public enum LinkView {
   
-  WEBHOOK_STATUS_UNSPECIFIED("WEBHOOK_STATUS_UNSPECIFIED"),
+  LINK_VIEW_UNSPECIFIED("LINK_VIEW_UNSPECIFIED"),
   
-  WEBHOOK_STATUS_ACTIVE("WEBHOOK_STATUS_ACTIVE"),
-  
-  WEBHOOK_STATUS_DISABLED("WEBHOOK_STATUS_DISABLED"),
-  
-  WEBHOOK_STATUS_PAUSED("WEBHOOK_STATUS_PAUSED");
+  LINK_VIEW_DIRECTORY("LINK_VIEW_DIRECTORY");
 
   private String value;
 
-  WebhookStatus(String value) {
+  LinkView(String value) {
     this.value = value;
   }
 
@@ -52,8 +48,8 @@ public enum WebhookStatus {
     return String.valueOf(value);
   }
 
-  public static WebhookStatus fromValue(String value) {
-    for (WebhookStatus b : WebhookStatus.values()) {
+  public static LinkView fromValue(String value) {
+    for (LinkView b : LinkView.values()) {
       if (b.value.equals(value)) {
         return b;
       }
@@ -61,22 +57,22 @@ public enum WebhookStatus {
     throw new IllegalArgumentException("Unexpected value '" + value + "'");
   }
 
-  public static class Adapter extends TypeAdapter<WebhookStatus> {
+  public static class Adapter extends TypeAdapter<LinkView> {
     @Override
-    public void write(final JsonWriter jsonWriter, final WebhookStatus enumeration) throws IOException {
+    public void write(final JsonWriter jsonWriter, final LinkView enumeration) throws IOException {
       jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public WebhookStatus read(final JsonReader jsonReader) throws IOException {
+    public LinkView read(final JsonReader jsonReader) throws IOException {
       String value = jsonReader.nextString();
-      return WebhookStatus.fromValue(value);
+      return LinkView.fromValue(value);
     }
   }
 
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
     String value = jsonElement.getAsString();
-    WebhookStatus.fromValue(value);
+    LinkView.fromValue(value);
   }
 }
 

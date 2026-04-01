@@ -177,6 +177,7 @@ src/main/java/com/linkbreakers/model/LeadScoreBreakdown.java
 src/main/java/com/linkbreakers/model/Link.java
 src/main/java/com/linkbreakers/model/LinkSetting.java
 src/main/java/com/linkbreakers/model/LinkSortField.java
+src/main/java/com/linkbreakers/model/LinkView.java
 src/main/java/com/linkbreakers/model/LinksServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/ListCustomDomainsResponse.java
 src/main/java/com/linkbreakers/model/ListDirectoriesResponse.java
