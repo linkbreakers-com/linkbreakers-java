@@ -4,7 +4,7 @@ apply plugin: 'java'
 apply plugin: 'com.diffplug.spotless'
 
 group = 'com.linkbreakers'
-version = '1.46.9'
+version = '1.46.10'
 
 buildscript {
     repositories {
