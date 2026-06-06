@@ -19,7 +19,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.PageTheme;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -47,34 +46,58 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * GetPageThemeResponse
+ * VCardSocialLink
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class GetPageThemeResponse {
-  public static final String SERIALIZED_NAME_PAGE_THEME = "pageTheme";
-  @SerializedName(SERIALIZED_NAME_PAGE_THEME)
+public class VCardSocialLink {
+  public static final String SERIALIZED_NAME_PLATFORM = "platform";
+  @SerializedName(SERIALIZED_NAME_PLATFORM)
   @javax.annotation.Nullable
-  private PageTheme pageTheme;
+  private String platform;
 
-  public GetPageThemeResponse() {
+  public static final String SERIALIZED_NAME_URL = "url";
+  @SerializedName(SERIALIZED_NAME_URL)
+  @javax.annotation.Nullable
+  private String url;
+
+  public VCardSocialLink() {
   }
 
-  public GetPageThemeResponse pageTheme(@javax.annotation.Nullable PageTheme pageTheme) {
-    this.pageTheme = pageTheme;
+  public VCardSocialLink platform(@javax.annotation.Nullable String platform) {
+    this.platform = platform;
     return this;
   }
 
   /**
-   * Get pageTheme
-   * @return pageTheme
+   * Get platform
+   * @return platform
    */
   @javax.annotation.Nullable
-  public PageTheme getPageTheme() {
-    return pageTheme;
+  public String getPlatform() {
+    return platform;
   }
 
-  public void setPageTheme(@javax.annotation.Nullable PageTheme pageTheme) {
-    this.pageTheme = pageTheme;
+  public void setPlatform(@javax.annotation.Nullable String platform) {
+    this.platform = platform;
+  }
+
+
+  public VCardSocialLink url(@javax.annotation.Nullable String url) {
+    this.url = url;
+    return this;
+  }
+
+  /**
+   * Get url
+   * @return url
+   */
+  @javax.annotation.Nullable
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(@javax.annotation.Nullable String url) {
+    this.url = url;
   }
 
 
@@ -87,20 +110,22 @@ public class GetPageThemeResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    GetPageThemeResponse getPageThemeResponse = (GetPageThemeResponse) o;
-    return Objects.equals(this.pageTheme, getPageThemeResponse.pageTheme);
+    VCardSocialLink vcardSocialLink = (VCardSocialLink) o;
+    return Objects.equals(this.platform, vcardSocialLink.platform) &&
+        Objects.equals(this.url, vcardSocialLink.url);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(pageTheme);
+    return Objects.hash(platform, url);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class GetPageThemeResponse {\n");
-    sb.append("    pageTheme: ").append(toIndentedString(pageTheme)).append("\n");
+    sb.append("class VCardSocialLink {\n");
+    sb.append("    platform: ").append(toIndentedString(platform)).append("\n");
+    sb.append("    url: ").append(toIndentedString(url)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -119,7 +144,7 @@ public class GetPageThemeResponse {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("pageTheme"));
+    openapiFields = new HashSet<String>(Arrays.asList("platform", "url"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -129,26 +154,28 @@ public class GetPageThemeResponse {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to GetPageThemeResponse
+   * @throws IOException if the JSON Element is invalid with respect to VCardSocialLink
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!GetPageThemeResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in GetPageThemeResponse is not found in the empty JSON string", GetPageThemeResponse.openapiRequiredFields.toString()));
+        if (!VCardSocialLink.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in VCardSocialLink is not found in the empty JSON string", VCardSocialLink.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!GetPageThemeResponse.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `GetPageThemeResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!VCardSocialLink.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `VCardSocialLink` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      // validate the optional field `pageTheme`
-      if (jsonObj.get("pageTheme") != null && !jsonObj.get("pageTheme").isJsonNull()) {
-        PageTheme.validateJsonElement(jsonObj.get("pageTheme"));
+      if ((jsonObj.get("platform") != null && !jsonObj.get("platform").isJsonNull()) && !jsonObj.get("platform").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `platform` to be a primitive type in the JSON string but got `%s`", jsonObj.get("platform").toString()));
+      }
+      if ((jsonObj.get("url") != null && !jsonObj.get("url").isJsonNull()) && !jsonObj.get("url").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `url` to be a primitive type in the JSON string but got `%s`", jsonObj.get("url").toString()));
       }
   }
 
@@ -156,22 +183,22 @@ public class GetPageThemeResponse {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!GetPageThemeResponse.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'GetPageThemeResponse' and its subtypes
+       if (!VCardSocialLink.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'VCardSocialLink' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<GetPageThemeResponse> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(GetPageThemeResponse.class));
+       final TypeAdapter<VCardSocialLink> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(VCardSocialLink.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<GetPageThemeResponse>() {
+       return (TypeAdapter<T>) new TypeAdapter<VCardSocialLink>() {
            @Override
-           public void write(JsonWriter out, GetPageThemeResponse value) throws IOException {
+           public void write(JsonWriter out, VCardSocialLink value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public GetPageThemeResponse read(JsonReader in) throws IOException {
+           public VCardSocialLink read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -182,18 +209,18 @@ public class GetPageThemeResponse {
   }
 
   /**
-   * Create an instance of GetPageThemeResponse given an JSON string
+   * Create an instance of VCardSocialLink given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of GetPageThemeResponse
-   * @throws IOException if the JSON string is invalid with respect to GetPageThemeResponse
+   * @return An instance of VCardSocialLink
+   * @throws IOException if the JSON string is invalid with respect to VCardSocialLink
    */
-  public static GetPageThemeResponse fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, GetPageThemeResponse.class);
+  public static VCardSocialLink fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, VCardSocialLink.class);
   }
 
   /**
-   * Convert an instance of GetPageThemeResponse to an JSON string
+   * Convert an instance of VCardSocialLink to an JSON string
    *
    * @return JSON string
    */

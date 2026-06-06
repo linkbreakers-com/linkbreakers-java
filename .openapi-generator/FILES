@@ -275,6 +275,7 @@ src/main/java/com/linkbreakers/model/UpdateWorkspaceOriginPurposeRequest.java
 src/main/java/com/linkbreakers/model/UpdateWorkspaceRequest.java
 src/main/java/com/linkbreakers/model/VCardData.java
 src/main/java/com/linkbreakers/model/VCardPayload.java
+src/main/java/com/linkbreakers/model/VCardSocialLink.java
 src/main/java/com/linkbreakers/model/ValidationInstructionsCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/ValidationInstructionsCustomDomainResponseValidation.java
 src/main/java/com/linkbreakers/model/ValidationInstructionsCustomDomainResponseValidationType.java
