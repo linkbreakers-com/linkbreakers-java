@@ -38,6 +38,7 @@ src/main/java/com/linkbreakers/api/MembersApi.java
 src/main/java/com/linkbreakers/api/PageThemesApi.java
 src/main/java/com/linkbreakers/api/QrCodeDesignsApi.java
 src/main/java/com/linkbreakers/api/QrCodeTemplatesApi.java
+src/main/java/com/linkbreakers/api/SlackIntegrationsApi.java
 src/main/java/com/linkbreakers/api/TagsApi.java
 src/main/java/com/linkbreakers/api/TimeSeriesApi.java
 src/main/java/com/linkbreakers/api/VisitorsApi.java
@@ -58,6 +59,8 @@ src/main/java/com/linkbreakers/model/BackgroundOptions.java
 src/main/java/com/linkbreakers/model/CanvasPosition.java
 src/main/java/com/linkbreakers/model/CheckCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/ClientRedirectPayload.java
+src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
+src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
 src/main/java/com/linkbreakers/model/ContactCardTraceCard.java
 src/main/java/com/linkbreakers/model/ContactCardTraceData.java
 src/main/java/com/linkbreakers/model/ContainerConfig.java
@@ -161,6 +164,8 @@ src/main/java/com/linkbreakers/model/GetLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/GetMediaResponse.java
 src/main/java/com/linkbreakers/model/GetPageThemeResponse.java
 src/main/java/com/linkbreakers/model/GetQrcodeDesignResponse.java
+src/main/java/com/linkbreakers/model/GetSlackIntegrationResponse.java
+src/main/java/com/linkbreakers/model/GetSlackOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetWebhookResponse.java
 src/main/java/com/linkbreakers/model/GetWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/GetWorkspaceTokenResponse.java
@@ -190,6 +195,7 @@ src/main/java/com/linkbreakers/model/ListMediaResponse.java
 src/main/java/com/linkbreakers/model/ListPageThemesResponse.java
 src/main/java/com/linkbreakers/model/ListQrcodeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/ListResponse.java
+src/main/java/com/linkbreakers/model/ListSlackChannelsResponse.java
 src/main/java/com/linkbreakers/model/ListTagsResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorAttributeKeysResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsCsvResponse.java
@@ -241,6 +247,9 @@ src/main/java/com/linkbreakers/model/SettingsServiceUpdateLinkSettingBody.java
 src/main/java/com/linkbreakers/model/Shape.java
 src/main/java/com/linkbreakers/model/ShortlinkAvailabilityResponse.java
 src/main/java/com/linkbreakers/model/ShortlinkRandomResponse.java
+src/main/java/com/linkbreakers/model/SlackChannel.java
+src/main/java/com/linkbreakers/model/SlackIntegration.java
+src/main/java/com/linkbreakers/model/SlackIntegrationStatus.java
 src/main/java/com/linkbreakers/model/SocialLinkButton.java
 src/main/java/com/linkbreakers/model/SocialLinkTraceButton.java
 src/main/java/com/linkbreakers/model/SocialLinksDisplayStyle.java
@@ -252,6 +261,7 @@ src/main/java/com/linkbreakers/model/SpecificDateConditionTraceData.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceOption.java
 src/main/java/com/linkbreakers/model/SpecificDateOption.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
+src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/ThemeColor.java
 src/main/java/com/linkbreakers/model/ThemeColorThemeColorType.java
 src/main/java/com/linkbreakers/model/TimeOfDayConditionPayload.java
@@ -268,6 +278,8 @@ src/main/java/com/linkbreakers/model/UpdateMeRequest.java
 src/main/java/com/linkbreakers/model/UpdatePageThemeResponse.java
 src/main/java/com/linkbreakers/model/UpdateQrcodeDesignResponse.java
 src/main/java/com/linkbreakers/model/UpdateQrcodeTemplateResponse.java
+src/main/java/com/linkbreakers/model/UpdateSlackIntegrationRequest.java
+src/main/java/com/linkbreakers/model/UpdateSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/UpdateWebhookResponse.java
 src/main/java/com/linkbreakers/model/UpdateWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/UpdateWorkspaceOriginInquiryRequest.java
