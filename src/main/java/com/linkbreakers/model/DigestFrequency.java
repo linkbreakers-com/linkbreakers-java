@@ -24,20 +24,22 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- * - SOCIAL_LINKS_DISPLAY_STYLE_DETAILED: Display icon with text label (default)  - SOCIAL_LINKS_DISPLAY_STYLE_COMPACT: Display icons only in a compact row
+ * - DIGEST_FREQUENCY_UNSPECIFIED: Not specified; defaults to monthly  - DIGEST_FREQUENCY_NONE: No digest emails  - DIGEST_FREQUENCY_WEEKLY: Weekly digest every Monday  - DIGEST_FREQUENCY_MONTHLY: Monthly digest on the 1st of each month
  */
-@JsonAdapter(SocialLinksDisplayStyle.Adapter.class)
-public enum SocialLinksDisplayStyle {
+@JsonAdapter(DigestFrequency.Adapter.class)
+public enum DigestFrequency {
   
-  SOCIAL_LINKS_DISPLAY_STYLE_UNSPECIFIED("SOCIAL_LINKS_DISPLAY_STYLE_UNSPECIFIED"),
+  DIGEST_FREQUENCY_UNSPECIFIED("DIGEST_FREQUENCY_UNSPECIFIED"),
   
-  SOCIAL_LINKS_DISPLAY_STYLE_DETAILED("SOCIAL_LINKS_DISPLAY_STYLE_DETAILED"),
+  DIGEST_FREQUENCY_NONE("DIGEST_FREQUENCY_NONE"),
   
-  SOCIAL_LINKS_DISPLAY_STYLE_COMPACT("SOCIAL_LINKS_DISPLAY_STYLE_COMPACT");
+  DIGEST_FREQUENCY_WEEKLY("DIGEST_FREQUENCY_WEEKLY"),
+  
+  DIGEST_FREQUENCY_MONTHLY("DIGEST_FREQUENCY_MONTHLY");
 
   private String value;
 
-  SocialLinksDisplayStyle(String value) {
+  DigestFrequency(String value) {
     this.value = value;
   }
 
@@ -50,8 +52,8 @@ public enum SocialLinksDisplayStyle {
     return String.valueOf(value);
   }
 
-  public static SocialLinksDisplayStyle fromValue(String value) {
-    for (SocialLinksDisplayStyle b : SocialLinksDisplayStyle.values()) {
+  public static DigestFrequency fromValue(String value) {
+    for (DigestFrequency b : DigestFrequency.values()) {
       if (b.value.equals(value)) {
         return b;
       }
@@ -59,22 +61,22 @@ public enum SocialLinksDisplayStyle {
     throw new IllegalArgumentException("Unexpected value '" + value + "'");
   }
 
-  public static class Adapter extends TypeAdapter<SocialLinksDisplayStyle> {
+  public static class Adapter extends TypeAdapter<DigestFrequency> {
     @Override
-    public void write(final JsonWriter jsonWriter, final SocialLinksDisplayStyle enumeration) throws IOException {
+    public void write(final JsonWriter jsonWriter, final DigestFrequency enumeration) throws IOException {
       jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public SocialLinksDisplayStyle read(final JsonReader jsonReader) throws IOException {
+    public DigestFrequency read(final JsonReader jsonReader) throws IOException {
       String value = jsonReader.nextString();
-      return SocialLinksDisplayStyle.fromValue(value);
+      return DigestFrequency.fromValue(value);
     }
   }
 
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
     String value = jsonElement.getAsString();
-    SocialLinksDisplayStyle.fromValue(value);
+    DigestFrequency.fromValue(value);
   }
 }
 

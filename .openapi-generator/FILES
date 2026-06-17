@@ -133,6 +133,7 @@ src/main/java/com/linkbreakers/model/DeviceTypeConditionPayload.java
 src/main/java/com/linkbreakers/model/DeviceTypeConditionTraceData.java
 src/main/java/com/linkbreakers/model/DeviceTypeConditionTraceOption.java
 src/main/java/com/linkbreakers/model/DeviceTypeConditionValue.java
+src/main/java/com/linkbreakers/model/DigestFrequency.java
 src/main/java/com/linkbreakers/model/DirectoriesServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/Directory.java
 src/main/java/com/linkbreakers/model/DotsOptions.java
