@@ -30,6 +30,7 @@ src/main/java/com/linkbreakers/StringUtil.java
 src/main/java/com/linkbreakers/api/CustomDomainsApi.java
 src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
+src/main/java/com/linkbreakers/api/GoogleFormsIntegrationsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsServiceApi.java
 src/main/java/com/linkbreakers/api/LinkSettingsApi.java
 src/main/java/com/linkbreakers/api/LinksApi.java
@@ -59,6 +60,8 @@ src/main/java/com/linkbreakers/model/BackgroundOptions.java
 src/main/java/com/linkbreakers/model/CanvasPosition.java
 src/main/java/com/linkbreakers/model/CheckCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/ClientRedirectPayload.java
+src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthRequest.java
+src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthResponse.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
 src/main/java/com/linkbreakers/model/ContactCardTraceCard.java
@@ -159,6 +162,9 @@ src/main/java/com/linkbreakers/model/GetCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/GetDirectoryResponse.java
 src/main/java/com/linkbreakers/model/GetEventsTimeSeriesRequest.java
 src/main/java/com/linkbreakers/model/GetEventsTimeSeriesResponse.java
+src/main/java/com/linkbreakers/model/GetGoogleFormFieldsResponse.java
+src/main/java/com/linkbreakers/model/GetGoogleFormsIntegrationResponse.java
+src/main/java/com/linkbreakers/model/GetGoogleFormsOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetLeadScoreExplanationResponse.java
 src/main/java/com/linkbreakers/model/GetLinkResponse.java
 src/main/java/com/linkbreakers/model/GetLinkSettingResponse.java
@@ -170,6 +176,11 @@ src/main/java/com/linkbreakers/model/GetSlackOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetWebhookResponse.java
 src/main/java/com/linkbreakers/model/GetWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/GetWorkspaceTokenResponse.java
+src/main/java/com/linkbreakers/model/GoogleForm.java
+src/main/java/com/linkbreakers/model/GoogleFormField.java
+src/main/java/com/linkbreakers/model/GoogleFormsFieldMapping.java
+src/main/java/com/linkbreakers/model/GoogleFormsIntegration.java
+src/main/java/com/linkbreakers/model/GoogleFormsIntegrationStatus.java
 src/main/java/com/linkbreakers/model/GooglerpcStatus.java
 src/main/java/com/linkbreakers/model/HTTPMethod.java
 src/main/java/com/linkbreakers/model/IdentifyRequest.java
@@ -191,6 +202,7 @@ src/main/java/com/linkbreakers/model/ListEventTracesResponse.java
 src/main/java/com/linkbreakers/model/ListEventsCsvResponse.java
 src/main/java/com/linkbreakers/model/ListEventsJsonResponse.java
 src/main/java/com/linkbreakers/model/ListEventsResponse.java
+src/main/java/com/linkbreakers/model/ListGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/ListLinksResponse.java
 src/main/java/com/linkbreakers/model/ListMediaResponse.java
 src/main/java/com/linkbreakers/model/ListPageThemesResponse.java
@@ -262,6 +274,7 @@ src/main/java/com/linkbreakers/model/SpecificDateConditionTraceData.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceOption.java
 src/main/java/com/linkbreakers/model/SpecificDateOption.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
+src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/ThemeColor.java
 src/main/java/com/linkbreakers/model/ThemeColorThemeColorType.java
@@ -273,6 +286,8 @@ src/main/java/com/linkbreakers/model/TriggeredBy.java
 src/main/java/com/linkbreakers/model/UpdateCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/UpdateDeviceResponse.java
 src/main/java/com/linkbreakers/model/UpdateDirectoryResponse.java
+src/main/java/com/linkbreakers/model/UpdateGoogleFormsIntegrationRequest.java
+src/main/java/com/linkbreakers/model/UpdateGoogleFormsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/UpdateLinkResponse.java
 src/main/java/com/linkbreakers/model/UpdateLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/UpdateMeRequest.java
