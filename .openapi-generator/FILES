@@ -65,6 +65,8 @@ src/main/java/com/linkbreakers/model/Action.java
 src/main/java/com/linkbreakers/model/AddWorkflowStepRelationshipResponse.java
 src/main/java/com/linkbreakers/model/AnalyticsDashboard.java
 src/main/java/com/linkbreakers/model/ApiTag.java
+src/main/java/com/linkbreakers/model/ApplyQrcodeTemplateRequest.java
+src/main/java/com/linkbreakers/model/ApplyQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/AutoLayoutWorkflowResponse.java
 src/main/java/com/linkbreakers/model/BackgroundOptions.java
 src/main/java/com/linkbreakers/model/BreakdownDataPoint.java

@@ -46,58 +46,58 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * CompleteGoogleFormsOAuthRequest
+ * ApplyQrcodeTemplateRequest applies a community template&#39;s design to an existing link&#39;s QR code.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class CompleteGoogleFormsOAuthRequest {
-  public static final String SERIALIZED_NAME_CODE = "code";
-  @SerializedName(SERIALIZED_NAME_CODE)
+public class ApplyQrcodeTemplateRequest {
+  public static final String SERIALIZED_NAME_LINK_ID = "linkId";
+  @SerializedName(SERIALIZED_NAME_LINK_ID)
   @javax.annotation.Nonnull
-  private String code;
+  private String linkId;
 
-  public static final String SERIALIZED_NAME_STATE = "state";
-  @SerializedName(SERIALIZED_NAME_STATE)
+  public static final String SERIALIZED_NAME_TEMPLATE_SLUG = "templateSlug";
+  @SerializedName(SERIALIZED_NAME_TEMPLATE_SLUG)
   @javax.annotation.Nonnull
-  private String state;
+  private String templateSlug;
 
-  public CompleteGoogleFormsOAuthRequest() {
+  public ApplyQrcodeTemplateRequest() {
   }
 
-  public CompleteGoogleFormsOAuthRequest code(@javax.annotation.Nonnull String code) {
-    this.code = code;
+  public ApplyQrcodeTemplateRequest linkId(@javax.annotation.Nonnull String linkId) {
+    this.linkId = linkId;
     return this;
   }
 
   /**
-   * Get code
-   * @return code
+   * Get linkId
+   * @return linkId
    */
   @javax.annotation.Nonnull
-  public String getCode() {
-    return code;
+  public String getLinkId() {
+    return linkId;
   }
 
-  public void setCode(@javax.annotation.Nonnull String code) {
-    this.code = code;
+  public void setLinkId(@javax.annotation.Nonnull String linkId) {
+    this.linkId = linkId;
   }
 
 
-  public CompleteGoogleFormsOAuthRequest state(@javax.annotation.Nonnull String state) {
-    this.state = state;
+  public ApplyQrcodeTemplateRequest templateSlug(@javax.annotation.Nonnull String templateSlug) {
+    this.templateSlug = templateSlug;
     return this;
   }
 
   /**
-   * Get state
-   * @return state
+   * Get templateSlug
+   * @return templateSlug
    */
   @javax.annotation.Nonnull
-  public String getState() {
-    return state;
+  public String getTemplateSlug() {
+    return templateSlug;
   }
 
-  public void setState(@javax.annotation.Nonnull String state) {
-    this.state = state;
+  public void setTemplateSlug(@javax.annotation.Nonnull String templateSlug) {
+    this.templateSlug = templateSlug;
   }
 
 
@@ -110,22 +110,22 @@ public class CompleteGoogleFormsOAuthRequest {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CompleteGoogleFormsOAuthRequest completeGoogleFormsOAuthRequest = (CompleteGoogleFormsOAuthRequest) o;
-    return Objects.equals(this.code, completeGoogleFormsOAuthRequest.code) &&
-        Objects.equals(this.state, completeGoogleFormsOAuthRequest.state);
+    ApplyQrcodeTemplateRequest applyQrcodeTemplateRequest = (ApplyQrcodeTemplateRequest) o;
+    return Objects.equals(this.linkId, applyQrcodeTemplateRequest.linkId) &&
+        Objects.equals(this.templateSlug, applyQrcodeTemplateRequest.templateSlug);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(code, state);
+    return Objects.hash(linkId, templateSlug);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CompleteGoogleFormsOAuthRequest {\n");
-    sb.append("    code: ").append(toIndentedString(code)).append("\n");
-    sb.append("    state: ").append(toIndentedString(state)).append("\n");
+    sb.append("class ApplyQrcodeTemplateRequest {\n");
+    sb.append("    linkId: ").append(toIndentedString(linkId)).append("\n");
+    sb.append("    templateSlug: ").append(toIndentedString(templateSlug)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -144,45 +144,45 @@ public class CompleteGoogleFormsOAuthRequest {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("code", "state"));
+    openapiFields = new HashSet<String>(Arrays.asList("linkId", "templateSlug"));
 
     // a set of required properties/fields (JSON key names)
-    openapiRequiredFields = new HashSet<String>(Arrays.asList("code", "state"));
+    openapiRequiredFields = new HashSet<String>(Arrays.asList("linkId", "templateSlug"));
   }
 
   /**
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to CompleteGoogleFormsOAuthRequest
+   * @throws IOException if the JSON Element is invalid with respect to ApplyQrcodeTemplateRequest
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!CompleteGoogleFormsOAuthRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in CompleteGoogleFormsOAuthRequest is not found in the empty JSON string", CompleteGoogleFormsOAuthRequest.openapiRequiredFields.toString()));
+        if (!ApplyQrcodeTemplateRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in ApplyQrcodeTemplateRequest is not found in the empty JSON string", ApplyQrcodeTemplateRequest.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!CompleteGoogleFormsOAuthRequest.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `CompleteGoogleFormsOAuthRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!ApplyQrcodeTemplateRequest.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `ApplyQrcodeTemplateRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
 
       // check to make sure all required properties/fields are present in the JSON string
-      for (String requiredField : CompleteGoogleFormsOAuthRequest.openapiRequiredFields) {
+      for (String requiredField : ApplyQrcodeTemplateRequest.openapiRequiredFields) {
         if (jsonElement.getAsJsonObject().get(requiredField) == null) {
           throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      if (!jsonObj.get("code").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `code` to be a primitive type in the JSON string but got `%s`", jsonObj.get("code").toString()));
+      if (!jsonObj.get("linkId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `linkId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("linkId").toString()));
       }
-      if (!jsonObj.get("state").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `state` to be a primitive type in the JSON string but got `%s`", jsonObj.get("state").toString()));
+      if (!jsonObj.get("templateSlug").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `templateSlug` to be a primitive type in the JSON string but got `%s`", jsonObj.get("templateSlug").toString()));
       }
   }
 
@@ -190,22 +190,22 @@ public class CompleteGoogleFormsOAuthRequest {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!CompleteGoogleFormsOAuthRequest.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'CompleteGoogleFormsOAuthRequest' and its subtypes
+       if (!ApplyQrcodeTemplateRequest.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'ApplyQrcodeTemplateRequest' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<CompleteGoogleFormsOAuthRequest> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(CompleteGoogleFormsOAuthRequest.class));
+       final TypeAdapter<ApplyQrcodeTemplateRequest> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(ApplyQrcodeTemplateRequest.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<CompleteGoogleFormsOAuthRequest>() {
+       return (TypeAdapter<T>) new TypeAdapter<ApplyQrcodeTemplateRequest>() {
            @Override
-           public void write(JsonWriter out, CompleteGoogleFormsOAuthRequest value) throws IOException {
+           public void write(JsonWriter out, ApplyQrcodeTemplateRequest value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public CompleteGoogleFormsOAuthRequest read(JsonReader in) throws IOException {
+           public ApplyQrcodeTemplateRequest read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -216,18 +216,18 @@ public class CompleteGoogleFormsOAuthRequest {
   }
 
   /**
-   * Create an instance of CompleteGoogleFormsOAuthRequest given an JSON string
+   * Create an instance of ApplyQrcodeTemplateRequest given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of CompleteGoogleFormsOAuthRequest
-   * @throws IOException if the JSON string is invalid with respect to CompleteGoogleFormsOAuthRequest
+   * @return An instance of ApplyQrcodeTemplateRequest
+   * @throws IOException if the JSON string is invalid with respect to ApplyQrcodeTemplateRequest
    */
-  public static CompleteGoogleFormsOAuthRequest fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, CompleteGoogleFormsOAuthRequest.class);
+  public static ApplyQrcodeTemplateRequest fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, ApplyQrcodeTemplateRequest.class);
   }
 
   /**
-   * Convert an instance of CompleteGoogleFormsOAuthRequest to an JSON string
+   * Convert an instance of ApplyQrcodeTemplateRequest to an JSON string
    *
    * @return JSON string
    */

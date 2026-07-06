@@ -19,11 +19,9 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.EventTrace;
+import com.linkbreakers.model.QrcodeDesign;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -49,42 +47,34 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * ListEventTracesResponse
+ * ApplyQrcodeTemplateResponse returns the updated QR code design after applying the template.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class ListEventTracesResponse {
-  public static final String SERIALIZED_NAME_TRACES = "traces";
-  @SerializedName(SERIALIZED_NAME_TRACES)
+public class ApplyQrcodeTemplateResponse {
+  public static final String SERIALIZED_NAME_QRCODE_DESIGN = "qrcodeDesign";
+  @SerializedName(SERIALIZED_NAME_QRCODE_DESIGN)
   @javax.annotation.Nullable
-  private List<EventTrace> traces = new ArrayList<>();
+  private QrcodeDesign qrcodeDesign;
 
-  public ListEventTracesResponse() {
+  public ApplyQrcodeTemplateResponse() {
   }
 
-  public ListEventTracesResponse traces(@javax.annotation.Nullable List<EventTrace> traces) {
-    this.traces = traces;
-    return this;
-  }
-
-  public ListEventTracesResponse addTracesItem(EventTrace tracesItem) {
-    if (this.traces == null) {
-      this.traces = new ArrayList<>();
-    }
-    this.traces.add(tracesItem);
+  public ApplyQrcodeTemplateResponse qrcodeDesign(@javax.annotation.Nullable QrcodeDesign qrcodeDesign) {
+    this.qrcodeDesign = qrcodeDesign;
     return this;
   }
 
   /**
-   * Get traces
-   * @return traces
+   * Get qrcodeDesign
+   * @return qrcodeDesign
    */
   @javax.annotation.Nullable
-  public List<EventTrace> getTraces() {
-    return traces;
+  public QrcodeDesign getQrcodeDesign() {
+    return qrcodeDesign;
   }
 
-  public void setTraces(@javax.annotation.Nullable List<EventTrace> traces) {
-    this.traces = traces;
+  public void setQrcodeDesign(@javax.annotation.Nullable QrcodeDesign qrcodeDesign) {
+    this.qrcodeDesign = qrcodeDesign;
   }
 
 
@@ -97,20 +87,20 @@ public class ListEventTracesResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ListEventTracesResponse listEventTracesResponse = (ListEventTracesResponse) o;
-    return Objects.equals(this.traces, listEventTracesResponse.traces);
+    ApplyQrcodeTemplateResponse applyQrcodeTemplateResponse = (ApplyQrcodeTemplateResponse) o;
+    return Objects.equals(this.qrcodeDesign, applyQrcodeTemplateResponse.qrcodeDesign);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(traces);
+    return Objects.hash(qrcodeDesign);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class ListEventTracesResponse {\n");
-    sb.append("    traces: ").append(toIndentedString(traces)).append("\n");
+    sb.append("class ApplyQrcodeTemplateResponse {\n");
+    sb.append("    qrcodeDesign: ").append(toIndentedString(qrcodeDesign)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -129,7 +119,7 @@ public class ListEventTracesResponse {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("traces"));
+    openapiFields = new HashSet<String>(Arrays.asList("qrcodeDesign"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -139,36 +129,26 @@ public class ListEventTracesResponse {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to ListEventTracesResponse
+   * @throws IOException if the JSON Element is invalid with respect to ApplyQrcodeTemplateResponse
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!ListEventTracesResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in ListEventTracesResponse is not found in the empty JSON string", ListEventTracesResponse.openapiRequiredFields.toString()));
+        if (!ApplyQrcodeTemplateResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in ApplyQrcodeTemplateResponse is not found in the empty JSON string", ApplyQrcodeTemplateResponse.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!ListEventTracesResponse.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `ListEventTracesResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!ApplyQrcodeTemplateResponse.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `ApplyQrcodeTemplateResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      if (jsonObj.get("traces") != null && !jsonObj.get("traces").isJsonNull()) {
-        JsonArray jsonArraytraces = jsonObj.getAsJsonArray("traces");
-        if (jsonArraytraces != null) {
-          // ensure the json data is an array
-          if (!jsonObj.get("traces").isJsonArray()) {
-            throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `traces` to be an array in the JSON string but got `%s`", jsonObj.get("traces").toString()));
-          }
-
-          // validate the optional field `traces` (array)
-          for (int i = 0; i < jsonArraytraces.size(); i++) {
-            EventTrace.validateJsonElement(jsonArraytraces.get(i));
-          };
-        }
+      // validate the optional field `qrcodeDesign`
+      if (jsonObj.get("qrcodeDesign") != null && !jsonObj.get("qrcodeDesign").isJsonNull()) {
+        QrcodeDesign.validateJsonElement(jsonObj.get("qrcodeDesign"));
       }
   }
 
@@ -176,22 +156,22 @@ public class ListEventTracesResponse {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!ListEventTracesResponse.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'ListEventTracesResponse' and its subtypes
+       if (!ApplyQrcodeTemplateResponse.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'ApplyQrcodeTemplateResponse' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<ListEventTracesResponse> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(ListEventTracesResponse.class));
+       final TypeAdapter<ApplyQrcodeTemplateResponse> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(ApplyQrcodeTemplateResponse.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<ListEventTracesResponse>() {
+       return (TypeAdapter<T>) new TypeAdapter<ApplyQrcodeTemplateResponse>() {
            @Override
-           public void write(JsonWriter out, ListEventTracesResponse value) throws IOException {
+           public void write(JsonWriter out, ApplyQrcodeTemplateResponse value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public ListEventTracesResponse read(JsonReader in) throws IOException {
+           public ApplyQrcodeTemplateResponse read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -202,18 +182,18 @@ public class ListEventTracesResponse {
   }
 
   /**
-   * Create an instance of ListEventTracesResponse given an JSON string
+   * Create an instance of ApplyQrcodeTemplateResponse given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of ListEventTracesResponse
-   * @throws IOException if the JSON string is invalid with respect to ListEventTracesResponse
+   * @return An instance of ApplyQrcodeTemplateResponse
+   * @throws IOException if the JSON string is invalid with respect to ApplyQrcodeTemplateResponse
    */
-  public static ListEventTracesResponse fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, ListEventTracesResponse.class);
+  public static ApplyQrcodeTemplateResponse fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, ApplyQrcodeTemplateResponse.class);
   }
 
   /**
-   * Convert an instance of ListEventTracesResponse to an JSON string
+   * Convert an instance of ApplyQrcodeTemplateResponse to an JSON string
    *
    * @return JSON string
    */
