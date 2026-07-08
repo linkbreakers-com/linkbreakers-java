@@ -261,6 +261,8 @@ src/main/java/com/linkbreakers/model/MediaType.java
 src/main/java/com/linkbreakers/model/MediaVisibility.java
 src/main/java/com/linkbreakers/model/Member.java
 src/main/java/com/linkbreakers/model/MembersServiceUpdateBody.java
+src/main/java/com/linkbreakers/model/MessagePageNavigationType.java
+src/main/java/com/linkbreakers/model/MessagePagePayload.java
 src/main/java/com/linkbreakers/model/MultiLinkButton.java
 src/main/java/com/linkbreakers/model/MultiLinkPayload.java
 src/main/java/com/linkbreakers/model/MultiLinkTraceButton.java
@@ -315,6 +317,7 @@ src/main/java/com/linkbreakers/model/SpecificDateOption.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
 src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
+src/main/java/com/linkbreakers/model/ThankYouPagePayload.java
 src/main/java/com/linkbreakers/model/ThemeColor.java
 src/main/java/com/linkbreakers/model/ThemeColorThemeColorType.java
 src/main/java/com/linkbreakers/model/TimeOfDayConditionPayload.java
