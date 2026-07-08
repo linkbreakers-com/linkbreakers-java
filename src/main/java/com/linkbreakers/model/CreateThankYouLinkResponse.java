@@ -19,8 +19,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.ListEventsCsvResponse;
-import com.linkbreakers.model.ListEventsJsonResponse;
+import com.linkbreakers.model.Link;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -48,58 +47,34 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * ListEventsResponse contains either the JSON payload or CSV export for the matching events.
+ * CreateThankYouLinkResponse
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class ListEventsResponse {
-  public static final String SERIALIZED_NAME_CSV = "csv";
-  @SerializedName(SERIALIZED_NAME_CSV)
+public class CreateThankYouLinkResponse {
+  public static final String SERIALIZED_NAME_LINK = "link";
+  @SerializedName(SERIALIZED_NAME_LINK)
   @javax.annotation.Nullable
-  private ListEventsCsvResponse csv;
+  private Link link;
 
-  public static final String SERIALIZED_NAME_JSON = "json";
-  @SerializedName(SERIALIZED_NAME_JSON)
-  @javax.annotation.Nullable
-  private ListEventsJsonResponse json;
-
-  public ListEventsResponse() {
+  public CreateThankYouLinkResponse() {
   }
 
-  public ListEventsResponse csv(@javax.annotation.Nullable ListEventsCsvResponse csv) {
-    this.csv = csv;
+  public CreateThankYouLinkResponse link(@javax.annotation.Nullable Link link) {
+    this.link = link;
     return this;
   }
 
   /**
-   * Get csv
-   * @return csv
+   * Get link
+   * @return link
    */
   @javax.annotation.Nullable
-  public ListEventsCsvResponse getCsv() {
-    return csv;
+  public Link getLink() {
+    return link;
   }
 
-  public void setCsv(@javax.annotation.Nullable ListEventsCsvResponse csv) {
-    this.csv = csv;
-  }
-
-
-  public ListEventsResponse json(@javax.annotation.Nullable ListEventsJsonResponse json) {
-    this.json = json;
-    return this;
-  }
-
-  /**
-   * Get json
-   * @return json
-   */
-  @javax.annotation.Nullable
-  public ListEventsJsonResponse getJson() {
-    return json;
-  }
-
-  public void setJson(@javax.annotation.Nullable ListEventsJsonResponse json) {
-    this.json = json;
+  public void setLink(@javax.annotation.Nullable Link link) {
+    this.link = link;
   }
 
 
@@ -112,22 +87,20 @@ public class ListEventsResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ListEventsResponse listEventsResponse = (ListEventsResponse) o;
-    return Objects.equals(this.csv, listEventsResponse.csv) &&
-        Objects.equals(this.json, listEventsResponse.json);
+    CreateThankYouLinkResponse createThankYouLinkResponse = (CreateThankYouLinkResponse) o;
+    return Objects.equals(this.link, createThankYouLinkResponse.link);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(csv, json);
+    return Objects.hash(link);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class ListEventsResponse {\n");
-    sb.append("    csv: ").append(toIndentedString(csv)).append("\n");
-    sb.append("    json: ").append(toIndentedString(json)).append("\n");
+    sb.append("class CreateThankYouLinkResponse {\n");
+    sb.append("    link: ").append(toIndentedString(link)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -146,7 +119,7 @@ public class ListEventsResponse {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("csv", "json"));
+    openapiFields = new HashSet<String>(Arrays.asList("link"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -156,30 +129,26 @@ public class ListEventsResponse {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to ListEventsResponse
+   * @throws IOException if the JSON Element is invalid with respect to CreateThankYouLinkResponse
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!ListEventsResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in ListEventsResponse is not found in the empty JSON string", ListEventsResponse.openapiRequiredFields.toString()));
+        if (!CreateThankYouLinkResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in CreateThankYouLinkResponse is not found in the empty JSON string", CreateThankYouLinkResponse.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!ListEventsResponse.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `ListEventsResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!CreateThankYouLinkResponse.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `CreateThankYouLinkResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      // validate the optional field `csv`
-      if (jsonObj.get("csv") != null && !jsonObj.get("csv").isJsonNull()) {
-        ListEventsCsvResponse.validateJsonElement(jsonObj.get("csv"));
-      }
-      // validate the optional field `json`
-      if (jsonObj.get("json") != null && !jsonObj.get("json").isJsonNull()) {
-        ListEventsJsonResponse.validateJsonElement(jsonObj.get("json"));
+      // validate the optional field `link`
+      if (jsonObj.get("link") != null && !jsonObj.get("link").isJsonNull()) {
+        Link.validateJsonElement(jsonObj.get("link"));
       }
   }
 
@@ -187,22 +156,22 @@ public class ListEventsResponse {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!ListEventsResponse.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'ListEventsResponse' and its subtypes
+       if (!CreateThankYouLinkResponse.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'CreateThankYouLinkResponse' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<ListEventsResponse> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(ListEventsResponse.class));
+       final TypeAdapter<CreateThankYouLinkResponse> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(CreateThankYouLinkResponse.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<ListEventsResponse>() {
+       return (TypeAdapter<T>) new TypeAdapter<CreateThankYouLinkResponse>() {
            @Override
-           public void write(JsonWriter out, ListEventsResponse value) throws IOException {
+           public void write(JsonWriter out, CreateThankYouLinkResponse value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public ListEventsResponse read(JsonReader in) throws IOException {
+           public CreateThankYouLinkResponse read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -213,18 +182,18 @@ public class ListEventsResponse {
   }
 
   /**
-   * Create an instance of ListEventsResponse given an JSON string
+   * Create an instance of CreateThankYouLinkResponse given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of ListEventsResponse
-   * @throws IOException if the JSON string is invalid with respect to ListEventsResponse
+   * @return An instance of CreateThankYouLinkResponse
+   * @throws IOException if the JSON string is invalid with respect to CreateThankYouLinkResponse
    */
-  public static ListEventsResponse fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, ListEventsResponse.class);
+  public static CreateThankYouLinkResponse fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, CreateThankYouLinkResponse.class);
   }
 
   /**
-   * Convert an instance of ListEventsResponse to an JSON string
+   * Convert an instance of CreateThankYouLinkResponse to an JSON string
    *
    * @return JSON string
    */

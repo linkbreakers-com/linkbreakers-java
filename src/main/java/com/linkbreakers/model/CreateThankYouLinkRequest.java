@@ -19,7 +19,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.VCardData;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,19 +50,24 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * Request to create a new contact card link.
+ * Request to create a new thank you page link.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class CreateContactLinkRequest {
+public class CreateThankYouLinkRequest {
   public static final String SERIALIZED_NAME_CUSTOM_DOMAIN_ID = "customDomainId";
   @SerializedName(SERIALIZED_NAME_CUSTOM_DOMAIN_ID)
   @javax.annotation.Nullable
   private String customDomainId;
 
-  public static final String SERIALIZED_NAME_FALLBACK_DESTINATION = "fallbackDestination";
-  @SerializedName(SERIALIZED_NAME_FALLBACK_DESTINATION)
+  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
   @javax.annotation.Nullable
-  private String fallbackDestination;
+  private String description;
+
+  public static final String SERIALIZED_NAME_DIRECTORY_ID = "directoryId";
+  @SerializedName(SERIALIZED_NAME_DIRECTORY_ID)
+  @javax.annotation.Nullable
+  private String directoryId;
 
   public static final String SERIALIZED_NAME_LEAD_GOAL_DEFINITION = "leadGoalDefinition";
   @SerializedName(SERIALIZED_NAME_LEAD_GOAL_DEFINITION)
@@ -105,20 +109,20 @@ public class CreateContactLinkRequest {
   @javax.annotation.Nullable
   private List<String> tags = new ArrayList<>();
 
-  public static final String SERIALIZED_NAME_VCARD_DATA = "vcardData";
-  @SerializedName(SERIALIZED_NAME_VCARD_DATA)
+  public static final String SERIALIZED_NAME_TITLE = "title";
+  @SerializedName(SERIALIZED_NAME_TITLE)
   @javax.annotation.Nonnull
-  private VCardData vcardData;
+  private String title;
 
   public static final String SERIALIZED_NAME_WAIT_FOR_QRCODE = "waitForQrcode";
   @SerializedName(SERIALIZED_NAME_WAIT_FOR_QRCODE)
   @javax.annotation.Nullable
   private Boolean waitForQrcode;
 
-  public CreateContactLinkRequest() {
+  public CreateThankYouLinkRequest() {
   }
 
-  public CreateContactLinkRequest customDomainId(@javax.annotation.Nullable String customDomainId) {
+  public CreateThankYouLinkRequest customDomainId(@javax.annotation.Nullable String customDomainId) {
     this.customDomainId = customDomainId;
     return this;
   }
@@ -137,26 +141,45 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest fallbackDestination(@javax.annotation.Nullable String fallbackDestination) {
-    this.fallbackDestination = fallbackDestination;
+  public CreateThankYouLinkRequest description(@javax.annotation.Nullable String description) {
+    this.description = description;
     return this;
   }
 
   /**
-   * Optional fallback URL if vCard download fails or is not supported.
-   * @return fallbackDestination
+   * Optional description displayed on the thank you page.
+   * @return description
    */
   @javax.annotation.Nullable
-  public String getFallbackDestination() {
-    return fallbackDestination;
+  public String getDescription() {
+    return description;
   }
 
-  public void setFallbackDestination(@javax.annotation.Nullable String fallbackDestination) {
-    this.fallbackDestination = fallbackDestination;
+  public void setDescription(@javax.annotation.Nullable String description) {
+    this.description = description;
   }
 
 
-  public CreateContactLinkRequest leadGoalDefinition(@javax.annotation.Nullable String leadGoalDefinition) {
+  public CreateThankYouLinkRequest directoryId(@javax.annotation.Nullable String directoryId) {
+    this.directoryId = directoryId;
+    return this;
+  }
+
+  /**
+   * Directory to organize this link into. If empty, link is created at root level.
+   * @return directoryId
+   */
+  @javax.annotation.Nullable
+  public String getDirectoryId() {
+    return directoryId;
+  }
+
+  public void setDirectoryId(@javax.annotation.Nullable String directoryId) {
+    this.directoryId = directoryId;
+  }
+
+
+  public CreateThankYouLinkRequest leadGoalDefinition(@javax.annotation.Nullable String leadGoalDefinition) {
     this.leadGoalDefinition = leadGoalDefinition;
     return this;
   }
@@ -175,7 +198,7 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest leadTargetDefinition(@javax.annotation.Nullable String leadTargetDefinition) {
+  public CreateThankYouLinkRequest leadTargetDefinition(@javax.annotation.Nullable String leadTargetDefinition) {
     this.leadTargetDefinition = leadTargetDefinition;
     return this;
   }
@@ -194,12 +217,12 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest metadata(@javax.annotation.Nullable Map<String, String> metadata) {
+  public CreateThankYouLinkRequest metadata(@javax.annotation.Nullable Map<String, String> metadata) {
     this.metadata = metadata;
     return this;
   }
 
-  public CreateContactLinkRequest putMetadataItem(String key, String metadataItem) {
+  public CreateThankYouLinkRequest putMetadataItem(String key, String metadataItem) {
     if (this.metadata == null) {
       this.metadata = new HashMap<>();
     }
@@ -221,7 +244,7 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest name(@javax.annotation.Nullable String name) {
+  public CreateThankYouLinkRequest name(@javax.annotation.Nullable String name) {
     this.name = name;
     return this;
   }
@@ -240,7 +263,7 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest qrcodeDesignId(@javax.annotation.Nullable String qrcodeDesignId) {
+  public CreateThankYouLinkRequest qrcodeDesignId(@javax.annotation.Nullable String qrcodeDesignId) {
     this.qrcodeDesignId = qrcodeDesignId;
     return this;
   }
@@ -259,7 +282,7 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest qrcodeTemplateId(@javax.annotation.Nullable String qrcodeTemplateId) {
+  public CreateThankYouLinkRequest qrcodeTemplateId(@javax.annotation.Nullable String qrcodeTemplateId) {
     this.qrcodeTemplateId = qrcodeTemplateId;
     return this;
   }
@@ -278,7 +301,7 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest shortlink(@javax.annotation.Nullable String shortlink) {
+  public CreateThankYouLinkRequest shortlink(@javax.annotation.Nullable String shortlink) {
     this.shortlink = shortlink;
     return this;
   }
@@ -297,12 +320,12 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest tags(@javax.annotation.Nullable List<String> tags) {
+  public CreateThankYouLinkRequest tags(@javax.annotation.Nullable List<String> tags) {
     this.tags = tags;
     return this;
   }
 
-  public CreateContactLinkRequest addTagsItem(String tagsItem) {
+  public CreateThankYouLinkRequest addTagsItem(String tagsItem) {
     if (this.tags == null) {
       this.tags = new ArrayList<>();
     }
@@ -324,26 +347,26 @@ public class CreateContactLinkRequest {
   }
 
 
-  public CreateContactLinkRequest vcardData(@javax.annotation.Nonnull VCardData vcardData) {
-    this.vcardData = vcardData;
+  public CreateThankYouLinkRequest title(@javax.annotation.Nonnull String title) {
+    this.title = title;
     return this;
   }
 
   /**
-   * Contact information for the vCard link. This field is required.
-   * @return vcardData
+   * Title displayed on the thank you page. This field is required.
+   * @return title
    */
   @javax.annotation.Nonnull
-  public VCardData getVcardData() {
-    return vcardData;
+  public String getTitle() {
+    return title;
   }
 
-  public void setVcardData(@javax.annotation.Nonnull VCardData vcardData) {
-    this.vcardData = vcardData;
+  public void setTitle(@javax.annotation.Nonnull String title) {
+    this.title = title;
   }
 
 
-  public CreateContactLinkRequest waitForQrcode(@javax.annotation.Nullable Boolean waitForQrcode) {
+  public CreateThankYouLinkRequest waitForQrcode(@javax.annotation.Nullable Boolean waitForQrcode) {
     this.waitForQrcode = waitForQrcode;
     return this;
   }
@@ -371,32 +394,34 @@ public class CreateContactLinkRequest {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CreateContactLinkRequest createContactLinkRequest = (CreateContactLinkRequest) o;
-    return Objects.equals(this.customDomainId, createContactLinkRequest.customDomainId) &&
-        Objects.equals(this.fallbackDestination, createContactLinkRequest.fallbackDestination) &&
-        Objects.equals(this.leadGoalDefinition, createContactLinkRequest.leadGoalDefinition) &&
-        Objects.equals(this.leadTargetDefinition, createContactLinkRequest.leadTargetDefinition) &&
-        Objects.equals(this.metadata, createContactLinkRequest.metadata) &&
-        Objects.equals(this.name, createContactLinkRequest.name) &&
-        Objects.equals(this.qrcodeDesignId, createContactLinkRequest.qrcodeDesignId) &&
-        Objects.equals(this.qrcodeTemplateId, createContactLinkRequest.qrcodeTemplateId) &&
-        Objects.equals(this.shortlink, createContactLinkRequest.shortlink) &&
-        Objects.equals(this.tags, createContactLinkRequest.tags) &&
-        Objects.equals(this.vcardData, createContactLinkRequest.vcardData) &&
-        Objects.equals(this.waitForQrcode, createContactLinkRequest.waitForQrcode);
+    CreateThankYouLinkRequest createThankYouLinkRequest = (CreateThankYouLinkRequest) o;
+    return Objects.equals(this.customDomainId, createThankYouLinkRequest.customDomainId) &&
+        Objects.equals(this.description, createThankYouLinkRequest.description) &&
+        Objects.equals(this.directoryId, createThankYouLinkRequest.directoryId) &&
+        Objects.equals(this.leadGoalDefinition, createThankYouLinkRequest.leadGoalDefinition) &&
+        Objects.equals(this.leadTargetDefinition, createThankYouLinkRequest.leadTargetDefinition) &&
+        Objects.equals(this.metadata, createThankYouLinkRequest.metadata) &&
+        Objects.equals(this.name, createThankYouLinkRequest.name) &&
+        Objects.equals(this.qrcodeDesignId, createThankYouLinkRequest.qrcodeDesignId) &&
+        Objects.equals(this.qrcodeTemplateId, createThankYouLinkRequest.qrcodeTemplateId) &&
+        Objects.equals(this.shortlink, createThankYouLinkRequest.shortlink) &&
+        Objects.equals(this.tags, createThankYouLinkRequest.tags) &&
+        Objects.equals(this.title, createThankYouLinkRequest.title) &&
+        Objects.equals(this.waitForQrcode, createThankYouLinkRequest.waitForQrcode);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(customDomainId, fallbackDestination, leadGoalDefinition, leadTargetDefinition, metadata, name, qrcodeDesignId, qrcodeTemplateId, shortlink, tags, vcardData, waitForQrcode);
+    return Objects.hash(customDomainId, description, directoryId, leadGoalDefinition, leadTargetDefinition, metadata, name, qrcodeDesignId, qrcodeTemplateId, shortlink, tags, title, waitForQrcode);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CreateContactLinkRequest {\n");
+    sb.append("class CreateThankYouLinkRequest {\n");
     sb.append("    customDomainId: ").append(toIndentedString(customDomainId)).append("\n");
-    sb.append("    fallbackDestination: ").append(toIndentedString(fallbackDestination)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    directoryId: ").append(toIndentedString(directoryId)).append("\n");
     sb.append("    leadGoalDefinition: ").append(toIndentedString(leadGoalDefinition)).append("\n");
     sb.append("    leadTargetDefinition: ").append(toIndentedString(leadTargetDefinition)).append("\n");
     sb.append("    metadata: ").append(toIndentedString(metadata)).append("\n");
@@ -405,7 +430,7 @@ public class CreateContactLinkRequest {
     sb.append("    qrcodeTemplateId: ").append(toIndentedString(qrcodeTemplateId)).append("\n");
     sb.append("    shortlink: ").append(toIndentedString(shortlink)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
-    sb.append("    vcardData: ").append(toIndentedString(vcardData)).append("\n");
+    sb.append("    title: ").append(toIndentedString(title)).append("\n");
     sb.append("    waitForQrcode: ").append(toIndentedString(waitForQrcode)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -425,35 +450,35 @@ public class CreateContactLinkRequest {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("customDomainId", "fallbackDestination", "leadGoalDefinition", "leadTargetDefinition", "metadata", "name", "qrcodeDesignId", "qrcodeTemplateId", "shortlink", "tags", "vcardData", "waitForQrcode"));
+    openapiFields = new HashSet<String>(Arrays.asList("customDomainId", "description", "directoryId", "leadGoalDefinition", "leadTargetDefinition", "metadata", "name", "qrcodeDesignId", "qrcodeTemplateId", "shortlink", "tags", "title", "waitForQrcode"));
 
     // a set of required properties/fields (JSON key names)
-    openapiRequiredFields = new HashSet<String>(Arrays.asList("vcardData"));
+    openapiRequiredFields = new HashSet<String>(Arrays.asList("title"));
   }
 
   /**
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to CreateContactLinkRequest
+   * @throws IOException if the JSON Element is invalid with respect to CreateThankYouLinkRequest
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!CreateContactLinkRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in CreateContactLinkRequest is not found in the empty JSON string", CreateContactLinkRequest.openapiRequiredFields.toString()));
+        if (!CreateThankYouLinkRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in CreateThankYouLinkRequest is not found in the empty JSON string", CreateThankYouLinkRequest.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!CreateContactLinkRequest.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `CreateContactLinkRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!CreateThankYouLinkRequest.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `CreateThankYouLinkRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
 
       // check to make sure all required properties/fields are present in the JSON string
-      for (String requiredField : CreateContactLinkRequest.openapiRequiredFields) {
+      for (String requiredField : CreateThankYouLinkRequest.openapiRequiredFields) {
         if (jsonElement.getAsJsonObject().get(requiredField) == null) {
           throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
         }
@@ -462,8 +487,11 @@ public class CreateContactLinkRequest {
       if ((jsonObj.get("customDomainId") != null && !jsonObj.get("customDomainId").isJsonNull()) && !jsonObj.get("customDomainId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `customDomainId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("customDomainId").toString()));
       }
-      if ((jsonObj.get("fallbackDestination") != null && !jsonObj.get("fallbackDestination").isJsonNull()) && !jsonObj.get("fallbackDestination").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `fallbackDestination` to be a primitive type in the JSON string but got `%s`", jsonObj.get("fallbackDestination").toString()));
+      if ((jsonObj.get("description") != null && !jsonObj.get("description").isJsonNull()) && !jsonObj.get("description").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `description` to be a primitive type in the JSON string but got `%s`", jsonObj.get("description").toString()));
+      }
+      if ((jsonObj.get("directoryId") != null && !jsonObj.get("directoryId").isJsonNull()) && !jsonObj.get("directoryId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `directoryId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("directoryId").toString()));
       }
       if ((jsonObj.get("leadGoalDefinition") != null && !jsonObj.get("leadGoalDefinition").isJsonNull()) && !jsonObj.get("leadGoalDefinition").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `leadGoalDefinition` to be a primitive type in the JSON string but got `%s`", jsonObj.get("leadGoalDefinition").toString()));
@@ -487,30 +515,31 @@ public class CreateContactLinkRequest {
       if (jsonObj.get("tags") != null && !jsonObj.get("tags").isJsonNull() && !jsonObj.get("tags").isJsonArray()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `tags` to be an array in the JSON string but got `%s`", jsonObj.get("tags").toString()));
       }
-      // validate the required field `vcardData`
-      VCardData.validateJsonElement(jsonObj.get("vcardData"));
+      if (!jsonObj.get("title").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `title` to be a primitive type in the JSON string but got `%s`", jsonObj.get("title").toString()));
+      }
   }
 
   public static class CustomTypeAdapterFactory implements TypeAdapterFactory {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!CreateContactLinkRequest.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'CreateContactLinkRequest' and its subtypes
+       if (!CreateThankYouLinkRequest.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'CreateThankYouLinkRequest' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<CreateContactLinkRequest> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(CreateContactLinkRequest.class));
+       final TypeAdapter<CreateThankYouLinkRequest> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(CreateThankYouLinkRequest.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<CreateContactLinkRequest>() {
+       return (TypeAdapter<T>) new TypeAdapter<CreateThankYouLinkRequest>() {
            @Override
-           public void write(JsonWriter out, CreateContactLinkRequest value) throws IOException {
+           public void write(JsonWriter out, CreateThankYouLinkRequest value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public CreateContactLinkRequest read(JsonReader in) throws IOException {
+           public CreateThankYouLinkRequest read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -521,18 +550,18 @@ public class CreateContactLinkRequest {
   }
 
   /**
-   * Create an instance of CreateContactLinkRequest given an JSON string
+   * Create an instance of CreateThankYouLinkRequest given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of CreateContactLinkRequest
-   * @throws IOException if the JSON string is invalid with respect to CreateContactLinkRequest
+   * @return An instance of CreateThankYouLinkRequest
+   * @throws IOException if the JSON string is invalid with respect to CreateThankYouLinkRequest
    */
-  public static CreateContactLinkRequest fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, CreateContactLinkRequest.class);
+  public static CreateThankYouLinkRequest fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, CreateThankYouLinkRequest.class);
   }
 
   /**
-   * Convert an instance of CreateContactLinkRequest to an JSON string
+   * Convert an instance of CreateThankYouLinkRequest to an JSON string
    *
    * @return JSON string
    */

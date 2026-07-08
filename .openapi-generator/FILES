@@ -107,6 +107,8 @@ src/main/java/com/linkbreakers/model/CreateMediaRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaResponse.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateResponse.java
+src/main/java/com/linkbreakers/model/CreateThankYouLinkRequest.java
+src/main/java/com/linkbreakers/model/CreateThankYouLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateWebhookRequest.java
 src/main/java/com/linkbreakers/model/CreateWebhookResponse.java
 src/main/java/com/linkbreakers/model/CreateWorkflowStepResponse.java
