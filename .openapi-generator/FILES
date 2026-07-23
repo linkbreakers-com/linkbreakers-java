@@ -316,6 +316,7 @@ src/main/java/com/linkbreakers/model/SpecificDateConditionPayload.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceData.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceOption.java
 src/main/java/com/linkbreakers/model/SpecificDateOption.java
+src/main/java/com/linkbreakers/model/StepThemeOverride.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
 src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
