@@ -57,9 +57,12 @@ src/main/java/com/linkbreakers/auth/HttpBasicAuth.java
 src/main/java/com/linkbreakers/auth/HttpBearerAuth.java
 src/main/java/com/linkbreakers/model/AIContextType.java
 src/main/java/com/linkbreakers/model/AIDisplayMessage.java
+src/main/java/com/linkbreakers/model/AIDisplayMessageAttachment.java
 src/main/java/com/linkbreakers/model/AIGetConversationResponse.java
 src/main/java/com/linkbreakers/model/AISendMessageRequest.java
 src/main/java/com/linkbreakers/model/AISendMessageResponse.java
+src/main/java/com/linkbreakers/model/AIUploadFileRequest.java
+src/main/java/com/linkbreakers/model/AIUploadFileResponse.java
 src/main/java/com/linkbreakers/model/AbstractOpenApiSchema.java
 src/main/java/com/linkbreakers/model/Action.java
 src/main/java/com/linkbreakers/model/AddWorkflowStepRelationshipResponse.java
