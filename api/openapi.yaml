@@ -5,7 +5,7 @@ info:
     url: https://app.linkbreakers.com
   description: This is a documentation of all the APIs of Linkbreakers
   title: Linkbreakers API
-  version: 1.107.2
+  version: 1.107.3
 servers:
 - url: https://api.linkbreakers.com
 security:
@@ -4187,6 +4187,34 @@ paths:
         schema:
           type: string
         style: form
+      - description: |-
+          Field to sort by. Defaults to created_at (newest first).
+
+           - VISITOR_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to created_at)
+           - VISITOR_SORT_FIELD_CREATED_AT: Sort by the date the visitor was first seen
+           - VISITOR_SORT_FIELD_VISIT_COUNT: Sort by total number of visits (events)
+           - VISITOR_SORT_FIELD_DEVICE_COUNT: Sort by number of attributed devices
+           - VISITOR_SORT_FIELD_QRCODE_COUNT: Sort by number of distinct QR codes interacted with
+        explode: true
+        in: query
+        name: sortField
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Sort direction. Defaults to descending.
+
+           - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)
+           - SORT_DIRECTION_ASC: Sort in ascending order
+           - SORT_DIRECTION_DESC: Sort in descending order
+        explode: true
+        in: query
+        name: sortDirection
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -7770,9 +7798,8 @@ components:
         action: ACTION_SCAN
         id: 8b6e1a2c-7d4f-4fd2-8b35-9a4c1f2d993a
         visitor:
-          createdAt: 2000-01-23T04:56:07.000+00:00
-          firstName: Sam
           lastName: Rivera
+          deviceCount: 2
           devices:
           - country: US
             screenWidth: 1728
@@ -7844,6 +7871,10 @@ components:
             region: CRF
             asn: 7922
             deviceBrand: Apple
+          qrcodeCount: 3
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          firstName: Sam
+          visitCount: 42
           phone: "+15551234567"
           attributes: "{}"
           links:
@@ -9885,9 +9916,8 @@ components:
           action: ACTION_SCAN
           id: 8b6e1a2c-7d4f-4fd2-8b35-9a4c1f2d993a
           visitor:
-            createdAt: 2000-01-23T04:56:07.000+00:00
-            firstName: Sam
             lastName: Rivera
+            deviceCount: 2
             devices:
             - country: US
               screenWidth: 1728
@@ -9959,6 +9989,10 @@ components:
               region: CRF
               asn: 7922
               deviceBrand: Apple
+            qrcodeCount: 3
+            createdAt: 2000-01-23T04:56:07.000+00:00
+            firstName: Sam
+            visitCount: 42
             phone: "+15551234567"
             attributes: "{}"
             links:
@@ -10051,9 +10085,8 @@ components:
           action: ACTION_SCAN
           id: 8b6e1a2c-7d4f-4fd2-8b35-9a4c1f2d993a
           visitor:
-            createdAt: 2000-01-23T04:56:07.000+00:00
-            firstName: Sam
             lastName: Rivera
+            deviceCount: 2
             devices:
             - country: US
               screenWidth: 1728
@@ -10125,6 +10158,10 @@ components:
               region: CRF
               asn: 7922
               deviceBrand: Apple
+            qrcodeCount: 3
+            createdAt: 2000-01-23T04:56:07.000+00:00
+            firstName: Sam
+            visitCount: 42
             phone: "+15551234567"
             attributes: "{}"
             links:
@@ -10250,9 +10287,8 @@ components:
             action: ACTION_SCAN
             id: 8b6e1a2c-7d4f-4fd2-8b35-9a4c1f2d993a
             visitor:
-              createdAt: 2000-01-23T04:56:07.000+00:00
-              firstName: Sam
               lastName: Rivera
+              deviceCount: 2
               devices:
               - country: US
                 screenWidth: 1728
@@ -10326,6 +10362,10 @@ components:
                 region: CRF
                 asn: 7922
                 deviceBrand: Apple
+              qrcodeCount: 3
+              createdAt: 2000-01-23T04:56:07.000+00:00
+              firstName: Sam
+              visitCount: 42
               phone: "+15551234567"
               attributes: "{}"
               links:
@@ -10418,9 +10458,8 @@ components:
             action: ACTION_SCAN
             id: 8b6e1a2c-7d4f-4fd2-8b35-9a4c1f2d993a
             visitor:
-              createdAt: 2000-01-23T04:56:07.000+00:00
-              firstName: Sam
               lastName: Rivera
+              deviceCount: 2
               devices:
               - country: US
                 screenWidth: 1728
@@ -10494,6 +10533,10 @@ components:
                 region: CRF
                 asn: 7922
                 deviceBrand: Apple
+              qrcodeCount: 3
+              createdAt: 2000-01-23T04:56:07.000+00:00
+              firstName: Sam
+              visitCount: 42
               phone: "+15551234567"
               attributes: "{}"
               links:
@@ -12609,14 +12652,16 @@ components:
     SortDirection:
       default: SORT_DIRECTION_UNSPECIFIED
       description: |-
-        - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)
+        SortDirection is the ordering applied to any sortable list endpoint.
+        Shared across resources so a caller learns it once.
+
+         - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)
          - SORT_DIRECTION_ASC: Sort in ascending order
          - SORT_DIRECTION_DESC: Sort in descending order
       enum:
       - SORT_DIRECTION_UNSPECIFIED
       - SORT_DIRECTION_ASC
       - SORT_DIRECTION_DESC
-      title: Sort direction for link listing
       type: string
     SpecificDateConditionPayload:
       properties:
@@ -13545,9 +13590,8 @@ components:
         Captures the cross-link profile Linkbreakers builds for someone who scans or clicks, combining reserved identity fields,
         attributed devices, events, and custom traits gathered from forms.
       example:
-        createdAt: 2000-01-23T04:56:07.000+00:00
-        firstName: Sam
         lastName: Rivera
+        deviceCount: 2
         devices:
         - country: US
           screenWidth: 1728
@@ -13619,6 +13663,10 @@ components:
           region: CRF
           asn: 7922
           deviceBrand: Apple
+        qrcodeCount: 3
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        firstName: Sam
+        visitCount: 42
         phone: "+15551234567"
         attributes: "{}"
         links:
@@ -13665,6 +13713,11 @@ components:
           format: date-time
           title: Timestamps
           type: string
+        deviceCount:
+          example: 2
+          format: int64
+          title: Number of devices attributed to this visitor
+          type: string
         devices:
           items:
             $ref: "#/components/schemas/Device"
@@ -13701,8 +13754,18 @@ components:
           example: "+15551234567"
           title: from "$phone"
           type: string
+        qrcodeCount:
+          example: 3
+          format: int64
+          title: Number of distinct QR codes / links this visitor has interacted with
+          type: string
         updatedAt:
           format: date-time
+          type: string
+        visitCount:
+          example: 42
+          format: int64
+          title: Total number of events (visits) recorded for this visitor
           type: string
         workspaceId:
           example: c0d3cafe-5b1e-4d42-a6fd-0c5f5c3962d0
@@ -13851,6 +13914,22 @@ components:
           title: Shortlink slug used in public URLs
           type: string
       title: VisitorLink
+    VisitorSortField:
+      default: VISITOR_SORT_FIELD_UNSPECIFIED
+      description: |-
+        - VISITOR_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to created_at)
+         - VISITOR_SORT_FIELD_CREATED_AT: Sort by the date the visitor was first seen
+         - VISITOR_SORT_FIELD_VISIT_COUNT: Sort by total number of visits (events)
+         - VISITOR_SORT_FIELD_DEVICE_COUNT: Sort by number of attributed devices
+         - VISITOR_SORT_FIELD_QRCODE_COUNT: Sort by number of distinct QR codes interacted with
+      enum:
+      - VISITOR_SORT_FIELD_UNSPECIFIED
+      - VISITOR_SORT_FIELD_CREATED_AT
+      - VISITOR_SORT_FIELD_VISIT_COUNT
+      - VISITOR_SORT_FIELD_DEVICE_COUNT
+      - VISITOR_SORT_FIELD_QRCODE_COUNT
+      title: Fields that can be used to sort visitors
+      type: string
     VisitorTrendDataPoint:
       example:
         newVisitorCount: 0

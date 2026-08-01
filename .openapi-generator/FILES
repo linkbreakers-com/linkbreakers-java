@@ -374,6 +374,7 @@ src/main/java/com/linkbreakers/model/VisitorDataConditionTraceOption.java
 src/main/java/com/linkbreakers/model/VisitorEvent.java
 src/main/java/com/linkbreakers/model/VisitorInput.java
 src/main/java/com/linkbreakers/model/VisitorLink.java
+src/main/java/com/linkbreakers/model/VisitorSortField.java
 src/main/java/com/linkbreakers/model/VisitorTrendDataPoint.java
 src/main/java/com/linkbreakers/model/VisitorsServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/Webhook.java
