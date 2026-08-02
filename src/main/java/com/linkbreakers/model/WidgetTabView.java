@@ -24,20 +24,20 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- * - ACTION_UNSPECIFIED: Action not specified  - ACTION_SCAN: QR code scan  - ACTION_CLICK: First-time direct link click
+ * WidgetTabView says how a tab draws what it fetched.   - WIDGET_TAB_VIEW_UNSPECIFIED: The widget&#39;s own chart type.  - WIDGET_TAB_VIEW_MAP: A world map, which needs rows carrying a country code.
  */
-@JsonAdapter(Action.Adapter.class)
-public enum Action {
+@JsonAdapter(WidgetTabView.Adapter.class)
+public enum WidgetTabView {
   
-  ACTION_UNSPECIFIED("ACTION_UNSPECIFIED"),
+  WIDGET_TAB_VIEW_UNSPECIFIED("WIDGET_TAB_VIEW_UNSPECIFIED"),
   
-  ACTION_SCAN("ACTION_SCAN"),
+  WIDGET_TAB_VIEW_CHART("WIDGET_TAB_VIEW_CHART"),
   
-  ACTION_CLICK("ACTION_CLICK");
+  WIDGET_TAB_VIEW_MAP("WIDGET_TAB_VIEW_MAP");
 
   private String value;
 
-  Action(String value) {
+  WidgetTabView(String value) {
     this.value = value;
   }
 
@@ -50,8 +50,8 @@ public enum Action {
     return String.valueOf(value);
   }
 
-  public static Action fromValue(String value) {
-    for (Action b : Action.values()) {
+  public static WidgetTabView fromValue(String value) {
+    for (WidgetTabView b : WidgetTabView.values()) {
       if (b.value.equals(value)) {
         return b;
       }
@@ -59,22 +59,22 @@ public enum Action {
     throw new IllegalArgumentException("Unexpected value '" + value + "'");
   }
 
-  public static class Adapter extends TypeAdapter<Action> {
+  public static class Adapter extends TypeAdapter<WidgetTabView> {
     @Override
-    public void write(final JsonWriter jsonWriter, final Action enumeration) throws IOException {
+    public void write(final JsonWriter jsonWriter, final WidgetTabView enumeration) throws IOException {
       jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public Action read(final JsonReader jsonReader) throws IOException {
+    public WidgetTabView read(final JsonReader jsonReader) throws IOException {
       String value = jsonReader.nextString();
-      return Action.fromValue(value);
+      return WidgetTabView.fromValue(value);
     }
   }
 
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
     String value = jsonElement.getAsString();
-    Action.fromValue(value);
+    WidgetTabView.fromValue(value);
   }
 }
 

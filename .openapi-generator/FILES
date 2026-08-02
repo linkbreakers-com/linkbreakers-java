@@ -403,6 +403,7 @@ src/main/java/com/linkbreakers/model/WidgetPosition.java
 src/main/java/com/linkbreakers/model/WidgetSize.java
 src/main/java/com/linkbreakers/model/WidgetTab.java
 src/main/java/com/linkbreakers/model/WidgetTabMode.java
+src/main/java/com/linkbreakers/model/WidgetTabView.java
 src/main/java/com/linkbreakers/model/WidgetVisualization.java
 src/main/java/com/linkbreakers/model/WorkflowIssue.java
 src/main/java/com/linkbreakers/model/WorkflowStep.java
