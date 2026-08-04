@@ -218,7 +218,7 @@ src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesRequest.java
 src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesResponse.java
 src/main/java/com/linkbreakers/model/GetHourOfDayDistributionRequest.java
 src/main/java/com/linkbreakers/model/GetHourOfDayDistributionResponse.java
-src/main/java/com/linkbreakers/model/GetLeadScoreExplanationResponse.java
+src/main/java/com/linkbreakers/model/GetLeadScoreResponse.java
 src/main/java/com/linkbreakers/model/GetLinkResponse.java
 src/main/java/com/linkbreakers/model/GetLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/GetMediaResponse.java
