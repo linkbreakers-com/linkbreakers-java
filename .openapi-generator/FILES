@@ -194,6 +194,8 @@ src/main/java/com/linkbreakers/model/FormFieldType.java
 src/main/java/com/linkbreakers/model/FormPayload.java
 src/main/java/com/linkbreakers/model/FormTraceData.java
 src/main/java/com/linkbreakers/model/FormTraceDataField.java
+src/main/java/com/linkbreakers/model/FunnelBranch.java
+src/main/java/com/linkbreakers/model/FunnelStep.java
 src/main/java/com/linkbreakers/model/GenerateWidgetSummaryResponse.java
 src/main/java/com/linkbreakers/model/GeoDataPoint.java
 src/main/java/com/linkbreakers/model/GetAttributeDistributionRequest.java
@@ -226,6 +228,8 @@ src/main/java/com/linkbreakers/model/GetPageThemeResponse.java
 src/main/java/com/linkbreakers/model/GetQrcodeDesignResponse.java
 src/main/java/com/linkbreakers/model/GetSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/GetSlackOAuthURLResponse.java
+src/main/java/com/linkbreakers/model/GetStepFunnelRequest.java
+src/main/java/com/linkbreakers/model/GetStepFunnelResponse.java
 src/main/java/com/linkbreakers/model/GetTopLinksRequest.java
 src/main/java/com/linkbreakers/model/GetTopLinksResponse.java
 src/main/java/com/linkbreakers/model/GetVisitorTrendsRequest.java
