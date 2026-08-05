@@ -6,7 +6,7 @@
 
     <groupId>com.linkbreakers</groupId>
     <artifactId>linkbreakers-sdk</artifactId>
-    <version>1.111.8</version>
+    <version>1.111.10</version>
     <packaging>jar</packaging>
 
     <name>Linkbreakers SDK</name>
