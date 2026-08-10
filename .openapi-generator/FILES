@@ -57,7 +57,6 @@ src/main/java/com/linkbreakers/auth/HttpBasicAuth.java
 src/main/java/com/linkbreakers/auth/HttpBearerAuth.java
 src/main/java/com/linkbreakers/model/AbstractOpenApiSchema.java
 src/main/java/com/linkbreakers/model/Action.java
-src/main/java/com/linkbreakers/model/AddWorkflowStepRelationshipResponse.java
 src/main/java/com/linkbreakers/model/AgentContextType.java
 src/main/java/com/linkbreakers/model/AgentDisplayMessage.java
 src/main/java/com/linkbreakers/model/AgentDisplayMessageAttachment.java
@@ -88,6 +87,7 @@ src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthResponse.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
+src/main/java/com/linkbreakers/model/ConnectWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/ContactCardTraceCard.java
 src/main/java/com/linkbreakers/model/ContactCardTraceData.java
 src/main/java/com/linkbreakers/model/ContainerConfig.java
@@ -174,6 +174,7 @@ src/main/java/com/linkbreakers/model/DeviceTypeConditionValue.java
 src/main/java/com/linkbreakers/model/DigestFrequency.java
 src/main/java/com/linkbreakers/model/DirectoriesServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/Directory.java
+src/main/java/com/linkbreakers/model/DisconnectWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/DotsOptions.java
 src/main/java/com/linkbreakers/model/DotsType.java
 src/main/java/com/linkbreakers/model/EntryAccessTraceData.java
@@ -316,7 +317,6 @@ src/main/java/com/linkbreakers/model/QrcodeDesignServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/QrcodeTemplate.java
 src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateQrcodeTemplateBody.java
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
-src/main/java/com/linkbreakers/model/RemoveWorkflowStepRelationshipResponse.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
 src/main/java/com/linkbreakers/model/ResolveStepCollisionsResponse.java
 src/main/java/com/linkbreakers/model/ResponseFormat.java
@@ -411,10 +411,11 @@ src/main/java/com/linkbreakers/model/WidgetTabView.java
 src/main/java/com/linkbreakers/model/WidgetVisualization.java
 src/main/java/com/linkbreakers/model/WorkflowIssue.java
 src/main/java/com/linkbreakers/model/WorkflowStep.java
+src/main/java/com/linkbreakers/model/WorkflowStepBranch.java
 src/main/java/com/linkbreakers/model/WorkflowStepKind.java
 src/main/java/com/linkbreakers/model/WorkflowStepNodeType.java
 src/main/java/com/linkbreakers/model/WorkflowStepPayload.java
-src/main/java/com/linkbreakers/model/WorkflowStepsServiceAddRelationshipBody.java
+src/main/java/com/linkbreakers/model/WorkflowStepsServiceConnectStepBody.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceCreateBody.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/Workspace.java

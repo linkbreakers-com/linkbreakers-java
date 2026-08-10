@@ -46,97 +46,73 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * DayOfMonthOption
+ * One exit of a workflow step. Server-derived, returned on every step read.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class DayOfMonthOption {
-  public static final String SERIALIZED_NAME_DAY_OF_MONTH = "dayOfMonth";
-  @SerializedName(SERIALIZED_NAME_DAY_OF_MONTH)
+public class WorkflowStepBranch {
+  public static final String SERIALIZED_NAME_BRANCH_ID = "branchId";
+  @SerializedName(SERIALIZED_NAME_BRANCH_ID)
   @javax.annotation.Nullable
-  private Integer dayOfMonth;
+  private String branchId;
 
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
+  public static final String SERIALIZED_NAME_LABEL = "label";
+  @SerializedName(SERIALIZED_NAME_LABEL)
   @javax.annotation.Nullable
-  private String id;
-
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  @javax.annotation.Nullable
-  private String name;
+  private String label;
 
   public static final String SERIALIZED_NAME_NEXT_STEP_ID = "nextStepId";
   @SerializedName(SERIALIZED_NAME_NEXT_STEP_ID)
   @javax.annotation.Nullable
   private String nextStepId;
 
-  public DayOfMonthOption() {
+  public WorkflowStepBranch() {
   }
 
-  public DayOfMonthOption dayOfMonth(@javax.annotation.Nullable Integer dayOfMonth) {
-    this.dayOfMonth = dayOfMonth;
+  public WorkflowStepBranch branchId(@javax.annotation.Nullable String branchId) {
+    this.branchId = branchId;
     return this;
   }
 
   /**
-   * Day of month (1-31, or -1 for last day)
-   * @return dayOfMonth
+   * The id this branch is addressed by: \&quot;next\&quot; for an atomic step&#39;s single exit, \&quot;else\&quot; for a condition&#39;s fallback, or the id the branch carries in the step&#39;s payload — a button id, option id, range id, or country code.
+   * @return branchId
    */
   @javax.annotation.Nullable
-  public Integer getDayOfMonth() {
-    return dayOfMonth;
+  public String getBranchId() {
+    return branchId;
   }
 
-  public void setDayOfMonth(@javax.annotation.Nullable Integer dayOfMonth) {
-    this.dayOfMonth = dayOfMonth;
+  public void setBranchId(@javax.annotation.Nullable String branchId) {
+    this.branchId = branchId;
   }
 
 
-  public DayOfMonthOption id(@javax.annotation.Nullable String id) {
-    this.id = id;
+  public WorkflowStepBranch label(@javax.annotation.Nullable String label) {
+    this.label = label;
     return this;
   }
 
   /**
-   * Get id
-   * @return id
+   * Human-readable name of the branch: a button&#39;s label, a country code, a condition option&#39;s name, \&quot;fallback\&quot;, \&quot;next step\&quot;.
+   * @return label
    */
   @javax.annotation.Nullable
-  public String getId() {
-    return id;
+  public String getLabel() {
+    return label;
   }
 
-  public void setId(@javax.annotation.Nullable String id) {
-    this.id = id;
-  }
-
-
-  public DayOfMonthOption name(@javax.annotation.Nullable String name) {
-    this.name = name;
-    return this;
-  }
-
-  /**
-   * Get name
-   * @return name
-   */
-  @javax.annotation.Nullable
-  public String getName() {
-    return name;
-  }
-
-  public void setName(@javax.annotation.Nullable String name) {
-    this.name = name;
+  public void setLabel(@javax.annotation.Nullable String label) {
+    this.label = label;
   }
 
 
-  public DayOfMonthOption nextStepId(@javax.annotation.Nullable String nextStepId) {
+  public WorkflowStepBranch nextStepId(@javax.annotation.Nullable String nextStepId) {
     this.nextStepId = nextStepId;
     return this;
   }
 
   /**
-   * Get nextStepId
+   * The step this branch leads to. Empty when the branch is unconnected.
    * @return nextStepId
    */
   @javax.annotation.Nullable
@@ -158,25 +134,23 @@ public class DayOfMonthOption {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    DayOfMonthOption dayOfMonthOption = (DayOfMonthOption) o;
-    return Objects.equals(this.dayOfMonth, dayOfMonthOption.dayOfMonth) &&
-        Objects.equals(this.id, dayOfMonthOption.id) &&
-        Objects.equals(this.name, dayOfMonthOption.name) &&
-        Objects.equals(this.nextStepId, dayOfMonthOption.nextStepId);
+    WorkflowStepBranch workflowStepBranch = (WorkflowStepBranch) o;
+    return Objects.equals(this.branchId, workflowStepBranch.branchId) &&
+        Objects.equals(this.label, workflowStepBranch.label) &&
+        Objects.equals(this.nextStepId, workflowStepBranch.nextStepId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(dayOfMonth, id, name, nextStepId);
+    return Objects.hash(branchId, label, nextStepId);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class DayOfMonthOption {\n");
-    sb.append("    dayOfMonth: ").append(toIndentedString(dayOfMonth)).append("\n");
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("class WorkflowStepBranch {\n");
+    sb.append("    branchId: ").append(toIndentedString(branchId)).append("\n");
+    sb.append("    label: ").append(toIndentedString(label)).append("\n");
     sb.append("    nextStepId: ").append(toIndentedString(nextStepId)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -196,7 +170,7 @@ public class DayOfMonthOption {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("dayOfMonth", "id", "name", "nextStepId"));
+    openapiFields = new HashSet<String>(Arrays.asList("branchId", "label", "nextStepId"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -206,28 +180,28 @@ public class DayOfMonthOption {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to DayOfMonthOption
+   * @throws IOException if the JSON Element is invalid with respect to WorkflowStepBranch
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!DayOfMonthOption.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in DayOfMonthOption is not found in the empty JSON string", DayOfMonthOption.openapiRequiredFields.toString()));
+        if (!WorkflowStepBranch.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in WorkflowStepBranch is not found in the empty JSON string", WorkflowStepBranch.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!DayOfMonthOption.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `DayOfMonthOption` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!WorkflowStepBranch.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `WorkflowStepBranch` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      if ((jsonObj.get("id") != null && !jsonObj.get("id").isJsonNull()) && !jsonObj.get("id").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `id` to be a primitive type in the JSON string but got `%s`", jsonObj.get("id").toString()));
+      if ((jsonObj.get("branchId") != null && !jsonObj.get("branchId").isJsonNull()) && !jsonObj.get("branchId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `branchId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("branchId").toString()));
       }
-      if ((jsonObj.get("name") != null && !jsonObj.get("name").isJsonNull()) && !jsonObj.get("name").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `name` to be a primitive type in the JSON string but got `%s`", jsonObj.get("name").toString()));
+      if ((jsonObj.get("label") != null && !jsonObj.get("label").isJsonNull()) && !jsonObj.get("label").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `label` to be a primitive type in the JSON string but got `%s`", jsonObj.get("label").toString()));
       }
       if ((jsonObj.get("nextStepId") != null && !jsonObj.get("nextStepId").isJsonNull()) && !jsonObj.get("nextStepId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `nextStepId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("nextStepId").toString()));
@@ -238,22 +212,22 @@ public class DayOfMonthOption {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!DayOfMonthOption.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'DayOfMonthOption' and its subtypes
+       if (!WorkflowStepBranch.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'WorkflowStepBranch' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<DayOfMonthOption> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(DayOfMonthOption.class));
+       final TypeAdapter<WorkflowStepBranch> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(WorkflowStepBranch.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<DayOfMonthOption>() {
+       return (TypeAdapter<T>) new TypeAdapter<WorkflowStepBranch>() {
            @Override
-           public void write(JsonWriter out, DayOfMonthOption value) throws IOException {
+           public void write(JsonWriter out, WorkflowStepBranch value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public DayOfMonthOption read(JsonReader in) throws IOException {
+           public WorkflowStepBranch read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -264,18 +238,18 @@ public class DayOfMonthOption {
   }
 
   /**
-   * Create an instance of DayOfMonthOption given an JSON string
+   * Create an instance of WorkflowStepBranch given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of DayOfMonthOption
-   * @throws IOException if the JSON string is invalid with respect to DayOfMonthOption
+   * @return An instance of WorkflowStepBranch
+   * @throws IOException if the JSON string is invalid with respect to WorkflowStepBranch
    */
-  public static DayOfMonthOption fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, DayOfMonthOption.class);
+  public static WorkflowStepBranch fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, WorkflowStepBranch.class);
   }
 
   /**
-   * Convert an instance of DayOfMonthOption to an JSON string
+   * Convert an instance of WorkflowStepBranch to an JSON string
    *
    * @return JSON string
    */
