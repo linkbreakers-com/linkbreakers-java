@@ -24,20 +24,20 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- * - SOCIAL_LINKS_DISPLAY_STYLE_DETAILED: Display icon with text label (default)  - SOCIAL_LINKS_DISPLAY_STYLE_COMPACT: Display icons only in a compact row
+ * QrcodeTemplateScope selects which templates a list call returns.   - QRCODE_TEMPLATE_SCOPE_UNSPECIFIED: Defaults to QRCODE_TEMPLATE_SCOPE_WORKSPACE.  - QRCODE_TEMPLATE_SCOPE_WORKSPACE: Only templates owned by the caller&#39;s workspace.  - QRCODE_TEMPLATE_SCOPE_AVAILABLE: Every template the workspace may use: its own, built-in ones, and templates published by other workspaces.
  */
-@JsonAdapter(SocialLinksDisplayStyle.Adapter.class)
-public enum SocialLinksDisplayStyle {
+@JsonAdapter(QrcodeTemplateScope.Adapter.class)
+public enum QrcodeTemplateScope {
   
-  SOCIAL_LINKS_DISPLAY_STYLE_UNSPECIFIED("SOCIAL_LINKS_DISPLAY_STYLE_UNSPECIFIED"),
+  QRCODE_TEMPLATE_SCOPE_UNSPECIFIED("QRCODE_TEMPLATE_SCOPE_UNSPECIFIED"),
   
-  SOCIAL_LINKS_DISPLAY_STYLE_DETAILED("SOCIAL_LINKS_DISPLAY_STYLE_DETAILED"),
+  QRCODE_TEMPLATE_SCOPE_WORKSPACE("QRCODE_TEMPLATE_SCOPE_WORKSPACE"),
   
-  SOCIAL_LINKS_DISPLAY_STYLE_COMPACT("SOCIAL_LINKS_DISPLAY_STYLE_COMPACT");
+  QRCODE_TEMPLATE_SCOPE_AVAILABLE("QRCODE_TEMPLATE_SCOPE_AVAILABLE");
 
   private String value;
 
-  SocialLinksDisplayStyle(String value) {
+  QrcodeTemplateScope(String value) {
     this.value = value;
   }
 
@@ -50,8 +50,8 @@ public enum SocialLinksDisplayStyle {
     return String.valueOf(value);
   }
 
-  public static SocialLinksDisplayStyle fromValue(String value) {
-    for (SocialLinksDisplayStyle b : SocialLinksDisplayStyle.values()) {
+  public static QrcodeTemplateScope fromValue(String value) {
+    for (QrcodeTemplateScope b : QrcodeTemplateScope.values()) {
       if (b.value.equals(value)) {
         return b;
       }
@@ -59,22 +59,22 @@ public enum SocialLinksDisplayStyle {
     throw new IllegalArgumentException("Unexpected value '" + value + "'");
   }
 
-  public static class Adapter extends TypeAdapter<SocialLinksDisplayStyle> {
+  public static class Adapter extends TypeAdapter<QrcodeTemplateScope> {
     @Override
-    public void write(final JsonWriter jsonWriter, final SocialLinksDisplayStyle enumeration) throws IOException {
+    public void write(final JsonWriter jsonWriter, final QrcodeTemplateScope enumeration) throws IOException {
       jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public SocialLinksDisplayStyle read(final JsonReader jsonReader) throws IOException {
+    public QrcodeTemplateScope read(final JsonReader jsonReader) throws IOException {
       String value = jsonReader.nextString();
-      return SocialLinksDisplayStyle.fromValue(value);
+      return QrcodeTemplateScope.fromValue(value);
     }
   }
 
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
     String value = jsonElement.getAsString();
-    SocialLinksDisplayStyle.fromValue(value);
+    QrcodeTemplateScope.fromValue(value);
   }
 }
 

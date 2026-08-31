@@ -317,6 +317,7 @@ src/main/java/com/linkbreakers/model/PublishQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/QrcodeDesign.java
 src/main/java/com/linkbreakers/model/QrcodeDesignServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/QrcodeTemplate.java
+src/main/java/com/linkbreakers/model/QrcodeTemplateScope.java
 src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateQrcodeTemplateBody.java
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
