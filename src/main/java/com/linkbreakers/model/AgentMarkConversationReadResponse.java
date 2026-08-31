@@ -19,7 +19,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.ThemeColor;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -47,34 +46,34 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * BackgroundOptions
+ * AgentMarkConversationReadResponse
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class BackgroundOptions {
-  public static final String SERIALIZED_NAME_THEME_COLOR = "themeColor";
-  @SerializedName(SERIALIZED_NAME_THEME_COLOR)
+public class AgentMarkConversationReadResponse {
+  public static final String SERIALIZED_NAME_MARKED_COUNT = "markedCount";
+  @SerializedName(SERIALIZED_NAME_MARKED_COUNT)
   @javax.annotation.Nullable
-  private ThemeColor themeColor;
+  private Integer markedCount;
 
-  public BackgroundOptions() {
+  public AgentMarkConversationReadResponse() {
   }
 
-  public BackgroundOptions themeColor(@javax.annotation.Nullable ThemeColor themeColor) {
-    this.themeColor = themeColor;
+  public AgentMarkConversationReadResponse markedCount(@javax.annotation.Nullable Integer markedCount) {
+    this.markedCount = markedCount;
     return this;
   }
 
   /**
-   * Get themeColor
-   * @return themeColor
+   * Get markedCount
+   * @return markedCount
    */
   @javax.annotation.Nullable
-  public ThemeColor getThemeColor() {
-    return themeColor;
+  public Integer getMarkedCount() {
+    return markedCount;
   }
 
-  public void setThemeColor(@javax.annotation.Nullable ThemeColor themeColor) {
-    this.themeColor = themeColor;
+  public void setMarkedCount(@javax.annotation.Nullable Integer markedCount) {
+    this.markedCount = markedCount;
   }
 
 
@@ -87,20 +86,20 @@ public class BackgroundOptions {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    BackgroundOptions backgroundOptions = (BackgroundOptions) o;
-    return Objects.equals(this.themeColor, backgroundOptions.themeColor);
+    AgentMarkConversationReadResponse agentMarkConversationReadResponse = (AgentMarkConversationReadResponse) o;
+    return Objects.equals(this.markedCount, agentMarkConversationReadResponse.markedCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(themeColor);
+    return Objects.hash(markedCount);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class BackgroundOptions {\n");
-    sb.append("    themeColor: ").append(toIndentedString(themeColor)).append("\n");
+    sb.append("class AgentMarkConversationReadResponse {\n");
+    sb.append("    markedCount: ").append(toIndentedString(markedCount)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -119,7 +118,7 @@ public class BackgroundOptions {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("themeColor"));
+    openapiFields = new HashSet<String>(Arrays.asList("markedCount"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -129,49 +128,45 @@ public class BackgroundOptions {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to BackgroundOptions
+   * @throws IOException if the JSON Element is invalid with respect to AgentMarkConversationReadResponse
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!BackgroundOptions.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in BackgroundOptions is not found in the empty JSON string", BackgroundOptions.openapiRequiredFields.toString()));
+        if (!AgentMarkConversationReadResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in AgentMarkConversationReadResponse is not found in the empty JSON string", AgentMarkConversationReadResponse.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!BackgroundOptions.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `BackgroundOptions` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!AgentMarkConversationReadResponse.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `AgentMarkConversationReadResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      // validate the optional field `themeColor`
-      if (jsonObj.get("themeColor") != null && !jsonObj.get("themeColor").isJsonNull()) {
-        ThemeColor.validateJsonElement(jsonObj.get("themeColor"));
-      }
   }
 
   public static class CustomTypeAdapterFactory implements TypeAdapterFactory {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!BackgroundOptions.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'BackgroundOptions' and its subtypes
+       if (!AgentMarkConversationReadResponse.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'AgentMarkConversationReadResponse' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<BackgroundOptions> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(BackgroundOptions.class));
+       final TypeAdapter<AgentMarkConversationReadResponse> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(AgentMarkConversationReadResponse.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<BackgroundOptions>() {
+       return (TypeAdapter<T>) new TypeAdapter<AgentMarkConversationReadResponse>() {
            @Override
-           public void write(JsonWriter out, BackgroundOptions value) throws IOException {
+           public void write(JsonWriter out, AgentMarkConversationReadResponse value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public BackgroundOptions read(JsonReader in) throws IOException {
+           public AgentMarkConversationReadResponse read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -182,18 +177,18 @@ public class BackgroundOptions {
   }
 
   /**
-   * Create an instance of BackgroundOptions given an JSON string
+   * Create an instance of AgentMarkConversationReadResponse given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of BackgroundOptions
-   * @throws IOException if the JSON string is invalid with respect to BackgroundOptions
+   * @return An instance of AgentMarkConversationReadResponse
+   * @throws IOException if the JSON string is invalid with respect to AgentMarkConversationReadResponse
    */
-  public static BackgroundOptions fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, BackgroundOptions.class);
+  public static AgentMarkConversationReadResponse fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, AgentMarkConversationReadResponse.class);
   }
 
   /**
-   * Convert an instance of BackgroundOptions to an JSON string
+   * Convert an instance of AgentMarkConversationReadResponse to an JSON string
    *
    * @return JSON string
    */

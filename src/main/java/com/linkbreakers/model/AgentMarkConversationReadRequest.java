@@ -47,34 +47,24 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * AgentSendMessageRequest
+ * AgentMarkConversationReadRequest
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class AgentSendMessageRequest {
+public class AgentMarkConversationReadRequest {
   public static final String SERIALIZED_NAME_CONTEXT_ID = "contextId";
   @SerializedName(SERIALIZED_NAME_CONTEXT_ID)
   @javax.annotation.Nullable
   private String contextId;
 
-  public static final String SERIALIZED_NAME_CONTEXT_METADATA = "contextMetadata";
-  @SerializedName(SERIALIZED_NAME_CONTEXT_METADATA)
-  @javax.annotation.Nullable
-  private String contextMetadata;
-
   public static final String SERIALIZED_NAME_CONTEXT_TYPE = "contextType";
   @SerializedName(SERIALIZED_NAME_CONTEXT_TYPE)
   @javax.annotation.Nullable
-  private AgentContextType contextType;
+  private AgentContextType contextType = AgentContextType.AGENT_CONTEXT_TYPE_UNSPECIFIED;
 
-  public static final String SERIALIZED_NAME_MESSAGE = "message";
-  @SerializedName(SERIALIZED_NAME_MESSAGE)
-  @javax.annotation.Nullable
-  private String message;
-
-  public AgentSendMessageRequest() {
+  public AgentMarkConversationReadRequest() {
   }
 
-  public AgentSendMessageRequest contextId(@javax.annotation.Nullable String contextId) {
+  public AgentMarkConversationReadRequest contextId(@javax.annotation.Nullable String contextId) {
     this.contextId = contextId;
     return this;
   }
@@ -93,26 +83,7 @@ public class AgentSendMessageRequest {
   }
 
 
-  public AgentSendMessageRequest contextMetadata(@javax.annotation.Nullable String contextMetadata) {
-    this.contextMetadata = contextMetadata;
-    return this;
-  }
-
-  /**
-   * Get contextMetadata
-   * @return contextMetadata
-   */
-  @javax.annotation.Nullable
-  public String getContextMetadata() {
-    return contextMetadata;
-  }
-
-  public void setContextMetadata(@javax.annotation.Nullable String contextMetadata) {
-    this.contextMetadata = contextMetadata;
-  }
-
-
-  public AgentSendMessageRequest contextType(@javax.annotation.Nullable AgentContextType contextType) {
+  public AgentMarkConversationReadRequest contextType(@javax.annotation.Nullable AgentContextType contextType) {
     this.contextType = contextType;
     return this;
   }
@@ -131,25 +102,6 @@ public class AgentSendMessageRequest {
   }
 
 
-  public AgentSendMessageRequest message(@javax.annotation.Nullable String message) {
-    this.message = message;
-    return this;
-  }
-
-  /**
-   * Get message
-   * @return message
-   */
-  @javax.annotation.Nullable
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(@javax.annotation.Nullable String message) {
-    this.message = message;
-  }
-
-
 
   @Override
   public boolean equals(Object o) {
@@ -159,26 +111,22 @@ public class AgentSendMessageRequest {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AgentSendMessageRequest agentSendMessageRequest = (AgentSendMessageRequest) o;
-    return Objects.equals(this.contextId, agentSendMessageRequest.contextId) &&
-        Objects.equals(this.contextMetadata, agentSendMessageRequest.contextMetadata) &&
-        Objects.equals(this.contextType, agentSendMessageRequest.contextType) &&
-        Objects.equals(this.message, agentSendMessageRequest.message);
+    AgentMarkConversationReadRequest agentMarkConversationReadRequest = (AgentMarkConversationReadRequest) o;
+    return Objects.equals(this.contextId, agentMarkConversationReadRequest.contextId) &&
+        Objects.equals(this.contextType, agentMarkConversationReadRequest.contextType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(contextId, contextMetadata, contextType, message);
+    return Objects.hash(contextId, contextType);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class AgentSendMessageRequest {\n");
+    sb.append("class AgentMarkConversationReadRequest {\n");
     sb.append("    contextId: ").append(toIndentedString(contextId)).append("\n");
-    sb.append("    contextMetadata: ").append(toIndentedString(contextMetadata)).append("\n");
     sb.append("    contextType: ").append(toIndentedString(contextType)).append("\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -197,7 +145,7 @@ public class AgentSendMessageRequest {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("contextId", "contextMetadata", "contextType", "message"));
+    openapiFields = new HashSet<String>(Arrays.asList("contextId", "contextType"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -207,35 +155,29 @@ public class AgentSendMessageRequest {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to AgentSendMessageRequest
+   * @throws IOException if the JSON Element is invalid with respect to AgentMarkConversationReadRequest
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!AgentSendMessageRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in AgentSendMessageRequest is not found in the empty JSON string", AgentSendMessageRequest.openapiRequiredFields.toString()));
+        if (!AgentMarkConversationReadRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in AgentMarkConversationReadRequest is not found in the empty JSON string", AgentMarkConversationReadRequest.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!AgentSendMessageRequest.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `AgentSendMessageRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!AgentMarkConversationReadRequest.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `AgentMarkConversationReadRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
       if ((jsonObj.get("contextId") != null && !jsonObj.get("contextId").isJsonNull()) && !jsonObj.get("contextId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `contextId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("contextId").toString()));
       }
-      if ((jsonObj.get("contextMetadata") != null && !jsonObj.get("contextMetadata").isJsonNull()) && !jsonObj.get("contextMetadata").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `contextMetadata` to be a primitive type in the JSON string but got `%s`", jsonObj.get("contextMetadata").toString()));
-      }
       // validate the optional field `contextType`
       if (jsonObj.get("contextType") != null && !jsonObj.get("contextType").isJsonNull()) {
         AgentContextType.validateJsonElement(jsonObj.get("contextType"));
-      }
-      if ((jsonObj.get("message") != null && !jsonObj.get("message").isJsonNull()) && !jsonObj.get("message").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `message` to be a primitive type in the JSON string but got `%s`", jsonObj.get("message").toString()));
       }
   }
 
@@ -243,22 +185,22 @@ public class AgentSendMessageRequest {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!AgentSendMessageRequest.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'AgentSendMessageRequest' and its subtypes
+       if (!AgentMarkConversationReadRequest.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'AgentMarkConversationReadRequest' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<AgentSendMessageRequest> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(AgentSendMessageRequest.class));
+       final TypeAdapter<AgentMarkConversationReadRequest> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(AgentMarkConversationReadRequest.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<AgentSendMessageRequest>() {
+       return (TypeAdapter<T>) new TypeAdapter<AgentMarkConversationReadRequest>() {
            @Override
-           public void write(JsonWriter out, AgentSendMessageRequest value) throws IOException {
+           public void write(JsonWriter out, AgentMarkConversationReadRequest value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public AgentSendMessageRequest read(JsonReader in) throws IOException {
+           public AgentMarkConversationReadRequest read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -269,18 +211,18 @@ public class AgentSendMessageRequest {
   }
 
   /**
-   * Create an instance of AgentSendMessageRequest given an JSON string
+   * Create an instance of AgentMarkConversationReadRequest given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of AgentSendMessageRequest
-   * @throws IOException if the JSON string is invalid with respect to AgentSendMessageRequest
+   * @return An instance of AgentMarkConversationReadRequest
+   * @throws IOException if the JSON string is invalid with respect to AgentMarkConversationReadRequest
    */
-  public static AgentSendMessageRequest fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, AgentSendMessageRequest.class);
+  public static AgentMarkConversationReadRequest fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, AgentMarkConversationReadRequest.class);
   }
 
   /**
-   * Convert an instance of AgentSendMessageRequest to an JSON string
+   * Convert an instance of AgentMarkConversationReadRequest to an JSON string
    *
    * @return JSON string
    */

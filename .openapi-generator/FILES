@@ -61,6 +61,8 @@ src/main/java/com/linkbreakers/model/AgentContextType.java
 src/main/java/com/linkbreakers/model/AgentDisplayMessage.java
 src/main/java/com/linkbreakers/model/AgentDisplayMessageAttachment.java
 src/main/java/com/linkbreakers/model/AgentGetConversationResponse.java
+src/main/java/com/linkbreakers/model/AgentMarkConversationReadRequest.java
+src/main/java/com/linkbreakers/model/AgentMarkConversationReadResponse.java
 src/main/java/com/linkbreakers/model/AgentSendMessageRequest.java
 src/main/java/com/linkbreakers/model/AgentSendMessageResponse.java
 src/main/java/com/linkbreakers/model/AgentUploadFileRequest.java
