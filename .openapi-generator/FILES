@@ -39,6 +39,7 @@ src/main/java/com/linkbreakers/api/LinkSettingsApi.java
 src/main/java/com/linkbreakers/api/LinksApi.java
 src/main/java/com/linkbreakers/api/MediaApi.java
 src/main/java/com/linkbreakers/api/MembersApi.java
+src/main/java/com/linkbreakers/api/PageThemeTemplatesApi.java
 src/main/java/com/linkbreakers/api/PageThemesApi.java
 src/main/java/com/linkbreakers/api/QrCodeDesignsApi.java
 src/main/java/com/linkbreakers/api/QrCodeTemplatesApi.java
@@ -72,6 +73,8 @@ src/main/java/com/linkbreakers/model/AnalyticsDashboardServiceGenerateWidgetSumm
 src/main/java/com/linkbreakers/model/AnalyticsDashboardServiceUpdateDashboardBody.java
 src/main/java/com/linkbreakers/model/AnalyticsWidgetResult.java
 src/main/java/com/linkbreakers/model/ApiTag.java
+src/main/java/com/linkbreakers/model/ApplyPageThemeTemplateRequest.java
+src/main/java/com/linkbreakers/model/ApplyPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ApplyQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ApplyQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/AttributeValueDataPoint.java
@@ -116,6 +119,8 @@ src/main/java/com/linkbreakers/model/CreateLinkRequest.java
 src/main/java/com/linkbreakers/model/CreateLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaResponse.java
+src/main/java/com/linkbreakers/model/CreatePageThemeTemplateRequest.java
+src/main/java/com/linkbreakers/model/CreatePageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/CreateThankYouLinkRequest.java
@@ -190,6 +195,7 @@ src/main/java/com/linkbreakers/model/EventsServiceCreateEventTraceBody.java
 src/main/java/com/linkbreakers/model/EventsServiceUpdateDeviceBody.java
 src/main/java/com/linkbreakers/model/EventsTimeSeries.java
 src/main/java/com/linkbreakers/model/EventsTimeSeriesData.java
+src/main/java/com/linkbreakers/model/FindMatchingPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/FontConfig.java
 src/main/java/com/linkbreakers/model/FormField.java
 src/main/java/com/linkbreakers/model/FormFieldOption.java
@@ -250,6 +256,8 @@ src/main/java/com/linkbreakers/model/HourOfDayDataPoint.java
 src/main/java/com/linkbreakers/model/IdentifyRequest.java
 src/main/java/com/linkbreakers/model/IdentifyResponse.java
 src/main/java/com/linkbreakers/model/IdentifyVisitorTraceData.java
+src/main/java/com/linkbreakers/model/ImportPageThemeTemplateRequest.java
+src/main/java/com/linkbreakers/model/ImportPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/InviteMemberRequest.java
@@ -270,6 +278,7 @@ src/main/java/com/linkbreakers/model/ListEventsJsonResponse.java
 src/main/java/com/linkbreakers/model/ListEventsResponse.java
 src/main/java/com/linkbreakers/model/ListLinksResponse.java
 src/main/java/com/linkbreakers/model/ListMediaResponse.java
+src/main/java/com/linkbreakers/model/ListPageThemeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/ListPageThemesResponse.java
 src/main/java/com/linkbreakers/model/ListQrcodeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/ListResponse.java
@@ -302,6 +311,11 @@ src/main/java/com/linkbreakers/model/PageThemeBorderStyle.java
 src/main/java/com/linkbreakers/model/PageThemeCanvasCoverMode.java
 src/main/java/com/linkbreakers/model/PageThemeContainerVariant.java
 src/main/java/com/linkbreakers/model/PageThemeFontFamily.java
+src/main/java/com/linkbreakers/model/PageThemeStyling.java
+src/main/java/com/linkbreakers/model/PageThemeTemplate.java
+src/main/java/com/linkbreakers/model/PageThemeTemplateScope.java
+src/main/java/com/linkbreakers/model/PageThemeTemplatesServiceUpdatePageThemeTemplateBody.java
+src/main/java/com/linkbreakers/model/PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.java
 src/main/java/com/linkbreakers/model/PageThemesServiceUpdatePageThemeBody.java
 src/main/java/com/linkbreakers/model/PasswordPayload.java
 src/main/java/com/linkbreakers/model/PasswordTraceData.java
@@ -310,9 +324,12 @@ src/main/java/com/linkbreakers/model/ProtobufAny.java
 src/main/java/com/linkbreakers/model/ProtobufNullValue.java
 src/main/java/com/linkbreakers/model/PublicCreateQrcodeDesignRequest.java
 src/main/java/com/linkbreakers/model/PublicCreateQrcodeDesignResponse.java
+src/main/java/com/linkbreakers/model/PublicListPageThemeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/PublicListQrcodeTemplatesResponse.java
+src/main/java/com/linkbreakers/model/PublicPageThemeTemplate.java
 src/main/java/com/linkbreakers/model/PublicQrcodeTemplate.java
 src/main/java/com/linkbreakers/model/PublicWorkspace.java
+src/main/java/com/linkbreakers/model/PublishPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/PublishQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/QrcodeDesign.java
 src/main/java/com/linkbreakers/model/QrcodeDesignServiceUpdateBody.java
@@ -365,6 +382,8 @@ src/main/java/com/linkbreakers/model/UpdateLinkResponse.java
 src/main/java/com/linkbreakers/model/UpdateLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/UpdateMeRequest.java
 src/main/java/com/linkbreakers/model/UpdatePageThemeResponse.java
+src/main/java/com/linkbreakers/model/UpdatePageThemeTemplateResponse.java
+src/main/java/com/linkbreakers/model/UpdatePageThemeTemplateStylingResponse.java
 src/main/java/com/linkbreakers/model/UpdateQrcodeDesignResponse.java
 src/main/java/com/linkbreakers/model/UpdateQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/UpdateSlackIntegrationRequest.java
