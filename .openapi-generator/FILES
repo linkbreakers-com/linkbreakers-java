@@ -44,6 +44,7 @@ src/main/java/com/linkbreakers/api/PageThemesApi.java
 src/main/java/com/linkbreakers/api/QrCodeDesignsApi.java
 src/main/java/com/linkbreakers/api/QrCodeTemplatesApi.java
 src/main/java/com/linkbreakers/api/SlackIntegrationsApi.java
+src/main/java/com/linkbreakers/api/SupportApi.java
 src/main/java/com/linkbreakers/api/TagsApi.java
 src/main/java/com/linkbreakers/api/TimeSeriesApi.java
 src/main/java/com/linkbreakers/api/VisitorsApi.java
@@ -93,6 +94,8 @@ src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
 src/main/java/com/linkbreakers/model/ConnectWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/ContactCardTraceCard.java
 src/main/java/com/linkbreakers/model/ContactCardTraceData.java
+src/main/java/com/linkbreakers/model/ContactSupportRequest.java
+src/main/java/com/linkbreakers/model/ContactSupportResponse.java
 src/main/java/com/linkbreakers/model/ContainerConfig.java
 src/main/java/com/linkbreakers/model/CornersDotOptions.java
 src/main/java/com/linkbreakers/model/CornersDotType.java
