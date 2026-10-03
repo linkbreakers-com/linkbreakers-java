@@ -75,8 +75,11 @@ src/main/java/com/linkbreakers/model/AssistantMarkConversationReadRequest.java
 src/main/java/com/linkbreakers/model/AssistantMarkConversationReadResponse.java
 src/main/java/com/linkbreakers/model/AssistantUploadFileRequest.java
 src/main/java/com/linkbreakers/model/AssistantUploadFileResponse.java
+src/main/java/com/linkbreakers/model/AttributeCapture.java
 src/main/java/com/linkbreakers/model/AttributeValueDataPoint.java
 src/main/java/com/linkbreakers/model/AttributeValueEntry.java
+src/main/java/com/linkbreakers/model/AttributeWrite.java
+src/main/java/com/linkbreakers/model/AttributeWriteMode.java
 src/main/java/com/linkbreakers/model/AutoLayoutWorkflowResponse.java
 src/main/java/com/linkbreakers/model/BackgroundOptions.java
 src/main/java/com/linkbreakers/model/BreakdownDataPoint.java
