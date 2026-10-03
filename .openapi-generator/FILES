@@ -262,6 +262,7 @@ src/main/java/com/linkbreakers/model/ImportPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/InviteMemberRequest.java
+src/main/java/com/linkbreakers/model/JourneyProgress.java
 src/main/java/com/linkbreakers/model/LeadScore.java
 src/main/java/com/linkbreakers/model/LeadScoreBreakdown.java
 src/main/java/com/linkbreakers/model/Link.java
