@@ -285,6 +285,7 @@ src/main/java/com/linkbreakers/model/ListTagsResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorAttributeKeysResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsCsvResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsJsonResponse.java
+src/main/java/com/linkbreakers/model/ListVisitorsRequest.java
 src/main/java/com/linkbreakers/model/ListVisitorsResponse.java
 src/main/java/com/linkbreakers/model/ListWebhooksResponse.java
 src/main/java/com/linkbreakers/model/ListWorkflowStepsResponse.java
@@ -428,6 +429,9 @@ src/main/java/com/linkbreakers/model/VisitTypeConditionTraceData.java
 src/main/java/com/linkbreakers/model/VisitTypeConditionTraceOption.java
 src/main/java/com/linkbreakers/model/Visitor.java
 src/main/java/com/linkbreakers/model/VisitorAttribute.java
+src/main/java/com/linkbreakers/model/VisitorAttributeFilter.java
+src/main/java/com/linkbreakers/model/VisitorAttributeFilterOperator.java
+src/main/java/com/linkbreakers/model/VisitorAttributeKey.java
 src/main/java/com/linkbreakers/model/VisitorAttributeType.java
 src/main/java/com/linkbreakers/model/VisitorDataConditionOption.java
 src/main/java/com/linkbreakers/model/VisitorDataConditionPayload.java
