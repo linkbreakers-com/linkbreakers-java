@@ -2,7 +2,7 @@ lazy val root = (project in file(".")).
   settings(
     organization := "com.linkbreakers",
     name := "linkbreakers-sdk",
-    version := "1.138.4",
+    version := "1.138.5",
     scalaVersion := "2.11.12",
     scalacOptions ++= Seq("-feature"),
     compile / javacOptions ++= Seq("-Xlint:deprecation"),
