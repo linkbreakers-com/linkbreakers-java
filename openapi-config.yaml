@@ -1,0 +1,20 @@
+additionalProperties:
+  groupId: com.linkbreakers
+  artifactId: linkbreakers-sdk
+  artifactUrl: https://linkbreakers.com
+  artifactDescription: Official Java SDK for the Linkbreakers API
+  scmConnection: scm:git:git://github.com/linkbreakers-com/linkbreakers-java.git
+  scmDeveloperConnection: scm:git:ssh://github.com:linkbreakers-com/linkbreakers-java.git
+  scmUrl: https://github.com/linkbreakers-com/linkbreakers-java/tree/main
+  developerName: Linkbreakers Team
+  developerEmail: support@linkbreakers.com
+  developerOrganization: Linkbreakers
+  developerOrganizationUrl: https://linkbreakers.com
+  licenseName: MIT License
+  licenseUrl: https://opensource.org/licenses/MIT
+  invokerPackage: com.linkbreakers
+  apiPackage: com.linkbreakers.api
+  modelPackage: com.linkbreakers.model
+  library: okhttp-gson
+  dateLibrary: java8
+  hideGenerationTimestamp: true

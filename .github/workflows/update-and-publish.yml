@@ -3,14 +3,14 @@ name: Update and Publish SDK
 on:
   repository_dispatch:
     types: [update-sdk]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   update-and-publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
+      issues: write
 
     steps:
       - name: Checkout repository
@@ -26,181 +26,155 @@ jobs:
           cache: 'maven'
 
       - name: Install OpenAPI Generator
-        run: |
-          npm install -g @openapitools/openapi-generator-cli
+        run: npm install -g @openapitools/openapi-generator-cli
 
       - name: Fetch current version from swagger
         id: fetch-version
         run: |
           SWAGGER_URL="https://api.linkbreakers.com/internal/openapi/api/v1/api.swagger.json"
-          NEW_VERSION=$(curl -s "$SWAGGER_URL" | jq -r '.info.version')
+          NEW_VERSION=$(curl -fsS "$SWAGGER_URL" | jq -r '.info.version')
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Swagger version: $NEW_VERSION"
 
-      - name: Read version published on Maven Central
-        id: current-version
-        run: |
-          METADATA_URL="https://repo1.maven.org/maven2/com/linkbreakers/linkbreakers-sdk/maven-metadata.xml"
-          CURRENT_VERSION=$(curl -fsSL "$METADATA_URL" | sed -n 's|.*<release>\(.*\)</release>.*|\1|p')
-          if [ -z "$CURRENT_VERSION" ]; then
-            echo "Could not read <release> from $METADATA_URL" >&2
-            exit 1
-          fi
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "Maven Central release: $CURRENT_VERSION"
-
-      - name: Compare versions
+      - name: Check whether Maven Central already has this version
         id: compare
+        env:
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version }}
         run: |
-          if [ "${{ steps.fetch-version.outputs.new_version }}" == "${{ steps.current-version.outputs.current_version }}" ]; then
-            echo "needs_update=false" >> $GITHUB_OUTPUT
-            echo "✅ Versions match. No update needed."
-          else
-            echo "needs_update=true" >> $GITHUB_OUTPUT
-            echo "🔄 Version changed: ${{ steps.current-version.outputs.current_version }} → ${{ steps.fetch-version.outputs.new_version }}"
-          fi
+          POM_URL="https://repo1.maven.org/maven2/com/linkbreakers/linkbreakers-sdk/$NEW_VERSION/linkbreakers-sdk-$NEW_VERSION.pom"
+          CODE=$(curl -sS -o /dev/null -w '%{http_code}' "$POM_URL")
+          case "$CODE" in
+            200) echo "needs_update=false" >> $GITHUB_OUTPUT; echo "Maven Central already has $NEW_VERSION" ;;
+            404) echo "needs_update=true" >> $GITHUB_OUTPUT; echo "Maven Central does not have $NEW_VERSION yet" ;;
+            *) echo "Unexpected HTTP $CODE from $POM_URL" >&2; exit 1 ;;
+          esac
 
-      - name: Download and convert OpenAPI spec to 3.1
+      - name: Generate SDK
         if: steps.compare.outputs.needs_update == 'true'
+        env:
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version }}
         run: |
-          # Download OpenAPI 3.2.0 spec
-          curl -o openapi-3.2.json https://api.linkbreakers.com/internal/openapi/api/v1/api.swagger.json
-
-          # Convert OpenAPI 3.2 to 3.1 (remove 3.2-specific fields)
+          curl -fsS -o openapi-3.2.json https://api.linkbreakers.com/internal/openapi/api/v1/api.swagger.json
           jq '.openapi = "3.1.0" | del(.jsonSchemaDialect)' openapi-3.2.json > openapi-3.1.json
 
-          echo "✅ OpenAPI spec converted from 3.2 to 3.1"
-
-      - name: Generate SDK using OpenAPI Generator
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
-
-          # Backup custom files that we want to preserve
-          mkdir -p .backup
-          cp pom.xml .backup/ 2>/dev/null || true
-          cp README.md .backup/ 2>/dev/null || true
-
-          # Remove old generated code
-          rm -rf src/main/java/com/linkbreakers 2>/dev/null || true
-          rm -rf src/main/java/org/openapitools 2>/dev/null || true
-
-          # Generate SDK using OpenAPI Generator with java generator
+          rm -rf src/main/java/com/linkbreakers
           openapi-generator-cli generate \
             -i openapi-3.1.json \
             -g java \
             -o . \
+            -c openapi-config.yaml \
+            -t templates \
             --skip-validate-spec \
             --git-host github.com \
             --git-user-id linkbreakers-com \
             --git-repo-id linkbreakers-java \
             --global-property apiTests=false,modelTests=false,apiDocs=false,modelDocs=false \
-            --additional-properties=groupId=com.linkbreakers,artifactId=linkbreakers-sdk,artifactVersion=$NEW_VERSION,invokerPackage=com.linkbreakers,apiPackage=com.linkbreakers.api,modelPackage=com.linkbreakers.model,library=okhttp-gson,dateLibrary=java8,hideGenerationTimestamp=true
+            --additional-properties=artifactVersion=$NEW_VERSION
 
-          # Restore custom pom.xml (contains publishing config)
-          cp .backup/pom.xml . 2>/dev/null || true
-          cp .backup/README.md . 2>/dev/null || true
-
-          # Update ONLY the project version in pom.xml (not plugin versions)
-          # This targets the <version> tag that comes right after <artifactId>linkbreakers-sdk</artifactId>
-          sed -i "/<artifactId>linkbreakers-sdk<\/artifactId>/!b;n;s|<version>.*</version>|<version>$NEW_VERSION</version>|" pom.xml
-
-          # Clean up
-          rm -rf .backup
-          rm openapi-3.2.json openapi-3.1.json
-
-          echo "✅ SDK generated successfully with version $NEW_VERSION"
-
-      - name: Update version files
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
-
-          # Update OPENAPI_VERSION file
           echo "$NEW_VERSION" > OPENAPI_VERSION
-
-          echo "✅ Version files updated to $NEW_VERSION"
-
-      - name: Build with Maven
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          mvn clean package -DskipTests
-          echo "✅ Maven build completed"
-
-      - name: Check README against the generated SDK
-        if: steps.compare.outputs.needs_update == 'true'
-        run: ./scripts/check-docs.sh
+          rm openapi-3.2.json openapi-3.1.json
 
       - name: Import GPG key
         if: steps.compare.outputs.needs_update == 'true'
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import
-          echo "✅ GPG key imported"
+        run: echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import
 
-      - name: Configure Maven settings
+      - name: Build and sign
         if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml <<EOF
-          <settings>
-            <servers>
-              <server>
-                <id>central</id>
-                <username>${{ secrets.CENTRAL_TOKEN_USERNAME }}</username>
-                <password>${{ secrets.CENTRAL_TOKEN_PASSWORD }}</password>
-              </server>
-            </servers>
-          </settings>
-          EOF
-          echo "✅ Maven settings configured for Sonatype Central Portal"
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn -B clean verify -DskipTests -Psign-artifacts
 
-      - name: Configure Git
+      - name: Smoke check the README against the built SDK
         if: steps.compare.outputs.needs_update == 'true'
+        run: ./scripts/check-docs.sh
+
+      - name: Build the Central Portal bundle
+        if: steps.compare.outputs.needs_update == 'true'
+        env:
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version }}
+        run: |
+          ARTIFACT=linkbreakers-sdk
+          DIR="target/bundle/com/linkbreakers/$ARTIFACT/$NEW_VERSION"
+          mkdir -p "$DIR"
+          for f in "$ARTIFACT-$NEW_VERSION.pom" "$ARTIFACT-$NEW_VERSION.jar" \
+                   "$ARTIFACT-$NEW_VERSION-sources.jar" "$ARTIFACT-$NEW_VERSION-javadoc.jar"; do
+            cp "target/$f" "target/$f.asc" "$DIR/"
+            md5sum "target/$f" | cut -d' ' -f1 > "$DIR/$f.md5"
+            sha1sum "target/$f" | cut -d' ' -f1 > "$DIR/$f.sha1"
+          done
+          (cd target/bundle && zip -qrD ../central-bundle.zip com)
+          unzip -l target/central-bundle.zip
+
+      - name: Publish to Maven Central
+        if: steps.compare.outputs.needs_update == 'true'
+        env:
+          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version }}
+        run: |
+          AUTH="Authorization: Bearer $(printf '%s:%s' "$CENTRAL_TOKEN_USERNAME" "$CENTRAL_TOKEN_PASSWORD" | base64 -w0)"
+          ID=$(curl -sS --fail-with-body -X POST -H "$AUTH" \
+            -F "bundle=@target/central-bundle.zip" \
+            "https://central.sonatype.com/api/v1/publisher/upload?name=linkbreakers-sdk-$NEW_VERSION&publishingType=AUTOMATIC")
+          echo "Deployment $ID"
+          for i in $(seq 1 90); do
+            sleep 20
+            STATUS=$(curl -sS --fail-with-body -X POST -H "$AUTH" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=$ID")
+            STATE=$(echo "$STATUS" | jq -r '.deploymentState')
+            echo "$STATE"
+            case "$STATE" in
+              PUBLISHED) exit 0 ;;
+              FAILED) echo "$STATUS" | jq . >&2; exit 1 ;;
+            esac
+          done
+          echo "Deployment $ID was not published after 30 minutes" >&2
+          exit 1
+
+      - name: Commit, tag and push
+        if: steps.compare.outputs.needs_update == 'true'
+        env:
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Deploy to Maven Central
-        if: steps.compare.outputs.needs_update == 'true'
-        env:
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          mvn clean deploy -DskipTests -Dgpg.passphrase=$GPG_PASSPHRASE
-          echo "✅ Published to Maven Central"
-
-      - name: Commit changes
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
-
           git add .
-          if git diff --cached --quiet; then
-            echo "Nothing to commit, main already has $NEW_VERSION"
-          else
+          if ! git diff --cached --quiet; then
             git commit -m "chore: update SDK to API version $NEW_VERSION"
-            echo "✅ Changes committed"
           fi
-
-      - name: Create and push tag
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
-
           git push origin main
-          if git ls-remote --exit-code --tags origin "refs/tags/v$NEW_VERSION" >/dev/null; then
-            echo "Tag v$NEW_VERSION already exists"
-          else
+          if ! git ls-remote --exit-code --tags origin "refs/tags/v$NEW_VERSION" >/dev/null; then
             git tag "v$NEW_VERSION"
             git push origin "v$NEW_VERSION"
-            echo "✅ Tag v$NEW_VERSION created and pushed"
           fi
 
-      - name: Summary
-        if: steps.compare.outputs.needs_update == 'true'
+      - name: Close release failure issues
+        if: success() && steps.compare.outputs.needs_update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version }}
         run: |
-          echo "🎉 SDK successfully updated and published!"
-          echo "Version: ${{ steps.fetch-version.outputs.new_version }}"
-          echo "Maven Central: https://central.sonatype.com/artifact/com.linkbreakers/linkbreakers-sdk"
+          for number in $(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label release-failure --json number --jq '.[].number'); do
+            gh issue close "$number" --repo "$GITHUB_REPOSITORY" --comment "Published $NEW_VERSION."
+          done
+
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.fetch-version.outputs.new_version || 'unknown' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          MESSAGE="Publishing linkbreakers-sdk $NEW_VERSION to Maven Central failed. Run: $RUN_URL"
+          echo "::error title=Release failed::$MESSAGE"
+          gh label create release-failure --repo "$GITHUB_REPOSITORY" --color B60205 \
+            --description "The update and publish workflow failed" --force
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label release-failure --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body "$MESSAGE"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --label release-failure \
+              --title "SDK release failing" --body "$MESSAGE"
+          fi
