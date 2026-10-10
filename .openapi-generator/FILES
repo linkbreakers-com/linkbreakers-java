@@ -230,7 +230,6 @@ src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesRequest.java
 src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesResponse.java
 src/main/java/com/linkbreakers/model/GetHourOfDayDistributionRequest.java
 src/main/java/com/linkbreakers/model/GetHourOfDayDistributionResponse.java
-src/main/java/com/linkbreakers/model/GetLeadScoreResponse.java
 src/main/java/com/linkbreakers/model/GetLinkResponse.java
 src/main/java/com/linkbreakers/model/GetLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/GetMediaResponse.java
@@ -263,8 +262,6 @@ src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/InviteMemberRequest.java
 src/main/java/com/linkbreakers/model/JourneyProgress.java
-src/main/java/com/linkbreakers/model/LeadScore.java
-src/main/java/com/linkbreakers/model/LeadScoreBreakdown.java
 src/main/java/com/linkbreakers/model/Link.java
 src/main/java/com/linkbreakers/model/LinkSetting.java
 src/main/java/com/linkbreakers/model/LinkSortField.java
