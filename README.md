@@ -142,7 +142,6 @@ Class | Method | HTTP request | Description
 *LinksApi* | [**linksServiceCreateContactLink**](docs/LinksApi.md#linksServiceCreateContactLink) | **POST** /v1/links/contact | Create a new contact card link
 *LinksApi* | [**linksServiceDelete**](docs/LinksApi.md#linksServiceDelete) | **DELETE** /v1/links/{id} | Delete a link
 *LinksApi* | [**linksServiceGet**](docs/LinksApi.md#linksServiceGet) | **GET** /v1/links/{id} | Get link details
-*LinksApi* | [**linksServiceGetLeadScoreExplanation**](docs/LinksApi.md#linksServiceGetLeadScoreExplanation) | **GET** /v1/links/{linkId}/lead-score-explanation/{eventId} | Get lead score explanation
 *LinksApi* | [**linksServiceList**](docs/LinksApi.md#linksServiceList) | **GET** /v1/links | List links
 *LinksApi* | [**linksServiceShortlinkAvailability**](docs/LinksApi.md#linksServiceShortlinkAvailability) | **GET** /v1/links/shortlink-availability | Check shortlink availability
 *LinksApi* | [**linksServiceShortlinkRandom**](docs/LinksApi.md#linksServiceShortlinkRandom) | **GET** /v1/links/shortlink-random | Get a random shortlink
@@ -321,7 +320,6 @@ Class | Method | HTTP request | Description
  - [GetDirectoryResponse](docs/GetDirectoryResponse.md)
  - [GetEventsTimeSeriesRequest](docs/GetEventsTimeSeriesRequest.md)
  - [GetEventsTimeSeriesResponse](docs/GetEventsTimeSeriesResponse.md)
- - [GetLeadScoreExplanationResponse](docs/GetLeadScoreExplanationResponse.md)
  - [GetLinkResponse](docs/GetLinkResponse.md)
  - [GetLinkSettingResponse](docs/GetLinkSettingResponse.md)
  - [GetMediaResponse](docs/GetMediaResponse.md)
@@ -338,8 +336,6 @@ Class | Method | HTTP request | Description
  - [ImportQrcodeTemplateRequest](docs/ImportQrcodeTemplateRequest.md)
  - [ImportQrcodeTemplateResponse](docs/ImportQrcodeTemplateResponse.md)
  - [InviteMemberRequest](docs/InviteMemberRequest.md)
- - [LeadScore](docs/LeadScore.md)
- - [LeadScoreBreakdown](docs/LeadScoreBreakdown.md)
  - [Link](docs/Link.md)
  - [LinkSetting](docs/LinkSetting.md)
  - [LinkSortField](docs/LinkSortField.md)
