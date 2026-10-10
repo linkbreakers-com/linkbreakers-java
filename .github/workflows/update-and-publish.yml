@@ -37,16 +37,17 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Swagger version: $NEW_VERSION"
 
-      - name: Read current OPENAPI_VERSION
+      - name: Read version published on Maven Central
         id: current-version
         run: |
-          if [ -f OPENAPI_VERSION ]; then
-            CURRENT_VERSION=$(cat OPENAPI_VERSION)
-          else
-            CURRENT_VERSION="0.0.0"
+          METADATA_URL="https://repo1.maven.org/maven2/com/linkbreakers/linkbreakers-sdk/maven-metadata.xml"
+          CURRENT_VERSION=$(curl -fsSL "$METADATA_URL" | sed -n 's|.*<release>\(.*\)</release>.*|\1|p')
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "Could not read <release> from $METADATA_URL" >&2
+            exit 1
           fi
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT_VERSION"
+          echo "Maven Central release: $CURRENT_VERSION"
 
       - name: Compare versions
         id: compare
@@ -162,27 +163,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit changes
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
-
-          git add .
-          git commit -m "chore: update SDK to API version $NEW_VERSION"
-
-          echo "✅ Changes committed"
-
-      - name: Create and push tag
-        if: steps.compare.outputs.needs_update == 'true'
-        run: |
-          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
-
-          git tag "v$NEW_VERSION"
-          git push origin main
-          git push origin "v$NEW_VERSION"
-
-          echo "✅ Tag v$NEW_VERSION created and pushed"
-
       - name: Deploy to Maven Central
         if: steps.compare.outputs.needs_update == 'true'
         env:
@@ -190,6 +170,33 @@ jobs:
         run: |
           mvn clean deploy -DskipTests -Dgpg.passphrase=$GPG_PASSPHRASE
           echo "✅ Published to Maven Central"
+
+      - name: Commit changes
+        if: steps.compare.outputs.needs_update == 'true'
+        run: |
+          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
+
+          git add .
+          if git diff --cached --quiet; then
+            echo "Nothing to commit, main already has $NEW_VERSION"
+          else
+            git commit -m "chore: update SDK to API version $NEW_VERSION"
+            echo "✅ Changes committed"
+          fi
+
+      - name: Create and push tag
+        if: steps.compare.outputs.needs_update == 'true'
+        run: |
+          NEW_VERSION="${{ steps.fetch-version.outputs.new_version }}"
+
+          git push origin main
+          if git ls-remote --exit-code --tags origin "refs/tags/v$NEW_VERSION" >/dev/null; then
+            echo "Tag v$NEW_VERSION already exists"
+          else
+            git tag "v$NEW_VERSION"
+            git push origin "v$NEW_VERSION"
+            echo "✅ Tag v$NEW_VERSION created and pushed"
+          fi
 
       - name: Summary
         if: steps.compare.outputs.needs_update == 'true'
