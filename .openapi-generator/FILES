@@ -132,6 +132,10 @@ src/main/java/com/linkbreakers/model/CreateWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/CreateWorkspaceTokenRequest.java
 src/main/java/com/linkbreakers/model/CreateWorkspaceTokenResponse.java
 src/main/java/com/linkbreakers/model/CustomDomain.java
+src/main/java/com/linkbreakers/model/CustomDomainDnsRecord.java
+src/main/java/com/linkbreakers/model/CustomDomainOneClickSetup.java
+src/main/java/com/linkbreakers/model/CustomDomainSetupGuide.java
+src/main/java/com/linkbreakers/model/CustomDomainSetupHint.java
 src/main/java/com/linkbreakers/model/CustomDomainStatus.java
 src/main/java/com/linkbreakers/model/CustomDomainsServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/DashboardConfig.java
@@ -183,6 +187,9 @@ src/main/java/com/linkbreakers/model/DigestFrequency.java
 src/main/java/com/linkbreakers/model/DirectoriesServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/Directory.java
 src/main/java/com/linkbreakers/model/DisconnectWorkflowStepResponse.java
+src/main/java/com/linkbreakers/model/DnsProvider.java
+src/main/java/com/linkbreakers/model/DnsRecordPurpose.java
+src/main/java/com/linkbreakers/model/DnsRecordType.java
 src/main/java/com/linkbreakers/model/DotsOptions.java
 src/main/java/com/linkbreakers/model/DotsType.java
 src/main/java/com/linkbreakers/model/EntryAccessTraceData.java
@@ -217,6 +224,7 @@ src/main/java/com/linkbreakers/model/GetAttributeValuesResponse.java
 src/main/java/com/linkbreakers/model/GetBreakdownRequest.java
 src/main/java/com/linkbreakers/model/GetBreakdownResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainResponse.java
+src/main/java/com/linkbreakers/model/GetCustomDomainSetupGuideResponse.java
 src/main/java/com/linkbreakers/model/GetDeviceDistributionRequest.java
 src/main/java/com/linkbreakers/model/GetDeviceDistributionResponse.java
 src/main/java/com/linkbreakers/model/GetDirectoryResponse.java
