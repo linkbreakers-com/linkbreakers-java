@@ -11,7 +11,7 @@
 
     <name>Linkbreakers SDK</name>
     <description>Official Java SDK for the Linkbreakers API</description>
-    <url>https://github.com/linkbreakers-com/linkbreakers-java</url>
+    <url>https://linkbreakers.com</url>
 
     <licenses>
         <license>
@@ -68,6 +68,13 @@
             <groupId>io.gsonfire</groupId>
             <artifactId>gson-fire</artifactId>
             <version>1.9.0</version>
+        </dependency>
+
+        <!-- OAuth2 client used by the generated ApiClient and OAuthOkHttpClient -->
+        <dependency>
+            <groupId>org.apache.oltu.oauth2</groupId>
+            <artifactId>org.apache.oltu.oauth2.client</artifactId>
+            <version>1.0.2</version>
         </dependency>
 
         <!-- JSR-305 annotations (javax.annotation.Nullable, Nonnull) -->
