@@ -5,7 +5,7 @@
     <artifactId>linkbreakers-sdk</artifactId>
     <packaging>jar</packaging>
     <name>linkbreakers-sdk</name>
-    <version>1.167.0</version>
+    <version>1.168.0</version>
     <url>https://linkbreakers.com</url>
     <description>Official Java SDK for the Linkbreakers API</description>
     <scm>
