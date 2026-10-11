@@ -313,6 +313,7 @@ src/main/java/com/linkbreakers/model/ListEventsJsonResponse.java
 src/main/java/com/linkbreakers/model/ListEventsResponse.java
 src/main/java/com/linkbreakers/model/ListLinksResponse.java
 src/main/java/com/linkbreakers/model/ListMediaResponse.java
+src/main/java/com/linkbreakers/model/ListMyWorkspacesResponse.java
 src/main/java/com/linkbreakers/model/ListPageThemeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/ListPageThemesResponse.java
 src/main/java/com/linkbreakers/model/ListPricingPlansResponse.java
@@ -334,6 +335,7 @@ src/main/java/com/linkbreakers/model/MediaSelection.java
 src/main/java/com/linkbreakers/model/MediaType.java
 src/main/java/com/linkbreakers/model/MediaVisibility.java
 src/main/java/com/linkbreakers/model/Member.java
+src/main/java/com/linkbreakers/model/MembersServiceSwitchWorkspaceBody.java
 src/main/java/com/linkbreakers/model/MembersServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/MessagePageNavigationType.java
 src/main/java/com/linkbreakers/model/MessagePagePayload.java
@@ -343,6 +345,7 @@ src/main/java/com/linkbreakers/model/MultiLinkPayload.java
 src/main/java/com/linkbreakers/model/MultiLinkTraceButton.java
 src/main/java/com/linkbreakers/model/MultiLinkTraceData.java
 src/main/java/com/linkbreakers/model/MultiLinkTraceSelectedButton.java
+src/main/java/com/linkbreakers/model/MyWorkspace.java
 src/main/java/com/linkbreakers/model/OutputFileFormat.java
 src/main/java/com/linkbreakers/model/PageTheme.java
 src/main/java/com/linkbreakers/model/PageThemeBadgeShape.java
@@ -429,6 +432,7 @@ src/main/java/com/linkbreakers/model/SpecificDateConditionTraceData.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceOption.java
 src/main/java/com/linkbreakers/model/SpecificDateOption.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
+src/main/java/com/linkbreakers/model/SwitchWorkspaceResponse.java
 src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/ThankYouPagePayload.java
