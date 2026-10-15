@@ -95,6 +95,7 @@ src/main/java/com/linkbreakers/model/AttributeValueEntry.java
 src/main/java/com/linkbreakers/model/AttributeWrite.java
 src/main/java/com/linkbreakers/model/AttributeWriteMode.java
 src/main/java/com/linkbreakers/model/AutoLayoutWorkflowResponse.java
+src/main/java/com/linkbreakers/model/BackButton.java
 src/main/java/com/linkbreakers/model/BackgroundOptions.java
 src/main/java/com/linkbreakers/model/BillingInterval.java
 src/main/java/com/linkbreakers/model/BreakdownDataPoint.java
@@ -107,6 +108,7 @@ src/main/java/com/linkbreakers/model/ClaimAgentWorkspaceRequest.java
 src/main/java/com/linkbreakers/model/ClientRedirectPayload.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthResponse.java
+src/main/java/com/linkbreakers/model/CompleteMediaUploadResponse.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
 src/main/java/com/linkbreakers/model/ConnectWorkflowStepResponse.java
@@ -132,10 +134,14 @@ src/main/java/com/linkbreakers/model/CreateDashboardResponse.java
 src/main/java/com/linkbreakers/model/CreateDirectoryRequest.java
 src/main/java/com/linkbreakers/model/CreateDirectoryResponse.java
 src/main/java/com/linkbreakers/model/CreateEventTraceResponse.java
+src/main/java/com/linkbreakers/model/CreateFileLinkRequest.java
+src/main/java/com/linkbreakers/model/CreateFileLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateLinkRequest.java
 src/main/java/com/linkbreakers/model/CreateLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaResponse.java
+src/main/java/com/linkbreakers/model/CreateMediaUploadRequest.java
+src/main/java/com/linkbreakers/model/CreateMediaUploadResponse.java
 src/main/java/com/linkbreakers/model/CreatePageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/CreatePageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateRequest.java
@@ -223,6 +229,8 @@ src/main/java/com/linkbreakers/model/EventsServiceCreateEventTraceBody.java
 src/main/java/com/linkbreakers/model/EventsServiceUpdateDeviceBody.java
 src/main/java/com/linkbreakers/model/EventsTimeSeries.java
 src/main/java/com/linkbreakers/model/EventsTimeSeriesData.java
+src/main/java/com/linkbreakers/model/FilePayload.java
+src/main/java/com/linkbreakers/model/FileTraceData.java
 src/main/java/com/linkbreakers/model/FindMatchingPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/FontConfig.java
 src/main/java/com/linkbreakers/model/FormField.java
@@ -331,8 +339,11 @@ src/main/java/com/linkbreakers/model/ListWebhooksResponse.java
 src/main/java/com/linkbreakers/model/ListWorkflowStepsResponse.java
 src/main/java/com/linkbreakers/model/ListWorkspaceTokensResponse.java
 src/main/java/com/linkbreakers/model/Media.java
+src/main/java/com/linkbreakers/model/MediaKind.java
 src/main/java/com/linkbreakers/model/MediaSelection.java
+src/main/java/com/linkbreakers/model/MediaStatus.java
 src/main/java/com/linkbreakers/model/MediaType.java
+src/main/java/com/linkbreakers/model/MediaUsage.java
 src/main/java/com/linkbreakers/model/MediaVisibility.java
 src/main/java/com/linkbreakers/model/Member.java
 src/main/java/com/linkbreakers/model/MembersServiceSwitchWorkspaceBody.java
