@@ -340,6 +340,8 @@ src/main/java/com/linkbreakers/model/ListWorkflowStepsResponse.java
 src/main/java/com/linkbreakers/model/ListWorkspaceTokensResponse.java
 src/main/java/com/linkbreakers/model/Media.java
 src/main/java/com/linkbreakers/model/MediaKind.java
+src/main/java/com/linkbreakers/model/MediaReference.java
+src/main/java/com/linkbreakers/model/MediaReferenceType.java
 src/main/java/com/linkbreakers/model/MediaSelection.java
 src/main/java/com/linkbreakers/model/MediaStatus.java
 src/main/java/com/linkbreakers/model/MediaType.java
@@ -399,6 +401,7 @@ src/main/java/com/linkbreakers/model/QrcodeTemplate.java
 src/main/java/com/linkbreakers/model/QrcodeTemplateScope.java
 src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateQrcodeTemplateBody.java
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
+src/main/java/com/linkbreakers/model/RedirectTraceDataFallbackReason.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesResponse.java
