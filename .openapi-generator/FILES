@@ -81,7 +81,10 @@ src/main/java/com/linkbreakers/model/ApplyPageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ApplyPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ApplyQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ApplyQrcodeTemplateResponse.java
+src/main/java/com/linkbreakers/model/AssistantCompleteAttachmentUploadResponse.java
 src/main/java/com/linkbreakers/model/AssistantContextType.java
+src/main/java/com/linkbreakers/model/AssistantCreateAttachmentUploadRequest.java
+src/main/java/com/linkbreakers/model/AssistantCreateAttachmentUploadResponse.java
 src/main/java/com/linkbreakers/model/AssistantDisplayMessage.java
 src/main/java/com/linkbreakers/model/AssistantDisplayMessageAttachment.java
 src/main/java/com/linkbreakers/model/AssistantGetConversationResponse.java
@@ -291,6 +294,8 @@ src/main/java/com/linkbreakers/model/HourOfDayDataPoint.java
 src/main/java/com/linkbreakers/model/IdentifyRequest.java
 src/main/java/com/linkbreakers/model/IdentifyResponse.java
 src/main/java/com/linkbreakers/model/IdentifyVisitorTraceData.java
+src/main/java/com/linkbreakers/model/ImportMediaRequest.java
+src/main/java/com/linkbreakers/model/ImportMediaResponse.java
 src/main/java/com/linkbreakers/model/ImportPageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
