@@ -111,6 +111,7 @@ src/main/java/com/linkbreakers/model/ClaimAgentWorkspaceRequest.java
 src/main/java/com/linkbreakers/model/ClientRedirectPayload.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthResponse.java
+src/main/java/com/linkbreakers/model/CompleteMediaReplaceResponse.java
 src/main/java/com/linkbreakers/model/CompleteMediaUploadResponse.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
@@ -139,6 +140,7 @@ src/main/java/com/linkbreakers/model/CreateDirectoryResponse.java
 src/main/java/com/linkbreakers/model/CreateEventTraceResponse.java
 src/main/java/com/linkbreakers/model/CreateLinkRequest.java
 src/main/java/com/linkbreakers/model/CreateLinkResponse.java
+src/main/java/com/linkbreakers/model/CreateMediaReplaceUploadResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaUploadRequest.java
@@ -346,6 +348,8 @@ src/main/java/com/linkbreakers/model/MediaKind.java
 src/main/java/com/linkbreakers/model/MediaReference.java
 src/main/java/com/linkbreakers/model/MediaReferenceType.java
 src/main/java/com/linkbreakers/model/MediaSelection.java
+src/main/java/com/linkbreakers/model/MediaServiceCreateReplaceUploadBody.java
+src/main/java/com/linkbreakers/model/MediaServiceReplaceImportBody.java
 src/main/java/com/linkbreakers/model/MediaStatus.java
 src/main/java/com/linkbreakers/model/MediaTraceData.java
 src/main/java/com/linkbreakers/model/MediaType.java
@@ -408,6 +412,7 @@ src/main/java/com/linkbreakers/model/QrcodeTemplateScope.java
 src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateQrcodeTemplateBody.java
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
 src/main/java/com/linkbreakers/model/RedirectTraceDataFallbackReason.java
+src/main/java/com/linkbreakers/model/ReplaceMediaImportResponse.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesResponse.java
