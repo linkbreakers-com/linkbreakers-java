@@ -134,14 +134,14 @@ src/main/java/com/linkbreakers/model/CreateDashboardResponse.java
 src/main/java/com/linkbreakers/model/CreateDirectoryRequest.java
 src/main/java/com/linkbreakers/model/CreateDirectoryResponse.java
 src/main/java/com/linkbreakers/model/CreateEventTraceResponse.java
-src/main/java/com/linkbreakers/model/CreateFileLinkRequest.java
-src/main/java/com/linkbreakers/model/CreateFileLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateLinkRequest.java
 src/main/java/com/linkbreakers/model/CreateLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaUploadRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaUploadResponse.java
+src/main/java/com/linkbreakers/model/CreateOpenMediaLinkRequest.java
+src/main/java/com/linkbreakers/model/CreateOpenMediaLinkResponse.java
 src/main/java/com/linkbreakers/model/CreatePageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/CreatePageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateRequest.java
@@ -229,8 +229,6 @@ src/main/java/com/linkbreakers/model/EventsServiceCreateEventTraceBody.java
 src/main/java/com/linkbreakers/model/EventsServiceUpdateDeviceBody.java
 src/main/java/com/linkbreakers/model/EventsTimeSeries.java
 src/main/java/com/linkbreakers/model/EventsTimeSeriesData.java
-src/main/java/com/linkbreakers/model/FilePayload.java
-src/main/java/com/linkbreakers/model/FileTraceData.java
 src/main/java/com/linkbreakers/model/FindMatchingPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/FontConfig.java
 src/main/java/com/linkbreakers/model/FormField.java
@@ -344,7 +342,9 @@ src/main/java/com/linkbreakers/model/MediaReference.java
 src/main/java/com/linkbreakers/model/MediaReferenceType.java
 src/main/java/com/linkbreakers/model/MediaSelection.java
 src/main/java/com/linkbreakers/model/MediaStatus.java
+src/main/java/com/linkbreakers/model/MediaTraceData.java
 src/main/java/com/linkbreakers/model/MediaType.java
+src/main/java/com/linkbreakers/model/MediaUploadOrigin.java
 src/main/java/com/linkbreakers/model/MediaUsage.java
 src/main/java/com/linkbreakers/model/MediaVisibility.java
 src/main/java/com/linkbreakers/model/Member.java
@@ -359,6 +359,7 @@ src/main/java/com/linkbreakers/model/MultiLinkTraceButton.java
 src/main/java/com/linkbreakers/model/MultiLinkTraceData.java
 src/main/java/com/linkbreakers/model/MultiLinkTraceSelectedButton.java
 src/main/java/com/linkbreakers/model/MyWorkspace.java
+src/main/java/com/linkbreakers/model/OpenMediaPayload.java
 src/main/java/com/linkbreakers/model/OutputFileFormat.java
 src/main/java/com/linkbreakers/model/PageTheme.java
 src/main/java/com/linkbreakers/model/PageThemeBadgeShape.java
