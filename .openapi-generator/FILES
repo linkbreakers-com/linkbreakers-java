@@ -32,6 +32,7 @@ src/main/java/com/linkbreakers/api/AnalyticsDashboardApi.java
 src/main/java/com/linkbreakers/api/AnalyticsDataApi.java
 src/main/java/com/linkbreakers/api/ApiScopesApi.java
 src/main/java/com/linkbreakers/api/AssistantApi.java
+src/main/java/com/linkbreakers/api/AuthApi.java
 src/main/java/com/linkbreakers/api/CustomDomainsApi.java
 src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
@@ -413,6 +414,7 @@ src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateQrcodeTemplateB
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
 src/main/java/com/linkbreakers/model/RedirectTraceDataFallbackReason.java
 src/main/java/com/linkbreakers/model/ReplaceMediaImportResponse.java
+src/main/java/com/linkbreakers/model/RequestEmailVerificationRequest.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesResponse.java
