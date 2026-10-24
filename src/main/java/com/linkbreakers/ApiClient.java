@@ -215,10 +215,43 @@ public class ApiClient {
 
         json = new JSON();
 
-        // Set default User-Agent.
-        setUserAgent("OpenAPI-Generator/1.183.3/java");
+        // Set default User-Agent, and tell the API which client sent the request.
+        setUserAgent("linkbreakers-java-sdk/" + SDK_VERSION);
+        addDefaultHeader(CLIENT_HEADER_NAME, clientHeader());
 
         authentications = new HashMap<String, Authentication>();
+    }
+
+    /** This SDK's version, written by the generator from the release version. */
+    public static final String SDK_VERSION = "1.183.3";
+
+    /** Header that tells the API which client sent a request. Override it with addDefaultHeader. */
+    public static final String CLIENT_HEADER_NAME = "Linkbreakers-Client";
+
+    /**
+     * The Linkbreakers-Client value: "sdk-java/&lt;version&gt; (java &lt;spec version&gt;; &lt;os&gt;)".
+     *
+     * @return the header value
+     */
+    public static String clientHeader() {
+        return "sdk-java/" + SDK_VERSION + " (java " + System.getProperty("java.specification.version", "unknown") + "; " + osFamily() + ")";
+    }
+
+    private static String osFamily() {
+        String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
+        if (os.startsWith("mac") || os.startsWith("darwin")) {
+            return "darwin";
+        }
+        if (os.startsWith("windows")) {
+            return "windows";
+        }
+        if (os.startsWith("linux")) {
+            return "linux";
+        }
+        if (os.contains("bsd")) {
+            return "bsd";
+        }
+        return "other";
     }
 
     /**
