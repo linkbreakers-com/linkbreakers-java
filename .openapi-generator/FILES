@@ -48,7 +48,6 @@ src/main/java/com/linkbreakers/api/PageThemesApi.java
 src/main/java/com/linkbreakers/api/PricingApi.java
 src/main/java/com/linkbreakers/api/QrCodeDesignsApi.java
 src/main/java/com/linkbreakers/api/QrCodeTemplatesApi.java
-src/main/java/com/linkbreakers/api/SandboxesApi.java
 src/main/java/com/linkbreakers/api/SlackIntegrationsApi.java
 src/main/java/com/linkbreakers/api/TagsApi.java
 src/main/java/com/linkbreakers/api/TimeSeriesApi.java
@@ -146,14 +145,14 @@ src/main/java/com/linkbreakers/model/CreateMediaRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaResponse.java
 src/main/java/com/linkbreakers/model/CreateMediaUploadRequest.java
 src/main/java/com/linkbreakers/model/CreateMediaUploadResponse.java
+src/main/java/com/linkbreakers/model/CreateMyWorkspaceRequest.java
+src/main/java/com/linkbreakers/model/CreateMyWorkspaceResponse.java
 src/main/java/com/linkbreakers/model/CreateOpenMediaLinkRequest.java
 src/main/java/com/linkbreakers/model/CreateOpenMediaLinkResponse.java
 src/main/java/com/linkbreakers/model/CreatePageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/CreatePageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/CreateQrcodeTemplateResponse.java
-src/main/java/com/linkbreakers/model/CreateSandboxRequest.java
-src/main/java/com/linkbreakers/model/CreateSandboxResponse.java
 src/main/java/com/linkbreakers/model/CreateThankYouLinkRequest.java
 src/main/java/com/linkbreakers/model/CreateThankYouLinkResponse.java
 src/main/java/com/linkbreakers/model/CreateWebhookRequest.java
@@ -333,7 +332,6 @@ src/main/java/com/linkbreakers/model/ListPageThemesResponse.java
 src/main/java/com/linkbreakers/model/ListPricingPlansResponse.java
 src/main/java/com/linkbreakers/model/ListQrcodeTemplatesResponse.java
 src/main/java/com/linkbreakers/model/ListResponse.java
-src/main/java/com/linkbreakers/model/ListSandboxesResponse.java
 src/main/java/com/linkbreakers/model/ListSlackChannelsResponse.java
 src/main/java/com/linkbreakers/model/ListTagsResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorAttributeKeysResponse.java
@@ -344,6 +342,9 @@ src/main/java/com/linkbreakers/model/ListVisitorsResponse.java
 src/main/java/com/linkbreakers/model/ListWebhooksResponse.java
 src/main/java/com/linkbreakers/model/ListWorkflowStepsResponse.java
 src/main/java/com/linkbreakers/model/ListWorkspaceTokensResponse.java
+src/main/java/com/linkbreakers/model/LocationRequestOutcome.java
+src/main/java/com/linkbreakers/model/LocationRequestPayload.java
+src/main/java/com/linkbreakers/model/LocationRequestTraceData.java
 src/main/java/com/linkbreakers/model/Media.java
 src/main/java/com/linkbreakers/model/MediaKind.java
 src/main/java/com/linkbreakers/model/MediaReference.java
@@ -425,7 +426,6 @@ src/main/java/com/linkbreakers/model/ResolveQrcodeTemplateImagesResponse.java
 src/main/java/com/linkbreakers/model/ResolveStepCollisionsResponse.java
 src/main/java/com/linkbreakers/model/ResponseFormat.java
 src/main/java/com/linkbreakers/model/Role.java
-src/main/java/com/linkbreakers/model/Sandbox.java
 src/main/java/com/linkbreakers/model/SettingsServiceUpdateLinkSettingBody.java
 src/main/java/com/linkbreakers/model/Shape.java
 src/main/java/com/linkbreakers/model/ShortlinkAvailabilityResponse.java
