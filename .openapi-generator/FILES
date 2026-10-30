@@ -36,6 +36,7 @@ src/main/java/com/linkbreakers/api/AuthApi.java
 src/main/java/com/linkbreakers/api/CustomDomainsApi.java
 src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
+src/main/java/com/linkbreakers/api/GoogleAnalyticsIntegrationsApi.java
 src/main/java/com/linkbreakers/api/GoogleFormsIntegrationsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsServiceApi.java
 src/main/java/com/linkbreakers/api/JobsApi.java
@@ -48,6 +49,7 @@ src/main/java/com/linkbreakers/api/PageThemesApi.java
 src/main/java/com/linkbreakers/api/PricingApi.java
 src/main/java/com/linkbreakers/api/QrCodeDesignsApi.java
 src/main/java/com/linkbreakers/api/QrCodeTemplatesApi.java
+src/main/java/com/linkbreakers/api/RetargetingPixelsApi.java
 src/main/java/com/linkbreakers/api/SlackIntegrationsApi.java
 src/main/java/com/linkbreakers/api/TagsApi.java
 src/main/java/com/linkbreakers/api/TimeSeriesApi.java
@@ -257,6 +259,7 @@ src/main/java/com/linkbreakers/model/GetBreakdownRequest.java
 src/main/java/com/linkbreakers/model/GetBreakdownResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainSetupGuideResponse.java
+src/main/java/com/linkbreakers/model/GetDataCollectionResponse.java
 src/main/java/com/linkbreakers/model/GetDeviceDistributionRequest.java
 src/main/java/com/linkbreakers/model/GetDeviceDistributionResponse.java
 src/main/java/com/linkbreakers/model/GetDirectoryResponse.java
@@ -264,6 +267,7 @@ src/main/java/com/linkbreakers/model/GetEventsTimeSeriesRequest.java
 src/main/java/com/linkbreakers/model/GetEventsTimeSeriesResponse.java
 src/main/java/com/linkbreakers/model/GetGeoBreakdownRequest.java
 src/main/java/com/linkbreakers/model/GetGeoBreakdownResponse.java
+src/main/java/com/linkbreakers/model/GetGoogleAnalyticsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/GetGoogleFormsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/GetGoogleFormsOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesRequest.java
@@ -275,6 +279,7 @@ src/main/java/com/linkbreakers/model/GetLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/GetMediaResponse.java
 src/main/java/com/linkbreakers/model/GetPageThemeResponse.java
 src/main/java/com/linkbreakers/model/GetQrcodeDesignResponse.java
+src/main/java/com/linkbreakers/model/GetRetargetingPixelsResponse.java
 src/main/java/com/linkbreakers/model/GetSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/GetSlackOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetStepFunnelRequest.java
@@ -287,6 +292,7 @@ src/main/java/com/linkbreakers/model/GetWebhookResponse.java
 src/main/java/com/linkbreakers/model/GetWidgetSummaryResponse.java
 src/main/java/com/linkbreakers/model/GetWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/GetWorkspaceTokenResponse.java
+src/main/java/com/linkbreakers/model/GoogleAnalyticsIntegration.java
 src/main/java/com/linkbreakers/model/GoogleFormsIntegration.java
 src/main/java/com/linkbreakers/model/GoogleFormsIntegrationStatus.java
 src/main/java/com/linkbreakers/model/GooglerpcStatus.java
@@ -308,6 +314,10 @@ src/main/java/com/linkbreakers/model/JobError.java
 src/main/java/com/linkbreakers/model/JobStatus.java
 src/main/java/com/linkbreakers/model/JobType.java
 src/main/java/com/linkbreakers/model/JourneyProgress.java
+src/main/java/com/linkbreakers/model/LanguageConditionOutcome.java
+src/main/java/com/linkbreakers/model/LanguageConditionPayload.java
+src/main/java/com/linkbreakers/model/LanguageConditionTraceData.java
+src/main/java/com/linkbreakers/model/LanguageConditionTraceOption.java
 src/main/java/com/linkbreakers/model/Link.java
 src/main/java/com/linkbreakers/model/LinkSetting.java
 src/main/java/com/linkbreakers/model/LinkSortField.java
@@ -415,6 +425,7 @@ src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateQrcodeTemplateB
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
 src/main/java/com/linkbreakers/model/RedirectTraceDataFallbackReason.java
 src/main/java/com/linkbreakers/model/ReplaceMediaImportResponse.java
+src/main/java/com/linkbreakers/model/ReportStepSearchMissRequest.java
 src/main/java/com/linkbreakers/model/RequestEmailVerificationRequest.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesRequest.java
@@ -425,6 +436,7 @@ src/main/java/com/linkbreakers/model/ResolveQrcodeTemplateImagesRequest.java
 src/main/java/com/linkbreakers/model/ResolveQrcodeTemplateImagesResponse.java
 src/main/java/com/linkbreakers/model/ResolveStepCollisionsResponse.java
 src/main/java/com/linkbreakers/model/ResponseFormat.java
+src/main/java/com/linkbreakers/model/RetargetingPixels.java
 src/main/java/com/linkbreakers/model/Role.java
 src/main/java/com/linkbreakers/model/SettingsServiceUpdateLinkSettingBody.java
 src/main/java/com/linkbreakers/model/Shape.java
@@ -461,6 +473,7 @@ src/main/java/com/linkbreakers/model/SpecificDateOption.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
 src/main/java/com/linkbreakers/model/SwitchWorkspaceResponse.java
 src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
+src/main/java/com/linkbreakers/model/TestGoogleAnalyticsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/ThankYouPagePayload.java
 src/main/java/com/linkbreakers/model/ThemeColor.java
@@ -476,8 +489,12 @@ src/main/java/com/linkbreakers/model/TriggeredBy.java
 src/main/java/com/linkbreakers/model/TypeDate.java
 src/main/java/com/linkbreakers/model/UpdateCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/UpdateDashboardResponse.java
+src/main/java/com/linkbreakers/model/UpdateDataCollectionRequest.java
+src/main/java/com/linkbreakers/model/UpdateDataCollectionResponse.java
 src/main/java/com/linkbreakers/model/UpdateDeviceResponse.java
 src/main/java/com/linkbreakers/model/UpdateDirectoryResponse.java
+src/main/java/com/linkbreakers/model/UpdateGoogleAnalyticsIntegrationRequest.java
+src/main/java/com/linkbreakers/model/UpdateGoogleAnalyticsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/UpdateGoogleFormsIntegrationRequest.java
 src/main/java/com/linkbreakers/model/UpdateGoogleFormsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/UpdateLinkResponse.java
@@ -488,6 +505,8 @@ src/main/java/com/linkbreakers/model/UpdatePageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/UpdatePageThemeTemplateStylingResponse.java
 src/main/java/com/linkbreakers/model/UpdateQrcodeDesignResponse.java
 src/main/java/com/linkbreakers/model/UpdateQrcodeTemplateResponse.java
+src/main/java/com/linkbreakers/model/UpdateRetargetingPixelsRequest.java
+src/main/java/com/linkbreakers/model/UpdateRetargetingPixelsResponse.java
 src/main/java/com/linkbreakers/model/UpdateSlackIntegrationRequest.java
 src/main/java/com/linkbreakers/model/UpdateSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/UpdateWebhookResponse.java
