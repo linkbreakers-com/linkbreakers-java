@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 600 requests per 60 seconds, per token. - Dashboard session or OAuth token: 500 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
+ * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
  *
- * The version of the OpenAPI document: 1.183.3
+ * The version of the OpenAPI document: 1.186.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -21,7 +21,9 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -51,6 +53,16 @@ import com.linkbreakers.JSON;
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
 public class GetAttributeMetricRequest {
+  public static final String SERIALIZED_NAME_COUNTRIES = "countries";
+  @SerializedName(SERIALIZED_NAME_COUNTRIES)
+  @javax.annotation.Nullable
+  private List<String> countries = new ArrayList<>();
+
+  public static final String SERIALIZED_NAME_DIRECTORY_ID = "directoryId";
+  @SerializedName(SERIALIZED_NAME_DIRECTORY_ID)
+  @javax.annotation.Nullable
+  private String directoryId;
+
   public static final String SERIALIZED_NAME_END_DATE = "endDate";
   @SerializedName(SERIALIZED_NAME_END_DATE)
   @javax.annotation.Nullable
@@ -71,8 +83,59 @@ public class GetAttributeMetricRequest {
   @javax.annotation.Nullable
   private OffsetDateTime startDate;
 
+  public static final String SERIALIZED_NAME_TAG_ID = "tagId";
+  @SerializedName(SERIALIZED_NAME_TAG_ID)
+  @javax.annotation.Nullable
+  private String tagId;
+
   public GetAttributeMetricRequest() {
   }
+
+  public GetAttributeMetricRequest countries(@javax.annotation.Nullable List<String> countries) {
+    this.countries = countries;
+    return this;
+  }
+
+  public GetAttributeMetricRequest addCountriesItem(String countriesItem) {
+    if (this.countries == null) {
+      this.countries = new ArrayList<>();
+    }
+    this.countries.add(countriesItem);
+    return this;
+  }
+
+  /**
+   * Get countries
+   * @return countries
+   */
+  @javax.annotation.Nullable
+  public List<String> getCountries() {
+    return countries;
+  }
+
+  public void setCountries(@javax.annotation.Nullable List<String> countries) {
+    this.countries = countries;
+  }
+
+
+  public GetAttributeMetricRequest directoryId(@javax.annotation.Nullable String directoryId) {
+    this.directoryId = directoryId;
+    return this;
+  }
+
+  /**
+   * Get directoryId
+   * @return directoryId
+   */
+  @javax.annotation.Nullable
+  public String getDirectoryId() {
+    return directoryId;
+  }
+
+  public void setDirectoryId(@javax.annotation.Nullable String directoryId) {
+    this.directoryId = directoryId;
+  }
+
 
   public GetAttributeMetricRequest endDate(@javax.annotation.Nullable OffsetDateTime endDate) {
     this.endDate = endDate;
@@ -150,6 +213,25 @@ public class GetAttributeMetricRequest {
   }
 
 
+  public GetAttributeMetricRequest tagId(@javax.annotation.Nullable String tagId) {
+    this.tagId = tagId;
+    return this;
+  }
+
+  /**
+   * Get tagId
+   * @return tagId
+   */
+  @javax.annotation.Nullable
+  public String getTagId() {
+    return tagId;
+  }
+
+  public void setTagId(@javax.annotation.Nullable String tagId) {
+    this.tagId = tagId;
+  }
+
+
 
   @Override
   public boolean equals(Object o) {
@@ -160,25 +242,31 @@ public class GetAttributeMetricRequest {
       return false;
     }
     GetAttributeMetricRequest getAttributeMetricRequest = (GetAttributeMetricRequest) o;
-    return Objects.equals(this.endDate, getAttributeMetricRequest.endDate) &&
+    return Objects.equals(this.countries, getAttributeMetricRequest.countries) &&
+        Objects.equals(this.directoryId, getAttributeMetricRequest.directoryId) &&
+        Objects.equals(this.endDate, getAttributeMetricRequest.endDate) &&
         Objects.equals(this.key, getAttributeMetricRequest.key) &&
         Objects.equals(this.linkId, getAttributeMetricRequest.linkId) &&
-        Objects.equals(this.startDate, getAttributeMetricRequest.startDate);
+        Objects.equals(this.startDate, getAttributeMetricRequest.startDate) &&
+        Objects.equals(this.tagId, getAttributeMetricRequest.tagId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(endDate, key, linkId, startDate);
+    return Objects.hash(countries, directoryId, endDate, key, linkId, startDate, tagId);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class GetAttributeMetricRequest {\n");
+    sb.append("    countries: ").append(toIndentedString(countries)).append("\n");
+    sb.append("    directoryId: ").append(toIndentedString(directoryId)).append("\n");
     sb.append("    endDate: ").append(toIndentedString(endDate)).append("\n");
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
     sb.append("    linkId: ").append(toIndentedString(linkId)).append("\n");
     sb.append("    startDate: ").append(toIndentedString(startDate)).append("\n");
+    sb.append("    tagId: ").append(toIndentedString(tagId)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -197,7 +285,7 @@ public class GetAttributeMetricRequest {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("endDate", "key", "linkId", "startDate"));
+    openapiFields = new HashSet<String>(Arrays.asList("countries", "directoryId", "endDate", "key", "linkId", "startDate", "tagId"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -224,11 +312,21 @@ public class GetAttributeMetricRequest {
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
+      // ensure the optional json data is an array if present
+      if (jsonObj.get("countries") != null && !jsonObj.get("countries").isJsonNull() && !jsonObj.get("countries").isJsonArray()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `countries` to be an array in the JSON string but got `%s`", jsonObj.get("countries").toString()));
+      }
+      if ((jsonObj.get("directoryId") != null && !jsonObj.get("directoryId").isJsonNull()) && !jsonObj.get("directoryId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `directoryId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("directoryId").toString()));
+      }
       if ((jsonObj.get("key") != null && !jsonObj.get("key").isJsonNull()) && !jsonObj.get("key").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `key` to be a primitive type in the JSON string but got `%s`", jsonObj.get("key").toString()));
       }
       if ((jsonObj.get("linkId") != null && !jsonObj.get("linkId").isJsonNull()) && !jsonObj.get("linkId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `linkId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("linkId").toString()));
+      }
+      if ((jsonObj.get("tagId") != null && !jsonObj.get("tagId").isJsonNull()) && !jsonObj.get("tagId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `tagId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("tagId").toString()));
       }
   }
 

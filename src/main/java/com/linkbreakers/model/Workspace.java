@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 600 requests per 60 seconds, per token. - Dashboard session or OAuth token: 500 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
+ * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
  *
- * The version of the OpenAPI document: 1.183.3
+ * The version of the OpenAPI document: 1.186.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -152,11 +152,6 @@ public class Workspace {
   @javax.annotation.Nullable
   private OffsetDateTime inactiveSince;
 
-  public static final String SERIALIZED_NAME_IS_SANDBOX = "isSandbox";
-  @SerializedName(SERIALIZED_NAME_IS_SANDBOX)
-  @javax.annotation.Nullable
-  private Boolean isSandbox;
-
   public static final String SERIALIZED_NAME_LINK_SETTING_ID = "linkSettingId";
   @SerializedName(SERIALIZED_NAME_LINK_SETTING_ID)
   @javax.annotation.Nullable
@@ -171,11 +166,6 @@ public class Workspace {
   @SerializedName(SERIALIZED_NAME_PUBLISHED_AT)
   @javax.annotation.Nullable
   private OffsetDateTime publishedAt;
-
-  public static final String SERIALIZED_NAME_SANDBOX_EXPIRES_AT = "sandboxExpiresAt";
-  @SerializedName(SERIALIZED_NAME_SANDBOX_EXPIRES_AT)
-  @javax.annotation.Nullable
-  private OffsetDateTime sandboxExpiresAt;
 
   public static final String SERIALIZED_NAME_SHORT_DESCRIPTION = "shortDescription";
   @SerializedName(SERIALIZED_NAME_SHORT_DESCRIPTION)
@@ -291,13 +281,9 @@ public class Workspace {
   }
 
   public Workspace(
-     Boolean isSandbox, 
-     OffsetDateTime sandboxExpiresAt, 
      OffsetDateTime unverifiedPauseAt
   ) {
     this();
-    this.isSandbox = isSandbox;
-    this.sandboxExpiresAt = sandboxExpiresAt;
     this.unverifiedPauseAt = unverifiedPauseAt;
   }
 
@@ -472,17 +458,6 @@ public class Workspace {
   }
 
 
-  /**
-   * True for a sandbox workspace: API-only, with its own caps, never billed.
-   * @return isSandbox
-   */
-  @javax.annotation.Nullable
-  public Boolean getIsSandbox() {
-    return isSandbox;
-  }
-
-
-
   public Workspace linkSettingId(@javax.annotation.Nullable String linkSettingId) {
     this.linkSettingId = linkSettingId;
     return this;
@@ -538,17 +513,6 @@ public class Workspace {
   public void setPublishedAt(@javax.annotation.Nullable OffsetDateTime publishedAt) {
     this.publishedAt = publishedAt;
   }
-
-
-  /**
-   * When a sandbox workspace is deleted. Unset for a live workspace.
-   * @return sandboxExpiresAt
-   */
-  @javax.annotation.Nullable
-  public OffsetDateTime getSandboxExpiresAt() {
-    return sandboxExpiresAt;
-  }
-
 
 
   public Workspace shortDescription(@javax.annotation.Nullable String shortDescription) {
@@ -666,7 +630,7 @@ public class Workspace {
 
 
   /**
-   * When the workspace is paused for not having a verified email address. While it is in the future, the workspace works normally and a member has until then to verify their email. Once it has passed, every API call other than signing in, reading the member and workspace, switching workspace and requesting a verification email answers WORKSPACE_UNVERIFIED, until a member verifies their email. QR codes and links keep working for visitors throughout. Empty when the workspace is verified, paying, or a sandbox.
+   * When the workspace is paused for not having a verified email address. While it is in the future, the workspace works normally and a member has until then to verify their email. Once it has passed, every API call other than signing in, reading the member and workspace, switching workspace and requesting a verification email answers WORKSPACE_UNVERIFIED, until a member verifies their email. QR codes and links keep working for visitors throughout. Empty when the workspace is verified or paying.
    * @return unverifiedPauseAt
    */
   @javax.annotation.Nullable
@@ -752,11 +716,9 @@ public class Workspace {
         Objects.equals(this.faq, workspace.faq) &&
         Objects.equals(this.id, workspace.id) &&
         Objects.equals(this.inactiveSince, workspace.inactiveSince) &&
-        Objects.equals(this.isSandbox, workspace.isSandbox) &&
         Objects.equals(this.linkSettingId, workspace.linkSettingId) &&
         Objects.equals(this.name, workspace.name) &&
         Objects.equals(this.publishedAt, workspace.publishedAt) &&
-        Objects.equals(this.sandboxExpiresAt, workspace.sandboxExpiresAt) &&
         Objects.equals(this.shortDescription, workspace.shortDescription) &&
         Objects.equals(this.slug, workspace.slug) &&
         Objects.equals(this.subscriptionType, workspace.subscriptionType) &&
@@ -771,7 +733,7 @@ public class Workspace {
 
   @Override
   public int hashCode() {
-    return Objects.hash(country, createdAt, description, digestFrequency, enforceMfa, enrollRequestedAt, faq, id, inactiveSince, isSandbox, linkSettingId, name, publishedAt, sandboxExpiresAt, shortDescription, slug, subscriptionType, tags, timezone, trialEndsAt, unverifiedPauseAt, updatedAt, verifiedAt, website);
+    return Objects.hash(country, createdAt, description, digestFrequency, enforceMfa, enrollRequestedAt, faq, id, inactiveSince, linkSettingId, name, publishedAt, shortDescription, slug, subscriptionType, tags, timezone, trialEndsAt, unverifiedPauseAt, updatedAt, verifiedAt, website);
   }
 
   @Override
@@ -787,11 +749,9 @@ public class Workspace {
     sb.append("    faq: ").append(toIndentedString(faq)).append("\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    inactiveSince: ").append(toIndentedString(inactiveSince)).append("\n");
-    sb.append("    isSandbox: ").append(toIndentedString(isSandbox)).append("\n");
     sb.append("    linkSettingId: ").append(toIndentedString(linkSettingId)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    publishedAt: ").append(toIndentedString(publishedAt)).append("\n");
-    sb.append("    sandboxExpiresAt: ").append(toIndentedString(sandboxExpiresAt)).append("\n");
     sb.append("    shortDescription: ").append(toIndentedString(shortDescription)).append("\n");
     sb.append("    slug: ").append(toIndentedString(slug)).append("\n");
     sb.append("    subscriptionType: ").append(toIndentedString(subscriptionType)).append("\n");
@@ -820,7 +780,7 @@ public class Workspace {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("country", "createdAt", "description", "digestFrequency", "enforceMfa", "enrollRequestedAt", "faq", "id", "inactiveSince", "isSandbox", "linkSettingId", "name", "publishedAt", "sandboxExpiresAt", "shortDescription", "slug", "subscriptionType", "tags", "timezone", "trialEndsAt", "unverifiedPauseAt", "updatedAt", "verifiedAt", "website"));
+    openapiFields = new HashSet<String>(Arrays.asList("country", "createdAt", "description", "digestFrequency", "enforceMfa", "enrollRequestedAt", "faq", "id", "inactiveSince", "linkSettingId", "name", "publishedAt", "shortDescription", "slug", "subscriptionType", "tags", "timezone", "trialEndsAt", "unverifiedPauseAt", "updatedAt", "verifiedAt", "website"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);

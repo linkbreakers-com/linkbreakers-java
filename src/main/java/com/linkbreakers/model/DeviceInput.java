@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 600 requests per 60 seconds, per token. - Dashboard session or OAuth token: 500 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
+ * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
  *
- * The version of the OpenAPI document: 1.183.3
+ * The version of the OpenAPI document: 1.186.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -50,6 +50,11 @@ import com.linkbreakers.JSON;
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
 public class DeviceInput {
+  public static final String SERIALIZED_NAME_AUTOMATED = "automated";
+  @SerializedName(SERIALIZED_NAME_AUTOMATED)
+  @javax.annotation.Nullable
+  private Boolean automated;
+
   public static final String SERIALIZED_NAME_BROWSER_LANGUAGE = "browserLanguage";
   @SerializedName(SERIALIZED_NAME_BROWSER_LANGUAGE)
   @javax.annotation.Nullable
@@ -142,6 +147,25 @@ public class DeviceInput {
 
   public DeviceInput() {
   }
+
+  public DeviceInput automated(@javax.annotation.Nullable Boolean automated) {
+    this.automated = automated;
+    return this;
+  }
+
+  /**
+   * True when the browser reports it is driven by automation (navigator.webdriver), as a remote-controlled Chrome does even though its requests look like a person&#39;s. Sent by the Advanced data collection page; the device is then recorded as AUTOMATED, \&quot;Automated browser\&quot;, and later visits from it take the automated branch of an actor condition.
+   * @return automated
+   */
+  @javax.annotation.Nullable
+  public Boolean getAutomated() {
+    return automated;
+  }
+
+  public void setAutomated(@javax.annotation.Nullable Boolean automated) {
+    this.automated = automated;
+  }
+
 
   public DeviceInput browserLanguage(@javax.annotation.Nullable String browserLanguage) {
     this.browserLanguage = browserLanguage;
@@ -495,7 +519,8 @@ public class DeviceInput {
       return false;
     }
     DeviceInput deviceInput = (DeviceInput) o;
-    return Objects.equals(this.browserLanguage, deviceInput.browserLanguage) &&
+    return Objects.equals(this.automated, deviceInput.automated) &&
+        Objects.equals(this.browserLanguage, deviceInput.browserLanguage) &&
         Objects.equals(this.browserName, deviceInput.browserName) &&
         Objects.equals(this.browserVersion, deviceInput.browserVersion) &&
         Objects.equals(this.deviceBrand, deviceInput.deviceBrand) &&
@@ -517,13 +542,14 @@ public class DeviceInput {
 
   @Override
   public int hashCode() {
-    return Objects.hash(browserLanguage, browserName, browserVersion, deviceBrand, deviceConcurrency, deviceMemory, deviceName, gpu, id, networkBandwidth, networkConnection, networkRtt, platformName, platformVersion, screenHeight, screenRatio, screenWidth, touchScreen);
+    return Objects.hash(automated, browserLanguage, browserName, browserVersion, deviceBrand, deviceConcurrency, deviceMemory, deviceName, gpu, id, networkBandwidth, networkConnection, networkRtt, platformName, platformVersion, screenHeight, screenRatio, screenWidth, touchScreen);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class DeviceInput {\n");
+    sb.append("    automated: ").append(toIndentedString(automated)).append("\n");
     sb.append("    browserLanguage: ").append(toIndentedString(browserLanguage)).append("\n");
     sb.append("    browserName: ").append(toIndentedString(browserName)).append("\n");
     sb.append("    browserVersion: ").append(toIndentedString(browserVersion)).append("\n");
@@ -560,7 +586,7 @@ public class DeviceInput {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("browserLanguage", "browserName", "browserVersion", "deviceBrand", "deviceConcurrency", "deviceMemory", "deviceName", "gpu", "id", "networkBandwidth", "networkConnection", "networkRtt", "platformName", "platformVersion", "screenHeight", "screenRatio", "screenWidth", "touchScreen"));
+    openapiFields = new HashSet<String>(Arrays.asList("automated", "browserLanguage", "browserName", "browserVersion", "deviceBrand", "deviceConcurrency", "deviceMemory", "deviceName", "gpu", "id", "networkBandwidth", "networkConnection", "networkRtt", "platformName", "platformVersion", "screenHeight", "screenRatio", "screenWidth", "touchScreen"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);

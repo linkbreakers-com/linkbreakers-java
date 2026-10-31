@@ -14,8 +14,8 @@ info:
 
     Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.
 
-    - Workspace API token: 600 requests per 60 seconds, per token.
-    - Dashboard session or OAuth token: 500 requests per 60 seconds, per token.
+    - Workspace API token: 720 requests per 60 seconds, per token.
+    - Dashboard session or OAuth token: 600 requests per 60 seconds, per token.
     - No credentials: 300 requests per 60 seconds, per client IP.
 
     Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.
@@ -38,7 +38,7 @@ info:
 
     Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
   title: Linkbreakers API
-  version: 1.183.3
+  version: 1.186.2
   x-api-versioning:
     compatibility: additive changes only within a version
     currentVersion: v1
@@ -86,6 +86,10 @@ tags:
 - description: Endpoints for managing events in Linkbreakers. These endpoints allow
     you to collect data and list events.
   name: Events
+- description: "Send every QR code scan and link visit, form submission and piece\
+    \ of visitor data captured to Google Analytics 4, server side through the Measurement\
+    \ Protocol, with no delay for the visitor."
+  name: Google Analytics Integrations
 - description: Connect your Google account to automatically sync form responses from
     links that redirect to Google Forms.
   name: Google Forms Integrations
@@ -118,22 +122,19 @@ tags:
     \ Prices come from the billing provider and limits from the code that enforces\
     \ them."
   name: Pricing
+- description: "What the dashboard reports about how people use it, so the team learns\
+    \ what they look for. Not part of the public API."
+  name: Internal
 - description: "Endpoints for managing QR Code Designs in Linkbreakers. These endpoints\
     \ allow you to create, retrieve, update, and delete QR Code Designs."
   name: QR Code Designs
 - description: "Endpoints for managing QR Code Templates in Linkbreakers. These endpoints\
     \ allow you to create, retrieve, update, and delete QR Code Templates."
   name: QR Code Templates
-- description: "Sandbox workspaces for testing an integration without touching live\
-    \ data. A sandbox is a separate, API-only workspace created from your live workspace.\
-    \ Its tokens start with `lb_test_`, and the API refuses a `lb_test_` prefix on\
-    \ a live token. Sandbox usage is never billed and does not count toward your plan:\
-    \ a sandbox has its own monthly caps (1,000 API calls, 500 counted scans and credits\
-    \ for 50 links) and allows no custom domains, members or credit top-ups. Links\
-    \ resolve and webhooks fire normally; a scan of a sandbox link answers with `X-Linkbreakers-Sandbox:\
-    \ true` and `X-Robots-Tag: noindex`. A sandbox and everything in it is deleted\
-    \ 30 days after it was created. A workspace holds at most 3 sandboxes."
-  name: Sandboxes
+- description: "Fire your ad platforms' retargeting pixels (Meta, Google, TikTok,\
+    \ LinkedIn, Google Tag Manager) when someone visits one of your links or scans\
+    \ one of your QR codes, so you can retarget them later."
+  name: Retargeting Pixels
 - description: Endpoints for managing link-level data collection settings in Linkbreakers.
   name: Link Settings
 - description: Endpoints for managing the Slack integration. Connect your Slack workspace
@@ -151,8 +152,6 @@ tags:
 - description: "Endpoints for managing webhooks in Linkbreakers. These endpoints allow\
     \ you to create, list, and delete webhooks for event notifications."
   name: Webhooks
-- description: Not part of the public API.
-  name: Internal
 - description: "Endpoints for managing workflow steps in Linkbreakers. Workflow steps\
     \ define the behavior of links, such as redirection destinations and data collection\
     \ flows."
@@ -3146,6 +3145,38 @@ paths:
         schema:
           type: string
         style: form
+      - description: |-
+          Optional directory filter (UUID): the links of this directory and of every
+          directory below it. Send link_id or directory_id, not both
+        explode: true
+        in: query
+        name: directoryId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Optional tag filter (UUID): every link carrying this tag. Send at most one
+          of link_id, directory_id and tag_id
+        explode: true
+        in: query
+        name: tagId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Optional country filter: visits from any of these countries (ISO 3166-1
+          alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+        explode: true
+        in: query
+        name: countries
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
       - description: "Opaque cursor from the previous page's nextPageToken. Same as\
           \ pageToken; when both are sent, pageToken wins."
         explode: true
@@ -3642,6 +3673,233 @@ paths:
       summary: Sync now
       tags:
       - Google Forms Integrations
+      x-required-scope: integrations:write
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /v1/integrations/google-analytics:
+    delete:
+      description: |-
+        Stop sending visits to Google Analytics 4 and delete the stored API secret.
+
+        Requires the `integrations:write` scope.
+      operationId: GoogleAnalyticsIntegrationsService_Delete
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties: {}
+                type: object
+          description: Everything worked as expected.
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unexpected error
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+      security:
+      - bearerAuth:
+        - integrations:write
+      - oauth2:
+        - integrations:write
+      summary: Disconnect Google Analytics
+      tags:
+      - Google Analytics Integrations
+      x-required-scope: integrations:write
+      x-accepts:
+      - application/json
+    get:
+      description: |-
+        Return the Google Analytics 4 property the workspace sends its visits to, without the API secret.
+
+        Requires the `integrations:read` scope.
+      operationId: GoogleAnalyticsIntegrationsService_Get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetGoogleAnalyticsIntegrationResponse"
+          description: Everything worked as expected.
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unexpected error
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+      security:
+      - bearerAuth:
+        - integrations:read
+      - oauth2:
+        - integrations:read
+      summary: Get Google Analytics integration
+      tags:
+      - Google Analytics Integrations
+      x-required-scope: integrations:read
+      x-accepts:
+      - application/json
+    put:
+      description: |-
+        Connect a Google Analytics 4 property, or change it. Every person's visit, form submission and piece of visitor data captured is then sent to it through the Measurement Protocol, without personal data.
+
+        Requires the `integrations:write` scope.
+      operationId: GoogleAnalyticsIntegrationsService_Update
+      parameters:
+      - description: Makes retrying this request safe. See components.parameters.IdempotencyKey.
+        explode: false
+        in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          maxLength: 255
+          minLength: 1
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGoogleAnalyticsIntegrationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateGoogleAnalyticsIntegrationResponse"
+          description: Everything worked as expected.
+          headers:
+            Idempotent-Replayed:
+              $ref: "#/components/headers/Idempotent-Replayed"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unexpected error
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+      security:
+      - bearerAuth:
+        - integrations:write
+      - oauth2:
+        - integrations:write
+      summary: Connect Google Analytics
+      tags:
+      - Google Analytics Integrations
+      x-required-scope: integrations:write
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /v1/integrations/google-analytics/test:
+    post:
+      description: |-
+        Send a linkbreakers_test event to the connected property in debug mode, so it shows in GA4 DebugView. Google accepts events even with a wrong API secret, so check DebugView to confirm.
+
+        Requires the `integrations:write` scope.
+      operationId: GoogleAnalyticsIntegrationsService_Test
+      parameters:
+      - description: Makes retrying this request safe. See components.parameters.IdempotencyKey.
+        explode: false
+        in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          maxLength: 255
+          minLength: 1
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestGoogleAnalyticsIntegrationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestGoogleAnalyticsIntegrationResponse"
+          description: Everything worked as expected.
+          headers:
+            Idempotent-Replayed:
+              $ref: "#/components/headers/Idempotent-Replayed"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unexpected error
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+      security:
+      - bearerAuth:
+        - integrations:write
+      - oauth2:
+        - integrations:write
+      summary: Send a test event to Google Analytics
+      tags:
+      - Google Analytics Integrations
       x-required-scope: integrations:write
       x-content-type: application/json
       x-accepts:
@@ -7158,6 +7416,39 @@ paths:
         schema:
           type: string
         style: form
+      - description: |-
+          Optional directory filter (UUID): the links of this directory and of every
+          directory below it. Send link_id or directory_id, not both; when both are
+          omitted aggregates workspace-wide
+        explode: true
+        in: query
+        name: directoryId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Optional tag filter (UUID): every link carrying this tag. Send at most one
+          of link_id, directory_id and tag_id
+        explode: true
+        in: query
+        name: tagId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Optional country filter: visits from any of these countries (ISO 3166-1
+          alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+        explode: true
+        in: query
+        name: countries
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
       responses:
         "200":
           content:
@@ -7337,6 +7628,72 @@ paths:
       tags:
       - Members
       x-required-scope: members:read
+      x-accepts:
+      - application/json
+    post:
+      description: |-
+        Create another workspace for the signed-in person, such as one per client or brand, and issue an access token for it. The new workspace starts on the Free plan and is billed on its own plan. A person may found a limited number of Free workspaces: past that the call answers FREE_WORKSPACE_LIMIT_REACHED, with the limit in its metadata, until one of them is on a paid plan. Workspaces the person was invited to do not count. Needs a dashboard session or a full-access token of a member with an email; a workspace token or a token limited to scopes is refused.
+
+        Requires the `members:write` scope.
+      operationId: MembersService_CreateMyWorkspace
+      parameters:
+      - description: Makes retrying this request safe. See components.parameters.IdempotencyKey.
+        explode: false
+        in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          maxLength: 255
+          minLength: 1
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMyWorkspaceRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateMyWorkspaceResponse"
+          description: Everything worked as expected.
+          headers:
+            Idempotent-Replayed:
+              $ref: "#/components/headers/Idempotent-Replayed"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unexpected error
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+      security:
+      - bearerAuth:
+        - members:write
+      - oauth2:
+        - members:write
+      summary: Create workspace
+      tags:
+      - Members
+      x-required-scope: members:write
+      x-content-type: application/json
       x-accepts:
       - application/json
   /v1/myself/workspaces/{workspaceId}:switch:
@@ -9816,19 +10173,19 @@ paths:
       x-content-type: application/json
       x-accepts:
       - application/json
-  /v1/sandboxes:
+  /v1/retargeting-pixels:
     get:
       description: |-
-        List the sandbox workspaces this workspace created, newest first, with when each one expires.
+        Return the ad platform pixels the workspace fires on every visit to its links.
 
-        Requires the `tokens:read` scope.
-      operationId: SandboxesService_List
+        Requires the `integrations:read` scope.
+      operationId: RetargetingPixelsService_Get
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSandboxesResponse"
+                $ref: "#/components/schemas/GetRetargetingPixelsResponse"
           description: Everything worked as expected.
           headers:
             RateLimit:
@@ -9854,21 +10211,21 @@ paths:
               $ref: "#/components/headers/RateLimit-Remaining"
       security:
       - bearerAuth:
-        - tokens:read
+        - integrations:read
       - oauth2:
-        - tokens:read
-      summary: List sandboxes
+        - integrations:read
+      summary: Get retargeting pixels
       tags:
-      - Sandboxes
-      x-required-scope: tokens:read
+      - Retargeting Pixels
+      x-required-scope: integrations:read
       x-accepts:
       - application/json
-    post:
+    put:
       description: |-
-        Create an API-only sandbox workspace and return its first token. The token starts with `lb_test_`, holds the scopes of the credential that created it, and is shown only once. Call this with a live workspace credential; a sandbox cannot create sandboxes.
+        Set, change or remove the ad platform pixels fired on every link visit. Omitted fields keep their value and an empty string removes a pixel. Once any pixel is set, link visits go through a short browser page that fires the pixels and then redirects, which adds a short delay.
 
-        Requires the `tokens:write` scope.
-      operationId: SandboxesService_Create
+        Requires the `integrations:write` scope.
+      operationId: RetargetingPixelsService_Update
       parameters:
       - description: Makes retrying this request safe. See components.parameters.IdempotencyKey.
         explode: false
@@ -9884,14 +10241,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateSandboxRequest"
+              $ref: "#/components/schemas/UpdateRetargetingPixelsRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateSandboxResponse"
+                $ref: "#/components/schemas/UpdateRetargetingPixelsResponse"
           description: Everything worked as expected.
           headers:
             Idempotent-Replayed:
@@ -9919,39 +10276,29 @@ paths:
               $ref: "#/components/headers/RateLimit-Remaining"
       security:
       - bearerAuth:
-        - tokens:write
+        - integrations:write
       - oauth2:
-        - tokens:write
-      summary: Create a sandbox
+        - integrations:write
+      summary: Update retargeting pixels
       tags:
-      - Sandboxes
-      x-required-scope: tokens:write
+      - Retargeting Pixels
+      x-required-scope: integrations:write
       x-content-type: application/json
       x-accepts:
       - application/json
-  /v1/sandboxes/{id}:
-    delete:
+  /v1/settings/data-collection:
+    get:
       description: |-
-        Delete a sandbox workspace now, with its links, visitors, events and tokens. Sandboxes are also deleted automatically 30 days after creation.
+        Return the data collection level of the caller's workspace, which applies to every link.
 
-        Requires the `tokens:write` scope.
-      operationId: SandboxesService_Delete
-      parameters:
-      - description: "The sandbox to delete (UUID), with everything in it."
-        explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        Requires the `links:read` scope.
+      operationId: SettingsService_GetDataCollection
       responses:
         "200":
           content:
             application/json:
               schema:
-                properties: {}
-                type: object
+                $ref: "#/components/schemas/GetDataCollectionResponse"
           description: Everything worked as expected.
           headers:
             RateLimit:
@@ -9977,13 +10324,79 @@ paths:
               $ref: "#/components/headers/RateLimit-Remaining"
       security:
       - bearerAuth:
-        - tokens:write
+        - links:read
       - oauth2:
-        - tokens:write
-      summary: Delete a sandbox
+        - links:read
+      summary: Get the data collection level
       tags:
-      - Sandboxes
-      x-required-scope: tokens:write
+      - Link Settings
+      x-required-scope: links:read
+      x-accepts:
+      - application/json
+    put:
+      description: |-
+        Set the data collection level of the caller's workspace. ADVANCED needs a paid plan.
+
+        Requires the `links:write` scope.
+      operationId: SettingsService_UpdateDataCollection
+      parameters:
+      - description: Makes retrying this request safe. See components.parameters.IdempotencyKey.
+        explode: false
+        in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          maxLength: 255
+          minLength: 1
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDataCollectionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateDataCollectionResponse"
+          description: Everything worked as expected.
+          headers:
+            Idempotent-Replayed:
+              $ref: "#/components/headers/Idempotent-Replayed"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unexpected error
+          headers:
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+            RateLimit-Policy:
+              $ref: "#/components/headers/RateLimit-Policy"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+      security:
+      - bearerAuth:
+        - links:write
+      - oauth2:
+        - links:write
+      summary: Update the data collection level
+      tags:
+      - Link Settings
+      x-required-scope: links:write
+      x-content-type: application/json
       x-accepts:
       - application/json
   /v1/settings/link-setting/{id}:
@@ -10952,6 +11365,39 @@ paths:
         required: false
         schema:
           type: string
+        style: form
+      - description: |-
+          Optional directory filter (UUID): the links of this directory and of every
+          directory below it. Send link_id or directory_id, not both; when both are
+          omitted aggregates workspace-wide
+        explode: true
+        in: query
+        name: directoryId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Optional tag filter (UUID): every link carrying this tag. Send at most one
+          of link_id, directory_id and tag_id
+        explode: true
+        in: query
+        name: tagId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |-
+          Optional country filter: visits from any of these countries (ISO 3166-1
+          alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+        explode: true
+        in: query
+        name: countries
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
         style: form
       responses:
         "200":
@@ -14227,7 +14673,8 @@ components:
           type: string
         shortlink:
           description: |-
-            The shortlink for the link
+            The shortlink for the link, one path segment or several ("menu/lunch").
+            On a custom domain, {name} segments make it dynamic ("p/{serial}").
             If not given, the shortlink will be generated by the system.
           example: jane-contact
           type: string
@@ -14541,6 +14988,10 @@ components:
           description: |-
             The shortlink (URL slug) for the link.
             If not given, a unique one is generated by the system.
+            It can span several path segments ("menu/lunch"). On a custom domain it
+            can be dynamic: a segment written {name} matches any value and saves it
+            on the visitor as the attribute "name", so "01/09506000134352/10/{batch}"
+            answers every batch of a GS1 Digital Link and saves batch=LOT42.
           example: my-link
           type: string
         tags:
@@ -14854,6 +15305,40 @@ components:
           description: "Where to send the file's bytes, directly to storage. Short-lived."
           type: string
       title: A reserved media item and where to upload its file
+    CreateMyWorkspaceRequest:
+      description: CreateMyWorkspaceRequest creates another workspace for the signed-in
+        person.
+      example:
+        name: Acme Coffee
+      properties:
+        name:
+          example: Acme Coffee
+          title: "Name of the new workspace, such as a client or a brand"
+          type: string
+    CreateMyWorkspaceResponse:
+      description: CreateMyWorkspaceResponse carries the session for the workspace
+        created.
+      example:
+        member: ""
+        accessToken: accessToken
+        memberId: memberId
+        workspaceId: workspaceId
+      properties:
+        accessToken:
+          description: |-
+            Access token for the new workspace. The previous token keeps working for
+            its own workspace until it is signed out.
+          type: string
+        member:
+          allOf:
+          - $ref: "#/components/schemas/Member"
+          title: "The member record in the new workspace, with access_token set"
+        memberId:
+          title: The person's member record in the new workspace (UUID)
+          type: string
+        workspaceId:
+          title: The workspace created (UUID)
+          type: string
     CreateOpenMediaLinkRequest:
       description: Request to create a new link that hands visitors one piece of media.
       example:
@@ -14955,7 +15440,8 @@ components:
           type: string
         shortlink:
           description: |-
-            The shortlink for the link
+            The shortlink for the link, one path segment or several ("menu/lunch").
+            On a custom domain, {name} segments make it dynamic ("p/{serial}").
             If not given, the shortlink will be generated by the system.
           example: menu
           type: string
@@ -15179,35 +15665,6 @@ components:
           title: The created QR code template
       title: CreateQrcodeTemplateResponse represents the response for creating a QR
         code template
-    CreateSandboxRequest:
-      example:
-        name: name
-      properties:
-        name:
-          description: "Optional name, at most 80 characters. Defaults to \"Sandbox\"\
-            \ and the creation time."
-          type: string
-    CreateSandboxResponse:
-      example:
-        sandbox:
-          createdAt: 2000-01-23T04:56:07.000+00:00
-          name: CI integration tests
-          id: 5b1e4d42-c0d3-4afe-a6fd-0c5f5c3962d0
-          expiresAt: 2000-01-23T04:56:07.000+00:00
-        accessToken: accessToken
-        token: ""
-      properties:
-        accessToken:
-          description: "The secret, starting with lb_test_. Returned only once."
-          type: string
-        sandbox:
-          $ref: "#/components/schemas/Sandbox"
-        token:
-          allOf:
-          - $ref: "#/components/schemas/WorkspaceToken"
-          description: |-
-            The sandbox's first API token, with the same scopes as the credential
-            that created the sandbox.
     CreateThankYouLinkRequest:
       description: Request to create a new thank you page link.
       example:
@@ -15312,7 +15769,8 @@ components:
           type: string
         shortlink:
           description: |-
-            The shortlink for the link
+            The shortlink for the link, one path segment or several ("menu/lunch").
+            On a custom domain, {name} segments make it dynamic ("p/{serial}").
             If not given, the shortlink will be generated by the system.
           example: thank-you
           type: string
@@ -15476,19 +15934,12 @@ components:
         scopes:
         - API_SCOPE_UNSPECIFIED
         - API_SCOPE_UNSPECIFIED
-        keyType: WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED
+        keyType: ""
       properties:
         keyType:
-          description: |-
-            - WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED: Default value (should not be used)
-             - WORKSPACE_TOKEN_KEY_TYPE_SECRET: Secret key with full API access
-             - WORKSPACE_TOKEN_KEY_TYPE_PUBLISHABLE: Publishable key with limited access
-          enum:
-          - WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED
-          - WORKSPACE_TOKEN_KEY_TYPE_SECRET
-          - WORKSPACE_TOKEN_KEY_TYPE_PUBLISHABLE
+          allOf:
+          - $ref: "#/components/schemas/WorkspaceTokenKeyType"
           title: The key type of the token (required)
-          type: string
         name:
           title: The name of the token
           type: string
@@ -16268,14 +16719,21 @@ components:
              - DEVICE_ACTOR_UNSPECIFIED: Actor not specified or not yet detected
              - DEVICE_ACTOR_HUMAN: Human visitor using a browser (covers MOBILE, TABLET, DESKTOP device types)
              - DEVICE_ACTOR_BOT: Automated crawler or scraper bot (e.g. Googlebot, BingBot, Applebot)
-             - DEVICE_ACTOR_AGENT: AI/LLM agent browsing on behalf of a user (e.g. GPTBot, ClaudeBot, Gemini, Grok)
-             - DEVICE_ACTOR_UNKNOWN: Unable to classify the actor
+             - DEVICE_ACTOR_AGENT: AI/LLM agent that names itself in its user agent (e.g. GPTBot, Claude-User,
+            Perplexity-User, Gemini, Grok)
+             - DEVICE_ACTOR_UNKNOWN: Unable to classify the actor: the request sent no user agent
+             - DEVICE_ACTOR_AUTOMATED: A browser driven by software, whoever is behind it: an AI agent operating
+            a browser, a test, a scraper or a monitor. Headless Chrome is recognized
+            from its request ("Headless Chrome"); a visible browser under automation
+            reports it (navigator.webdriver) on a link collecting data at the Advanced
+            level, and is recognized from its next visit on ("Automated browser")
           enum:
           - DEVICE_ACTOR_UNSPECIFIED
           - DEVICE_ACTOR_HUMAN
           - DEVICE_ACTOR_BOT
           - DEVICE_ACTOR_AGENT
           - DEVICE_ACTOR_UNKNOWN
+          - DEVICE_ACTOR_AUTOMATED
           example: DEVICE_ACTOR_HUMAN
           type: string
         deviceActorName:
@@ -16425,14 +16883,21 @@ components:
          - DEVICE_ACTOR_UNSPECIFIED: Actor not specified or not yet detected
          - DEVICE_ACTOR_HUMAN: Human visitor using a browser (covers MOBILE, TABLET, DESKTOP device types)
          - DEVICE_ACTOR_BOT: Automated crawler or scraper bot (e.g. Googlebot, BingBot, Applebot)
-         - DEVICE_ACTOR_AGENT: AI/LLM agent browsing on behalf of a user (e.g. GPTBot, ClaudeBot, Gemini, Grok)
-         - DEVICE_ACTOR_UNKNOWN: Unable to classify the actor
+         - DEVICE_ACTOR_AGENT: AI/LLM agent that names itself in its user agent (e.g. GPTBot, Claude-User,
+        Perplexity-User, Gemini, Grok)
+         - DEVICE_ACTOR_UNKNOWN: Unable to classify the actor: the request sent no user agent
+         - DEVICE_ACTOR_AUTOMATED: A browser driven by software, whoever is behind it: an AI agent operating
+        a browser, a test, a scraper or a monitor. Headless Chrome is recognized
+        from its request ("Headless Chrome"); a visible browser under automation
+        reports it (navigator.webdriver) on a link collecting data at the Advanced
+        level, and is recognized from its next visit on ("Automated browser")
       enum:
       - DEVICE_ACTOR_UNSPECIFIED
       - DEVICE_ACTOR_HUMAN
       - DEVICE_ACTOR_BOT
       - DEVICE_ACTOR_AGENT
       - DEVICE_ACTOR_UNKNOWN
+      - DEVICE_ACTOR_AUTOMATED
       type: string
     DeviceActorConditionOption:
       description: Device actor condition option for EVENT_ACTION_DEVICE_ACTOR_CONDITION.
@@ -16454,9 +16919,17 @@ components:
           - DEVICE_ACTOR_CONDITION_VALUE_BOT
           - DEVICE_ACTOR_CONDITION_VALUE_AGENT
           - DEVICE_ACTOR_CONDITION_VALUE_UNKNOWN
+          - DEVICE_ACTOR_CONDITION_VALUE_AUTOMATED
           example: DEVICE_ACTOR_CONDITION_VALUE_BOT
           type: string
     DeviceActorConditionPayload:
+      description: |-
+        Device actor condition payload for EVENT_ACTION_DEVICE_ACTOR_CONDITION. An
+        AGENT option matches AI agents that name themselves. An AUTOMATED option
+        matches headless browsers on every visit, and a visible browser under
+        automation from its second visit, once the link collects data at the
+        Advanced level, which lets the page read navigator.webdriver. To treat both
+        the same, route AGENT and AUTOMATED to the same step.
       properties:
         elseNextStepId:
           example: 987fcdeb-a321-45e6-b789-123456789012
@@ -16495,6 +16968,7 @@ components:
       - DEVICE_ACTOR_CONDITION_VALUE_BOT
       - DEVICE_ACTOR_CONDITION_VALUE_AGENT
       - DEVICE_ACTOR_CONDITION_VALUE_UNKNOWN
+      - DEVICE_ACTOR_CONDITION_VALUE_AUTOMATED
       type: string
     DeviceBrandConditionOption:
       description: Device brand condition option for EVENT_ACTION_DEVICE_BRAND_CONDITION.
@@ -16648,6 +17122,14 @@ components:
       title: DeviceDataPoint represents a device type with its event count
     DeviceInput:
       properties:
+        automated:
+          description: |-
+            True when the browser reports it is driven by automation
+            (navigator.webdriver), as a remote-controlled Chrome does even though its
+            requests look like a person's. Sent by the Advanced data collection page;
+            the device is then recorded as AUTOMATED, "Automated browser", and later
+            visits from it take the automated branch of an actor condition.
+          type: boolean
         browserLanguage:
           example: "en-US,en;q=0.9"
           title: Preferred language/locale from the browser (BCP-47)
@@ -17451,7 +17933,12 @@ components:
          - EVENT_ACTION_DEVICE_PLATFORM_CONDITION: Route visitors based on device platform / operating system (e.g. iOS, Android, macOS)
          - EVENT_ACTION_DEVICE_BROWSER_CONDITION: Route visitors based on browser family (e.g. Chrome, Safari, Firefox)
          - EVENT_ACTION_DEVICE_BRAND_CONDITION: Route visitors based on hardware brand (e.g. Apple, Samsung, Google)
-         - EVENT_ACTION_DEVICE_ACTOR_CONDITION: Route visitors based on actor classification (e.g. HUMAN, BOT, AGENT)
+         - EVENT_ACTION_DEVICE_ACTOR_CONDITION: Route visitors based on actor classification: HUMAN, BOT, AGENT, AUTOMATED
+        or UNKNOWN. AGENT is an AI agent that names itself (GPTBot, Claude-User,
+        Perplexity-User...). AUTOMATED is a browser driven by software, whoever is
+        behind it: headless Chrome from its request, and a visible browser under
+        automation once a link with the Advanced data collection level has read
+        navigator.webdriver, from that device's next visit on.
          - EVENT_ACTION_VISITOR_DATA_CONDITION: Route visitors based on their profile data or custom attributes
          - EVENT_ACTION_THANK_YOU_PAGE: Display a final thank you / completion message (exit step)
          - EVENT_ACTION_MESSAGE_PAGE: Text with ONE way onward: a single button, or a timer that moves the
@@ -17465,6 +17952,12 @@ components:
         with no page of its own. Any media of the library can be opened: it is uploaded once and
         referenced by its media_id; swapping it means pointing the step at another media item,
         and the QR code never changes.
+         - EVENT_ACTION_LOCATION_REQUEST: Ask the visitor for their precise location (GPS) through the browser, with
+        their permission (composite: two branches, "location" when it was shared,
+        "else" when it was refused, skipped or is unavailable).
+         - EVENT_ACTION_LANGUAGE_CONDITION: Route visitors based on their phone or browser language (the first
+        language it sends, matched on its two-letter ISO 639-1 base, so "fr"
+        catches fr-FR and fr-CA)
       enum:
       - EVENT_ACTION_UNSPECIFIED
       - EVENT_ACTION_CLIENT_REDIRECT
@@ -17489,6 +17982,8 @@ components:
       - EVENT_ACTION_THANK_YOU_PAGE
       - EVENT_ACTION_MESSAGE_PAGE
       - EVENT_ACTION_OPEN_MEDIA
+      - EVENT_ACTION_LOCATION_REQUEST
+      - EVENT_ACTION_LANGUAGE_CONDITION
       title: Event action types for workflow steps
       type: string
     EventTrace:
@@ -17588,6 +18083,10 @@ components:
           $ref: "#/components/schemas/FormTraceData"
         identifyVisitor:
           $ref: "#/components/schemas/IdentifyVisitorTraceData"
+        languageCondition:
+          $ref: "#/components/schemas/LanguageConditionTraceData"
+        locationRequest:
+          $ref: "#/components/schemas/LocationRequestTraceData"
         media:
           $ref: "#/components/schemas/MediaTraceData"
         multiLink:
@@ -18081,10 +18580,32 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         limit: 0
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         key: key
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           type: string
@@ -18098,6 +18619,12 @@ components:
           type: string
         startDate:
           format: date-time
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetAttributeDistributionRequest retrieves how attribute values are spread
     GetAttributeDistributionResponse:
@@ -18126,9 +18653,31 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         key: key
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           title: Inclusive end timestamp
@@ -18145,6 +18694,12 @@ components:
         startDate:
           format: date-time
           title: Inclusive start timestamp
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
     GetAttributeMetricResponse:
       example:
@@ -18191,10 +18746,32 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         limit: 0
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         key: key
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           type: string
@@ -18208,6 +18785,12 @@ components:
           type: string
         startDate:
           format: date-time
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
     GetAttributeValuesResponse:
       example:
@@ -18231,13 +18814,35 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         limit: 0
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         dimension: dimension
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
         dimension:
           title: "Dimension to break down by: \"browser\", \"platform\", \"device_type\"\
             , \"country\", \"city\", \"visit_type\""
+          type: string
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
           type: string
         endDate:
           format: date-time
@@ -18253,6 +18858,12 @@ components:
         startDate:
           format: date-time
           title: Inclusive start timestamp
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetBreakdownRequest retrieves a ranked breakdown of events by any dimension
     GetBreakdownResponse:
@@ -18335,12 +18946,43 @@ components:
         setupGuide:
           $ref: "#/components/schemas/CustomDomainSetupGuide"
       title: Response containing the setup guide of a custom domain
+    GetDataCollectionResponse:
+      description: GetDataCollectionResponse returns the workspace's link setting.
+      example:
+        linkSetting: ""
+      properties:
+        linkSetting:
+          allOf:
+          - $ref: "#/components/schemas/LinkSetting"
+          title: "The workspace's link setting, with its data collection level"
     GetDeviceDistributionRequest:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           title: Inclusive end timestamp
@@ -18351,6 +18993,12 @@ components:
         startDate:
           format: date-time
           title: Inclusive start timestamp
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetDeviceDistributionRequest retrieves device type distribution
     GetDeviceDistributionResponse:
@@ -18392,9 +19040,31 @@ components:
       example:
         linkId: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         intervalInMinutes: 0
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           title: Inclusive end timestamp for the time series
@@ -18412,6 +19082,12 @@ components:
           format: date-time
           title: Inclusive start timestamp for the time series
           type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
+          type: string
       title: Request message for getting events time series
     GetEventsTimeSeriesResponse:
       example:
@@ -18426,10 +19102,32 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         limit: 0
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         groupBy: groupBy
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           title: Inclusive end timestamp
@@ -18447,6 +19145,12 @@ components:
         startDate:
           format: date-time
           title: Inclusive start timestamp
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetGeoBreakdownRequest retrieves geographic distribution of events
     GetGeoBreakdownResponse:
@@ -18470,6 +19174,14 @@ components:
           title: Total number of events in the date range
           type: integer
       title: GetGeoBreakdownResponse contains geographic breakdown data
+    GetGoogleAnalyticsIntegrationResponse:
+      example:
+        integration: ""
+      properties:
+        integration:
+          allOf:
+          - $ref: "#/components/schemas/GoogleAnalyticsIntegration"
+          description: Absent when Google Analytics is not connected.
     GetGoogleFormsIntegrationResponse:
       example:
         integration:
@@ -18496,11 +19208,33 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         limit: 6
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         groupBy: ""
         intervalInMinutes: 0
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           type: string
@@ -18520,6 +19254,12 @@ components:
           type: string
         startDate:
           format: date-time
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetGroupedTimeSeriesRequest fetches time-bucketed event data grouped
         by a dimension
@@ -18553,8 +19293,30 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           type: string
@@ -18563,6 +19325,12 @@ components:
           type: string
         startDate:
           format: date-time
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetHourOfDayDistributionRequest fetches event counts aggregated by hour
         of day
@@ -18696,6 +19464,18 @@ components:
           allOf:
           - $ref: "#/components/schemas/QrcodeDesign"
           title: The QR code design
+    GetRetargetingPixelsResponse:
+      example:
+        pixels:
+          linkedinPartnerId: linkedinPartnerId
+          googleTagId: googleTagId
+          gtmContainerId: gtmContainerId
+          tiktokPixelId: tiktokPixelId
+          metaPixelId: metaPixelId
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        pixels:
+          $ref: "#/components/schemas/RetargetingPixels"
     GetSlackIntegrationResponse:
       example:
         slackIntegration: ""
@@ -18719,8 +19499,30 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           title: Inclusive end timestamp
@@ -18731,6 +19533,12 @@ components:
         startDate:
           format: date-time
           title: Inclusive start timestamp
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
     GetStepFunnelResponse:
       description: GetStepFunnelResponse contains the ordered funnel.
@@ -18788,9 +19596,31 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         limit: 0
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           type: string
@@ -18803,6 +19633,12 @@ components:
           type: string
         startDate:
           format: date-time
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetTopLinksRequest fetches the top performing links by event count
     GetTopLinksResponse:
@@ -18828,9 +19664,31 @@ components:
       example:
         linkId: linkId
         endDate: 2000-01-23T04:56:07.000+00:00
+        tagId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        directoryId: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+        countries:
+        - FR
+        - BE
         intervalInMinutes: 0
         startDate: 2000-01-23T04:56:07.000+00:00
       properties:
+        countries:
+          example:
+          - FR
+          - BE
+          items:
+            type: string
+          title: |-
+            Optional country filter: visits from any of these countries (ISO 3166-1
+            alpha-2 codes, e.g. "FR"). Combines with the link, directory or tag filter
+          type: array
+        directoryId:
+          example: d87a9b30-5c8b-4d4e-9fd3-5f5f5f5f5f5f
+          title: |-
+            Optional directory filter (UUID): the links of this directory and of every
+            directory below it. Send link_id or directory_id, not both; when both are
+            omitted aggregates workspace-wide
+          type: string
         endDate:
           format: date-time
           title: Inclusive end timestamp
@@ -18845,6 +19703,12 @@ components:
         startDate:
           format: date-time
           title: Inclusive start timestamp
+          type: string
+        tagId:
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          title: |-
+            Optional tag filter (UUID): every link carrying this tag. Send at most one
+            of link_id, directory_id and tag_id
           type: string
       title: GetVisitorTrendsRequest retrieves new vs returning visitor trends
     GetVisitorTrendsResponse:
@@ -18934,6 +19798,45 @@ components:
           title: Token metadata (does not include the secret access token)
       title: GetWorkspaceTokenResponse represents the response containing a workspace
         token
+    GoogleAnalyticsIntegration:
+      description: The Google Analytics 4 property a workspace sends its visits to.
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        apiSecretSet: true
+        lastError: lastError
+        lastErrorAt: 2000-01-23T04:56:07.000+00:00
+        lastSentAt: 2000-01-23T04:56:07.000+00:00
+        measurementId: measurementId
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        apiSecretSet:
+          description: |-
+            Whether a Measurement Protocol API secret is stored. The secret itself is
+            never returned.
+          type: boolean
+        createdAt:
+          description: When the integration was connected.
+          format: date-time
+          type: string
+        lastError:
+          description: "The last error met sending events, cleared by the next success."
+          type: string
+        lastErrorAt:
+          description: When that error happened.
+          format: date-time
+          type: string
+        lastSentAt:
+          description: When an event was last accepted by Google Analytics.
+          format: date-time
+          type: string
+        measurementId:
+          description: "GA4 Measurement ID, e.g. \"G-ABC123DEF4\"."
+          type: string
+        updatedAt:
+          description: When it was last changed.
+          format: date-time
+          type: string
+      title: GoogleAnalyticsIntegration
     GoogleFormsIntegration:
       description: |-
         GoogleFormsIntegration represents a connected Google account.
@@ -19303,6 +20206,54 @@ components:
             they reach an exit.
           format: int32
           type: integer
+    LanguageConditionOutcome:
+      properties:
+        languageCode:
+          description: |-
+            Two-letter ISO 639-1 language code, lowercase (e.g., "en", "fr", "es").
+            Matches every regional variant of the language: "fr" matches fr-FR and fr-CA.
+          example: fr
+          type: string
+        nextStepId:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          title: Workflow step ID to route to for this language (UUID)
+          type: string
+      title: Language condition outcome definition for EVENT_ACTION_LANGUAGE_CONDITION
+    LanguageConditionPayload:
+      description: |-
+        Language condition payload for EVENT_ACTION_LANGUAGE_CONDITION. The
+        visitor's language is the first one their phone or browser sends; visitors
+        whose language is not listed, or who send none, take the "else" branch.
+      properties:
+        elseNextStepId:
+          example: 987fcdeb-a321-45e6-b789-123456789012
+          title: Workflow step ID to route to if the language doesn't match any configured
+            option (UUID)
+          type: string
+        languages:
+          items:
+            $ref: "#/components/schemas/LanguageConditionOutcome"
+          title: "Language routing configuration, one branch per language code"
+          type: array
+    LanguageConditionTraceData:
+      description: LanguageConditionTraceData stores language condition routing metadata.
+      properties:
+        hasElse:
+          type: boolean
+        language:
+          title: "The visitor's language base code, e.g. \"fr\"; empty when none was\
+            \ sent"
+          type: string
+        languages:
+          items:
+            $ref: "#/components/schemas/LanguageConditionTraceOption"
+          type: array
+    LanguageConditionTraceOption:
+      properties:
+        hasRoute:
+          type: boolean
+        languageCode:
+          type: string
     Link:
       description: |-
         Core resource that ties a shortlink or QR entrypoint to its workflow, destination, and analytics metadata,
@@ -19484,8 +20435,9 @@ components:
         shortlink:
           description: |-
             The short link for the link.
-            This is the path segment that is attached to the URL. It can be defined by the client or generated by the system but is never null.
+            This is the path attached to the URL, one segment or several ("menu/lunch"). It can be defined by the client or generated by the system but is never null.
             It is unique within a custom domain or Linkbreakers default domain.
+            On a custom domain it can be dynamic, with {name} segments that match any value and save it on the visitor ("01/09506000134352/10/{batch}").
           example: 4BnH-R19p
           type: string
         tags:
@@ -21371,27 +22323,6 @@ components:
             given matches what it received.
           format: int64
           type: integer
-    ListSandboxesResponse:
-      example:
-        totalCount: 0
-        sandboxes:
-        - createdAt: 2000-01-23T04:56:07.000+00:00
-          name: CI integration tests
-          id: 5b1e4d42-c0d3-4afe-a6fd-0c5f5c3962d0
-          expiresAt: 2000-01-23T04:56:07.000+00:00
-        - createdAt: 2000-01-23T04:56:07.000+00:00
-          name: CI integration tests
-          id: 5b1e4d42-c0d3-4afe-a6fd-0c5f5c3962d0
-          expiresAt: 2000-01-23T04:56:07.000+00:00
-      properties:
-        sandboxes:
-          items:
-            $ref: "#/components/schemas/Sandbox"
-          type: array
-        totalCount:
-          description: How many sandboxes the workspace holds.
-          format: int64
-          type: integer
     ListSlackChannelsResponse:
       example:
         channels:
@@ -21755,7 +22686,7 @@ components:
           scopes:
           - API_SCOPE_UNSPECIFIED
           - API_SCOPE_UNSPECIFIED
-          keyType: WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED
+          keyType: ""
           support: true
           updatedAt: 2000-01-23T04:56:07.000+00:00
           workspaceId: c0d3cafe-5b1e-4d42-a6fd-0c5f5c3962d0
@@ -21768,7 +22699,7 @@ components:
           scopes:
           - API_SCOPE_UNSPECIFIED
           - API_SCOPE_UNSPECIFIED
-          keyType: WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED
+          keyType: ""
           support: true
           updatedAt: 2000-01-23T04:56:07.000+00:00
           workspaceId: c0d3cafe-5b1e-4d42-a6fd-0c5f5c3962d0
@@ -21791,6 +22722,85 @@ components:
             everything beyond it would be removed locally.
           format: int64
           type: integer
+    LocationRequestOutcome:
+      default: LOCATION_REQUEST_OUTCOME_UNSPECIFIED
+      description: |-
+        Outcome of a location request: what the visitor's browser answered.
+
+         - LOCATION_REQUEST_OUTCOME_SHARED: The visitor shared their location, by tapping the button or because their
+        browser had already allowed it
+         - LOCATION_REQUEST_OUTCOME_DENIED: The visitor or their browser refused to share the location
+         - LOCATION_REQUEST_OUTCOME_SKIPPED: The visitor pressed the skip button, without being asked by the browser
+         - LOCATION_REQUEST_OUTCOME_UNAVAILABLE: The browser could not provide a location (no GPS, timeout, unsupported)
+         - LOCATION_REQUEST_OUTCOME_ALREADY_SHARED: The step asks only once per device, and this device already shared its
+        location: the visitor went on without being asked again
+      enum:
+      - LOCATION_REQUEST_OUTCOME_UNSPECIFIED
+      - LOCATION_REQUEST_OUTCOME_SHARED
+      - LOCATION_REQUEST_OUTCOME_DENIED
+      - LOCATION_REQUEST_OUTCOME_SKIPPED
+      - LOCATION_REQUEST_OUTCOME_UNAVAILABLE
+      - LOCATION_REQUEST_OUTCOME_ALREADY_SHARED
+      type: string
+    LocationRequestPayload:
+      properties:
+        askOnce:
+          title: |-
+            Ask only once per device: a device that already shared its location on
+            this step passes over it on later visits, taking the "location" branch
+          type: boolean
+        buttonLabel:
+          example: Share my location
+          title: Label of the button that triggers the browser's location prompt
+          type: string
+        description:
+          example: We use it to show you the nearest store.
+          title: "Text under the heading, saying why the location is asked for"
+          type: string
+        elseNextStepId:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          title: |-
+            Step the visitor goes to when the location is refused, skipped or
+            unavailable ("else" branch)
+          type: string
+        nextStepId:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          title: Step the visitor goes to once the location is shared ("location"
+            branch)
+          type: string
+        skipEnabled:
+          title: |-
+            Whether the page offers a skip button, which takes the "else" branch
+            without triggering the browser prompt
+          type: boolean
+        skipLabel:
+          example: Not now
+          title: Label of the skip button
+          type: string
+        title:
+          example: Share your location
+          title: Heading shown on the page
+          type: string
+      title: Location request payload for EVENT_ACTION_LOCATION_REQUEST
+    LocationRequestTraceData:
+      description: |-
+        LocationRequestTraceData records what a location request step got from the
+        visitor's browser. Coordinates are present only when the outcome is SHARED.
+      properties:
+        accuracyMeters:
+          format: double
+          type: number
+        automatic:
+          title: True when the browser had already allowed it and no page was shown
+          type: boolean
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        outcome:
+          $ref: "#/components/schemas/LocationRequestOutcome"
     Media:
       description: |-
         A file in the workspace's media library: an image, a PDF document or an MP4 video. A media item only has a
@@ -24370,6 +25380,22 @@ components:
           title: "True when the new file was the media's own: nothing changed"
           type: boolean
       title: The media item after its file was replaced
+    ReportStepSearchMissRequest:
+      description: |-
+        ReportStepSearchMissRequest is a search in the step picker that found no
+        step, sent once the picker closes.
+      properties:
+        chosenStep:
+          description: |-
+            The step type they chose after the search found nothing, empty when
+            they closed the picker without choosing one.
+          type: string
+        linkId:
+          description: The link whose workflow they were editing.
+          type: string
+        query:
+          description: What the person typed.
+          type: string
     RequestEmailVerificationRequest:
       description: |-
         RequestEmailVerificationRequest sends a verification email to one member of
@@ -24499,6 +25525,44 @@ components:
       - RESPONSE_FORMAT_JSON
       - RESPONSE_FORMAT_CSV
       type: string
+    RetargetingPixels:
+      description: The ad platform pixels a workspace fires on every visit to its
+        links.
+      example:
+        linkedinPartnerId: linkedinPartnerId
+        googleTagId: googleTagId
+        gtmContainerId: gtmContainerId
+        tiktokPixelId: tiktokPixelId
+        metaPixelId: metaPixelId
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        googleTagId:
+          description: |-
+            Google tag ID: a Google Analytics 4 measurement ID ("G-XXXXXXX") or a
+            Google Ads tag ("AW-123456789").
+          type: string
+        gtmContainerId:
+          description: |-
+            Google Tag Manager container ID ("GTM-XXXXXXX"), to fire anything else
+            set up in that container.
+          type: string
+        linkedinPartnerId:
+          description: "LinkedIn Insight Tag partner ID, digits only, e.g. \"1234567\"\
+            ."
+          type: string
+        metaPixelId:
+          description: "Meta (Facebook, Instagram) Pixel ID, digits only, e.g. \"\
+            123456789012345\"."
+          type: string
+        tiktokPixelId:
+          description: "TikTok pixel ID, e.g. \"C4ABCDEFGHIJKLMNOPQR\"."
+          type: string
+        updatedAt:
+          description: When the pixels were last changed. Absent when none were ever
+            set.
+          format: date-time
+          type: string
+      title: RetargetingPixels
     Role:
       default: ROLE_UNSPECIFIED
       description: |-
@@ -24511,32 +25575,6 @@ components:
       - ROLE_ADMIN
       - ROLE_TECH
       type: string
-    Sandbox:
-      description: |-
-        A sandbox workspace for testing, empty when created, reachable only through
-        its own lb_test_ API tokens, and purged at expires_at.
-      example:
-        createdAt: 2000-01-23T04:56:07.000+00:00
-        name: CI integration tests
-        id: 5b1e4d42-c0d3-4afe-a6fd-0c5f5c3962d0
-        expiresAt: 2000-01-23T04:56:07.000+00:00
-      properties:
-        createdAt:
-          format: date-time
-          readOnly: true
-          type: string
-        expiresAt:
-          description: When the sandbox and everything in it is deleted.
-          format: date-time
-          readOnly: true
-          type: string
-        id:
-          description: The sandbox workspace id (UUID). Its tokens act on this workspace.
-          example: 5b1e4d42-c0d3-4afe-a6fd-0c5f5c3962d0
-          type: string
-        name:
-          example: CI integration tests
-          type: string
     SettingsServiceUpdateLinkSettingBody:
       description: UpdateLinkSettingRequest changes the visitor-data policy tied to
         a specific link.
@@ -25159,6 +26197,20 @@ components:
         visitorsEnriched:
           format: int64
           type: integer
+    TestGoogleAnalyticsIntegrationRequest:
+      type: object
+    TestGoogleAnalyticsIntegrationResponse:
+      example:
+        validationMessages:
+        - validationMessages
+        - validationMessages
+      properties:
+        validationMessages:
+          description: "Problems Google's validation server found in the event, empty\
+            \ when none."
+          items:
+            type: string
+          type: array
     TestSlackIntegrationRequest:
       title: TestSlackIntegrationRequest sends a test notification
       type: object
@@ -25403,6 +26455,27 @@ components:
       properties:
         dashboard:
           $ref: "#/components/schemas/AnalyticsDashboard"
+    UpdateDataCollectionRequest:
+      description: UpdateDataCollectionRequest sets the caller's workspace data collection
+        level.
+      example:
+        dataCollection: ""
+      properties:
+        dataCollection:
+          allOf:
+          - $ref: "#/components/schemas/DataCollection"
+          title: The new data collection level
+    UpdateDataCollectionResponse:
+      description: UpdateDataCollectionResponse returns the updated link setting.
+      example:
+        linkSetting:
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          id: fbb5c4b6-2a10-4f35-8cb1-60c613a92d2a
+          dataCollection: DATA_COLLECTION_BASIC
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        linkSetting:
+          $ref: "#/components/schemas/LinkSetting"
     UpdateDeviceResponse:
       properties:
         success:
@@ -25423,6 +26496,33 @@ components:
         directory:
           $ref: "#/components/schemas/Directory"
       title: Response containing the updated directory
+    UpdateGoogleAnalyticsIntegrationRequest:
+      description: "Connects Google Analytics, or changes the property it sends to."
+      example:
+        apiSecret: apiSecret
+        measurementId: measurementId
+      properties:
+        apiSecret:
+          description: |-
+            Measurement Protocol API secret. Required to connect; omit it to keep the
+            stored one when only changing the Measurement ID.
+          type: string
+        measurementId:
+          description: "GA4 Measurement ID, e.g. \"G-ABC123DEF4\"."
+          type: string
+    UpdateGoogleAnalyticsIntegrationResponse:
+      example:
+        integration:
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          apiSecretSet: true
+          lastError: lastError
+          lastErrorAt: 2000-01-23T04:56:07.000+00:00
+          lastSentAt: 2000-01-23T04:56:07.000+00:00
+          measurementId: measurementId
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        integration:
+          $ref: "#/components/schemas/GoogleAnalyticsIntegration"
     UpdateGoogleFormsIntegrationRequest:
       example:
         status: ""
@@ -25610,6 +26710,45 @@ components:
           title: The updated QR code template
       title: UpdateQrcodeTemplateResponse represents the response after updating a
         QR code template
+    UpdateRetargetingPixelsRequest:
+      description: |-
+        Send only the pixels to change. An empty string removes that pixel; an
+        omitted field keeps its current value.
+      example:
+        linkedinPartnerId: linkedinPartnerId
+        googleTagId: googleTagId
+        gtmContainerId: gtmContainerId
+        tiktokPixelId: tiktokPixelId
+        metaPixelId: metaPixelId
+      properties:
+        googleTagId:
+          description: "Google tag ID: \"G-...\" (Google Analytics 4) or \"AW-...\"\
+            \ (Google Ads)."
+          type: string
+        gtmContainerId:
+          description: "Google Tag Manager container ID, \"GTM-...\"."
+          type: string
+        linkedinPartnerId:
+          description: "LinkedIn Insight Tag partner ID, digits only."
+          type: string
+        metaPixelId:
+          description: "Meta (Facebook, Instagram) Pixel ID, digits only."
+          type: string
+        tiktokPixelId:
+          description: TikTok pixel ID.
+          type: string
+    UpdateRetargetingPixelsResponse:
+      example:
+        pixels:
+          linkedinPartnerId: linkedinPartnerId
+          googleTagId: googleTagId
+          gtmContainerId: gtmContainerId
+          tiktokPixelId: tiktokPixelId
+          metaPixelId: metaPixelId
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        pixels:
+          $ref: "#/components/schemas/RetargetingPixels"
     UpdateSlackIntegrationRequest:
       example:
         linkId: linkId
@@ -27111,7 +28250,12 @@ components:
              - EVENT_ACTION_DEVICE_PLATFORM_CONDITION: Route visitors based on device platform / operating system (e.g. iOS, Android, macOS)
              - EVENT_ACTION_DEVICE_BROWSER_CONDITION: Route visitors based on browser family (e.g. Chrome, Safari, Firefox)
              - EVENT_ACTION_DEVICE_BRAND_CONDITION: Route visitors based on hardware brand (e.g. Apple, Samsung, Google)
-             - EVENT_ACTION_DEVICE_ACTOR_CONDITION: Route visitors based on actor classification (e.g. HUMAN, BOT, AGENT)
+             - EVENT_ACTION_DEVICE_ACTOR_CONDITION: Route visitors based on actor classification: HUMAN, BOT, AGENT, AUTOMATED
+            or UNKNOWN. AGENT is an AI agent that names itself (GPTBot, Claude-User,
+            Perplexity-User...). AUTOMATED is a browser driven by software, whoever is
+            behind it: headless Chrome from its request, and a visible browser under
+            automation once a link with the Advanced data collection level has read
+            navigator.webdriver, from that device's next visit on.
              - EVENT_ACTION_VISITOR_DATA_CONDITION: Route visitors based on their profile data or custom attributes
              - EVENT_ACTION_THANK_YOU_PAGE: Display a final thank you / completion message (exit step)
              - EVENT_ACTION_MESSAGE_PAGE: Text with ONE way onward: a single button, or a timer that moves the
@@ -27125,6 +28269,12 @@ components:
             with no page of its own. Any media of the library can be opened: it is uploaded once and
             referenced by its media_id; swapping it means pointing the step at another media item,
             and the QR code never changes.
+             - EVENT_ACTION_LOCATION_REQUEST: Ask the visitor for their precise location (GPS) through the browser, with
+            their permission (composite: two branches, "location" when it was shared,
+            "else" when it was refused, skipped or is unavailable).
+             - EVENT_ACTION_LANGUAGE_CONDITION: Route visitors based on their phone or browser language (the first
+            language it sends, matched on its two-letter ISO 639-1 base, so "fr"
+            catches fr-FR and fr-CA)
           enum:
           - EVENT_ACTION_UNSPECIFIED
           - EVENT_ACTION_CLIENT_REDIRECT
@@ -27149,6 +28299,8 @@ components:
           - EVENT_ACTION_THANK_YOU_PAGE
           - EVENT_ACTION_MESSAGE_PAGE
           - EVENT_ACTION_OPEN_MEDIA
+          - EVENT_ACTION_LOCATION_REQUEST
+          - EVENT_ACTION_LANGUAGE_CONDITION
           example: EVENT_ACTION_CLIENT_REDIRECT
           title: The event action type for this workflow step
           type: string
@@ -27326,11 +28478,15 @@ components:
           $ref: "#/components/schemas/DeviceTypeConditionPayload"
         form:
           $ref: "#/components/schemas/FormPayload"
+        languageCondition:
+          $ref: "#/components/schemas/LanguageConditionPayload"
         linkVisit:
           description: Reserved for future link visit specific configuration
           title: Entry payload for EVENT_ACTION_LINK_VISIT (currently no specific
             fields)
           type: object
+        locationRequest:
+          $ref: "#/components/schemas/LocationRequestPayload"
         messagePage:
           $ref: "#/components/schemas/MessagePagePayload"
         multiLink:
@@ -27420,7 +28576,12 @@ components:
              - EVENT_ACTION_DEVICE_PLATFORM_CONDITION: Route visitors based on device platform / operating system (e.g. iOS, Android, macOS)
              - EVENT_ACTION_DEVICE_BROWSER_CONDITION: Route visitors based on browser family (e.g. Chrome, Safari, Firefox)
              - EVENT_ACTION_DEVICE_BRAND_CONDITION: Route visitors based on hardware brand (e.g. Apple, Samsung, Google)
-             - EVENT_ACTION_DEVICE_ACTOR_CONDITION: Route visitors based on actor classification (e.g. HUMAN, BOT, AGENT)
+             - EVENT_ACTION_DEVICE_ACTOR_CONDITION: Route visitors based on actor classification: HUMAN, BOT, AGENT, AUTOMATED
+            or UNKNOWN. AGENT is an AI agent that names itself (GPTBot, Claude-User,
+            Perplexity-User...). AUTOMATED is a browser driven by software, whoever is
+            behind it: headless Chrome from its request, and a visible browser under
+            automation once a link with the Advanced data collection level has read
+            navigator.webdriver, from that device's next visit on.
              - EVENT_ACTION_VISITOR_DATA_CONDITION: Route visitors based on their profile data or custom attributes
              - EVENT_ACTION_THANK_YOU_PAGE: Display a final thank you / completion message (exit step)
              - EVENT_ACTION_MESSAGE_PAGE: Text with ONE way onward: a single button, or a timer that moves the
@@ -27434,6 +28595,12 @@ components:
             with no page of its own. Any media of the library can be opened: it is uploaded once and
             referenced by its media_id; swapping it means pointing the step at another media item,
             and the QR code never changes.
+             - EVENT_ACTION_LOCATION_REQUEST: Ask the visitor for their precise location (GPS) through the browser, with
+            their permission (composite: two branches, "location" when it was shared,
+            "else" when it was refused, skipped or is unavailable).
+             - EVENT_ACTION_LANGUAGE_CONDITION: Route visitors based on their phone or browser language (the first
+            language it sends, matched on its two-letter ISO 639-1 base, so "fr"
+            catches fr-FR and fr-CA)
           enum:
           - EVENT_ACTION_UNSPECIFIED
           - EVENT_ACTION_CLIENT_REDIRECT
@@ -27458,6 +28625,8 @@ components:
           - EVENT_ACTION_THANK_YOU_PAGE
           - EVENT_ACTION_MESSAGE_PAGE
           - EVENT_ACTION_OPEN_MEDIA
+          - EVENT_ACTION_LOCATION_REQUEST
+          - EVENT_ACTION_LANGUAGE_CONDITION
           example: EVENT_ACTION_FORM_SUBMIT
           title: The event action type for this workflow step
           type: string
@@ -27533,10 +28702,8 @@ components:
         subscriptionType: SUBSCRIPTION_TYPE_PRO_PLAN
         faq: faq
         name: name
-        sandboxExpiresAt: 2000-01-23T04:56:07.000+00:00
         id: c0d3cafe-5b1e-4d42-a6fd-0c5f5c3962d0
         digestFrequency: DIGEST_FREQUENCY_UNSPECIFIED
-        isSandbox: true
         slug: slug
         updatedAt: 2000-01-23T04:56:07.000+00:00
       externalDocs:
@@ -27589,11 +28756,6 @@ components:
           title: When the workspace was flagged as inactive due to lack of activity
             (cleared on next sign-in/scan)
           type: string
-        isSandbox:
-          description: "True for a sandbox workspace: API-only, with its own caps,\
-            \ never billed."
-          readOnly: true
-          type: boolean
         linkSettingId:
           example: fbb5c4b6-2a10-4f35-8cb1-60c613a92d2a
           title: Link setting configuration that governs visitor data collection (UUID)
@@ -27604,11 +28766,6 @@ components:
         publishedAt:
           format: date-time
           title: Timestamp when the workspace was published/made public
-          type: string
-        sandboxExpiresAt:
-          description: When a sandbox workspace is deleted. Unset for a live workspace.
-          format: date-time
-          readOnly: true
           type: string
         shortDescription:
           title: Short description for the workspace
@@ -27653,7 +28810,7 @@ components:
             workspace and requesting a verification email answers
             WORKSPACE_UNVERIFIED, until a member verifies their email. QR codes and
             links keep working for visitors throughout. Empty when the workspace is
-            verified, paying, or a sandbox.
+            verified or paying.
           format: date-time
           readOnly: true
           type: string
@@ -27863,7 +29020,7 @@ components:
         scopes:
         - API_SCOPE_UNSPECIFIED
         - API_SCOPE_UNSPECIFIED
-        keyType: WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED
+        keyType: ""
         support: true
         updatedAt: 2000-01-23T04:56:07.000+00:00
         workspaceId: c0d3cafe-5b1e-4d42-a6fd-0c5f5c3962d0
@@ -27888,17 +29045,10 @@ components:
           title: The unique identifier of the workspace token (UUID)
           type: string
         keyType:
-          description: |-
-            - WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED: Default value (should not be used)
-             - WORKSPACE_TOKEN_KEY_TYPE_SECRET: Secret key with full API access
-             - WORKSPACE_TOKEN_KEY_TYPE_PUBLISHABLE: Publishable key with limited access
-          enum:
-          - WORKSPACE_TOKEN_KEY_TYPE_UNSPECIFIED
-          - WORKSPACE_TOKEN_KEY_TYPE_SECRET
-          - WORKSPACE_TOKEN_KEY_TYPE_PUBLISHABLE
+          allOf:
+          - $ref: "#/components/schemas/WorkspaceTokenKeyType"
           readOnly: true
           title: The key type of the token (secret or publishable)
-          type: string
         lastUsedAt:
           format: date-time
           readOnly: true
