@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.
+ * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.186.2
+ * The version of the OpenAPI document: 1.187.0
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -19,6 +19,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import com.linkbreakers.model.GoogleAnalyticsAttributeKeys;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -59,6 +60,16 @@ public class UpdateGoogleAnalyticsIntegrationRequest {
   @SerializedName(SERIALIZED_NAME_MEASUREMENT_ID)
   @javax.annotation.Nullable
   private String measurementId;
+
+  public static final String SERIALIZED_NAME_VISITOR_ATTRIBUTE_KEYS = "visitorAttributeKeys";
+  @SerializedName(SERIALIZED_NAME_VISITOR_ATTRIBUTE_KEYS)
+  @javax.annotation.Nullable
+  private GoogleAnalyticsAttributeKeys visitorAttributeKeys;
+
+  public static final String SERIALIZED_NAME_VISITOR_ATTRIBUTES_ENABLED = "visitorAttributesEnabled";
+  @SerializedName(SERIALIZED_NAME_VISITOR_ATTRIBUTES_ENABLED)
+  @javax.annotation.Nullable
+  private Boolean visitorAttributesEnabled;
 
   public UpdateGoogleAnalyticsIntegrationRequest() {
   }
@@ -101,6 +112,44 @@ public class UpdateGoogleAnalyticsIntegrationRequest {
   }
 
 
+  public UpdateGoogleAnalyticsIntegrationRequest visitorAttributeKeys(@javax.annotation.Nullable GoogleAnalyticsAttributeKeys visitorAttributeKeys) {
+    this.visitorAttributeKeys = visitorAttributeKeys;
+    return this;
+  }
+
+  /**
+   * Send only these attribute keys. Omit to keep the current list; an empty list sends every attribute that is not personal data.
+   * @return visitorAttributeKeys
+   */
+  @javax.annotation.Nullable
+  public GoogleAnalyticsAttributeKeys getVisitorAttributeKeys() {
+    return visitorAttributeKeys;
+  }
+
+  public void setVisitorAttributeKeys(@javax.annotation.Nullable GoogleAnalyticsAttributeKeys visitorAttributeKeys) {
+    this.visitorAttributeKeys = visitorAttributeKeys;
+  }
+
+
+  public UpdateGoogleAnalyticsIntegrationRequest visitorAttributesEnabled(@javax.annotation.Nullable Boolean visitorAttributesEnabled) {
+    this.visitorAttributesEnabled = visitorAttributesEnabled;
+    return this;
+  }
+
+  /**
+   * Add the visitor&#39;s data (form answers such as a rating, custom visitor attributes) to events as parameters, never personal data. Omit to keep the current setting; on by default when connecting.
+   * @return visitorAttributesEnabled
+   */
+  @javax.annotation.Nullable
+  public Boolean getVisitorAttributesEnabled() {
+    return visitorAttributesEnabled;
+  }
+
+  public void setVisitorAttributesEnabled(@javax.annotation.Nullable Boolean visitorAttributesEnabled) {
+    this.visitorAttributesEnabled = visitorAttributesEnabled;
+  }
+
+
 
   @Override
   public boolean equals(Object o) {
@@ -112,12 +161,14 @@ public class UpdateGoogleAnalyticsIntegrationRequest {
     }
     UpdateGoogleAnalyticsIntegrationRequest updateGoogleAnalyticsIntegrationRequest = (UpdateGoogleAnalyticsIntegrationRequest) o;
     return Objects.equals(this.apiSecret, updateGoogleAnalyticsIntegrationRequest.apiSecret) &&
-        Objects.equals(this.measurementId, updateGoogleAnalyticsIntegrationRequest.measurementId);
+        Objects.equals(this.measurementId, updateGoogleAnalyticsIntegrationRequest.measurementId) &&
+        Objects.equals(this.visitorAttributeKeys, updateGoogleAnalyticsIntegrationRequest.visitorAttributeKeys) &&
+        Objects.equals(this.visitorAttributesEnabled, updateGoogleAnalyticsIntegrationRequest.visitorAttributesEnabled);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(apiSecret, measurementId);
+    return Objects.hash(apiSecret, measurementId, visitorAttributeKeys, visitorAttributesEnabled);
   }
 
   @Override
@@ -126,6 +177,8 @@ public class UpdateGoogleAnalyticsIntegrationRequest {
     sb.append("class UpdateGoogleAnalyticsIntegrationRequest {\n");
     sb.append("    apiSecret: ").append(toIndentedString(apiSecret)).append("\n");
     sb.append("    measurementId: ").append(toIndentedString(measurementId)).append("\n");
+    sb.append("    visitorAttributeKeys: ").append(toIndentedString(visitorAttributeKeys)).append("\n");
+    sb.append("    visitorAttributesEnabled: ").append(toIndentedString(visitorAttributesEnabled)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -144,7 +197,7 @@ public class UpdateGoogleAnalyticsIntegrationRequest {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("apiSecret", "measurementId"));
+    openapiFields = new HashSet<String>(Arrays.asList("apiSecret", "measurementId", "visitorAttributeKeys", "visitorAttributesEnabled"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -176,6 +229,10 @@ public class UpdateGoogleAnalyticsIntegrationRequest {
       }
       if ((jsonObj.get("measurementId") != null && !jsonObj.get("measurementId").isJsonNull()) && !jsonObj.get("measurementId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `measurementId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("measurementId").toString()));
+      }
+      // validate the optional field `visitorAttributeKeys`
+      if (jsonObj.get("visitorAttributeKeys") != null && !jsonObj.get("visitorAttributeKeys").isJsonNull()) {
+        GoogleAnalyticsAttributeKeys.validateJsonElement(jsonObj.get("visitorAttributeKeys"));
       }
   }
 
