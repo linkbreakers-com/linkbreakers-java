@@ -470,6 +470,7 @@ src/main/java/com/linkbreakers/model/RedirectTraceDataFallbackReason.java
 src/main/java/com/linkbreakers/model/RenderQrcodeImagesResponse.java
 src/main/java/com/linkbreakers/model/RenderedQrcode.java
 src/main/java/com/linkbreakers/model/ReplaceMediaImportResponse.java
+src/main/java/com/linkbreakers/model/ReportIntegrationSearchMissRequest.java
 src/main/java/com/linkbreakers/model/ReportStepSearchMissRequest.java
 src/main/java/com/linkbreakers/model/RequestEmailVerificationRequest.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
