@@ -313,6 +313,7 @@ src/main/java/com/linkbreakers/model/GetPageThemeResponse.java
 src/main/java/com/linkbreakers/model/GetQrcodeDesignResponse.java
 src/main/java/com/linkbreakers/model/GetRetargetingPixelsResponse.java
 src/main/java/com/linkbreakers/model/GetReviewRewardOfferResponse.java
+src/main/java/com/linkbreakers/model/GetSharedLocationsResponse.java
 src/main/java/com/linkbreakers/model/GetSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/GetSlackOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetStepFunnelRequest.java
@@ -343,6 +344,8 @@ src/main/java/com/linkbreakers/model/ImportPageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateResponse.java
+src/main/java/com/linkbreakers/model/InAppBrowser.java
+src/main/java/com/linkbreakers/model/InAppBrowserDetails.java
 src/main/java/com/linkbreakers/model/InviteMemberRequest.java
 src/main/java/com/linkbreakers/model/Job.java
 src/main/java/com/linkbreakers/model/JobError.java
@@ -494,6 +497,7 @@ src/main/java/com/linkbreakers/model/ReviewRewardStatus.java
 src/main/java/com/linkbreakers/model/Role.java
 src/main/java/com/linkbreakers/model/SettingsServiceUpdateLinkSettingBody.java
 src/main/java/com/linkbreakers/model/Shape.java
+src/main/java/com/linkbreakers/model/SharedLocation.java
 src/main/java/com/linkbreakers/model/ShortlinkAvailabilityResponse.java
 src/main/java/com/linkbreakers/model/ShortlinkRandomResponse.java
 src/main/java/com/linkbreakers/model/SlackChannel.java
