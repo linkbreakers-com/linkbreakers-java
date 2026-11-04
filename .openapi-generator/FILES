@@ -124,6 +124,17 @@ src/main/java/com/linkbreakers/model/BackButton.java
 src/main/java/com/linkbreakers/model/BackgroundOptions.java
 src/main/java/com/linkbreakers/model/BillingInterval.java
 src/main/java/com/linkbreakers/model/BreakdownDataPoint.java
+src/main/java/com/linkbreakers/model/BulkEditStatus.java
+src/main/java/com/linkbreakers/model/BulkInsertWorkflowStepOverride.java
+src/main/java/com/linkbreakers/model/BulkInsertWorkflowStepRequest.java
+src/main/java/com/linkbreakers/model/BulkInsertWorkflowStepResponse.java
+src/main/java/com/linkbreakers/model/BulkInsertWorkflowStepResult.java
+src/main/java/com/linkbreakers/model/BulkPageThemeChange.java
+src/main/java/com/linkbreakers/model/BulkPageThemeResult.java
+src/main/java/com/linkbreakers/model/BulkPageThemeValues.java
+src/main/java/com/linkbreakers/model/BulkStepBranch.java
+src/main/java/com/linkbreakers/model/BulkUpdatePageThemesRequest.java
+src/main/java/com/linkbreakers/model/BulkUpdatePageThemesResponse.java
 src/main/java/com/linkbreakers/model/CanvasPosition.java
 src/main/java/com/linkbreakers/model/ChatBotCollectedValue.java
 src/main/java/com/linkbreakers/model/ChatBotMessageAuthor.java
