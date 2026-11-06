@@ -331,6 +331,8 @@ src/main/java/com/linkbreakers/model/GetStepFunnelRequest.java
 src/main/java/com/linkbreakers/model/GetStepFunnelResponse.java
 src/main/java/com/linkbreakers/model/GetTopLinksRequest.java
 src/main/java/com/linkbreakers/model/GetTopLinksResponse.java
+src/main/java/com/linkbreakers/model/GetTrafficSplitResultsRequest.java
+src/main/java/com/linkbreakers/model/GetTrafficSplitResultsResponse.java
 src/main/java/com/linkbreakers/model/GetVisitorTrendsRequest.java
 src/main/java/com/linkbreakers/model/GetVisitorTrendsResponse.java
 src/main/java/com/linkbreakers/model/GetWalletPassSupportResponse.java
@@ -486,6 +488,7 @@ src/main/java/com/linkbreakers/model/RenderedQrcode.java
 src/main/java/com/linkbreakers/model/ReplaceMediaImportResponse.java
 src/main/java/com/linkbreakers/model/ReportIntegrationSearchMissRequest.java
 src/main/java/com/linkbreakers/model/ReportStepSearchMissRequest.java
+src/main/java/com/linkbreakers/model/ReportStepSearchRequest.java
 src/main/java/com/linkbreakers/model/RequestEmailVerificationRequest.java
 src/main/java/com/linkbreakers/model/RequestWorkspaceEnrollmentRequest.java
 src/main/java/com/linkbreakers/model/ResolvePageThemeTemplateImagesRequest.java
@@ -556,6 +559,10 @@ src/main/java/com/linkbreakers/model/TimeOfDayRange.java
 src/main/java/com/linkbreakers/model/TimeSeriesPoint.java
 src/main/java/com/linkbreakers/model/TimeSeriesSeries.java
 src/main/java/com/linkbreakers/model/TopLinkDataPoint.java
+src/main/java/com/linkbreakers/model/TrafficSplitPayload.java
+src/main/java/com/linkbreakers/model/TrafficSplitTraceData.java
+src/main/java/com/linkbreakers/model/TrafficSplitVariant.java
+src/main/java/com/linkbreakers/model/TrafficSplitVariantResult.java
 src/main/java/com/linkbreakers/model/TriggeredBy.java
 src/main/java/com/linkbreakers/model/TypeDate.java
 src/main/java/com/linkbreakers/model/UpdateAgentKnowledgeDocumentResponse.java
