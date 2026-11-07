@@ -39,6 +39,7 @@ src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
 src/main/java/com/linkbreakers/api/GoogleAnalyticsIntegrationsApi.java
 src/main/java/com/linkbreakers/api/GoogleFormsIntegrationsApi.java
+src/main/java/com/linkbreakers/api/IntegrationsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsServiceApi.java
 src/main/java/com/linkbreakers/api/JobsApi.java
 src/main/java/com/linkbreakers/api/LinkSettingsApi.java
@@ -359,6 +360,8 @@ src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateResponse.java
 src/main/java/com/linkbreakers/model/InAppBrowser.java
 src/main/java/com/linkbreakers/model/InAppBrowserDetails.java
+src/main/java/com/linkbreakers/model/IntegrationDelivery.java
+src/main/java/com/linkbreakers/model/IntegrationVisitorData.java
 src/main/java/com/linkbreakers/model/InviteMemberRequest.java
 src/main/java/com/linkbreakers/model/Job.java
 src/main/java/com/linkbreakers/model/JobError.java
@@ -370,6 +373,8 @@ src/main/java/com/linkbreakers/model/LanguageConditionPayload.java
 src/main/java/com/linkbreakers/model/LanguageConditionTraceData.java
 src/main/java/com/linkbreakers/model/LanguageConditionTraceOption.java
 src/main/java/com/linkbreakers/model/Link.java
+src/main/java/com/linkbreakers/model/LinkIntegration.java
+src/main/java/com/linkbreakers/model/LinkIntegrationKind.java
 src/main/java/com/linkbreakers/model/LinkSetting.java
 src/main/java/com/linkbreakers/model/LinkSortField.java
 src/main/java/com/linkbreakers/model/LinkView.java
@@ -388,6 +393,7 @@ src/main/java/com/linkbreakers/model/ListEventTracesResponse.java
 src/main/java/com/linkbreakers/model/ListEventsCsvResponse.java
 src/main/java/com/linkbreakers/model/ListEventsJsonResponse.java
 src/main/java/com/linkbreakers/model/ListEventsResponse.java
+src/main/java/com/linkbreakers/model/ListLinkIntegrationsResponse.java
 src/main/java/com/linkbreakers/model/ListLinksResponse.java
 src/main/java/com/linkbreakers/model/ListMediaResponse.java
 src/main/java/com/linkbreakers/model/ListMyWorkspacesResponse.java
