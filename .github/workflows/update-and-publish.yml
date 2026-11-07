@@ -119,18 +119,21 @@ jobs:
             -F "bundle=@target/central-bundle.zip" \
             "https://central.sonatype.com/api/v1/publisher/upload?name=linkbreakers-sdk-$NEW_VERSION&publishingType=AUTOMATIC")
           echo "Deployment $ID"
-          for i in $(seq 1 90); do
+          # Wait for validation only. With AUTOMATIC, Central publishes a
+          # validated bundle on its own; waiting for PUBLISHED took ~9 minutes of
+          # Actions time per release (2026-11-07).
+          for i in $(seq 1 45); do
             sleep 20
             STATUS=$(curl -sS --fail-with-body -X POST -H "$AUTH" \
               "https://central.sonatype.com/api/v1/publisher/status?id=$ID")
             STATE=$(echo "$STATUS" | jq -r '.deploymentState')
             echo "$STATE"
             case "$STATE" in
-              PUBLISHED) exit 0 ;;
+              VALIDATED|PUBLISHING|PUBLISHED) exit 0 ;;
               FAILED) echo "$STATUS" | jq . >&2; exit 1 ;;
             esac
           done
-          echo "Deployment $ID was not published after 30 minutes" >&2
+          echo "Deployment $ID was not validated after 15 minutes" >&2
           exit 1
 
       - name: Commit, tag and push
