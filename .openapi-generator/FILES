@@ -34,6 +34,7 @@ src/main/java/com/linkbreakers/api/AnalyticsDataApi.java
 src/main/java/com/linkbreakers/api/ApiScopesApi.java
 src/main/java/com/linkbreakers/api/AssistantApi.java
 src/main/java/com/linkbreakers/api/AuthApi.java
+src/main/java/com/linkbreakers/api/ContactIntegrationsApi.java
 src/main/java/com/linkbreakers/api/CustomDomainsApi.java
 src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
@@ -158,10 +159,23 @@ src/main/java/com/linkbreakers/model/CompleteMediaReplaceResponse.java
 src/main/java/com/linkbreakers/model/CompleteMediaUploadResponse.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthResponse.java
+src/main/java/com/linkbreakers/model/ConnectContactToolResponse.java
 src/main/java/com/linkbreakers/model/ConnectFormToolResponse.java
 src/main/java/com/linkbreakers/model/ConnectWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/ContactCardTraceCard.java
 src/main/java/com/linkbreakers/model/ContactCardTraceData.java
+src/main/java/com/linkbreakers/model/ContactConnection.java
+src/main/java/com/linkbreakers/model/ContactField.java
+src/main/java/com/linkbreakers/model/ContactFieldMapping.java
+src/main/java/com/linkbreakers/model/ContactIntegrationsServiceConnectToolBody.java
+src/main/java/com/linkbreakers/model/ContactIntegrationsServiceUpdateBody.java
+src/main/java/com/linkbreakers/model/ContactList.java
+src/main/java/com/linkbreakers/model/ContactPipeline.java
+src/main/java/com/linkbreakers/model/ContactPipelineStage.java
+src/main/java/com/linkbreakers/model/ContactRecordKind.java
+src/main/java/com/linkbreakers/model/ContactSyncOptions.java
+src/main/java/com/linkbreakers/model/ContactTool.java
+src/main/java/com/linkbreakers/model/ContactToolCapabilities.java
 src/main/java/com/linkbreakers/model/ContainerConfig.java
 src/main/java/com/linkbreakers/model/CornersDotOptions.java
 src/main/java/com/linkbreakers/model/CornersDotType.java
@@ -312,6 +326,7 @@ src/main/java/com/linkbreakers/model/GetAttributeValuesRequest.java
 src/main/java/com/linkbreakers/model/GetAttributeValuesResponse.java
 src/main/java/com/linkbreakers/model/GetBreakdownRequest.java
 src/main/java/com/linkbreakers/model/GetBreakdownResponse.java
+src/main/java/com/linkbreakers/model/GetContactConnectionResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainSetupGuideResponse.java
 src/main/java/com/linkbreakers/model/GetDataCollectionResponse.java
@@ -399,6 +414,10 @@ src/main/java/com/linkbreakers/model/ListAgentPresetsResponse.java
 src/main/java/com/linkbreakers/model/ListAgentsResponse.java
 src/main/java/com/linkbreakers/model/ListAllowancesResponse.java
 src/main/java/com/linkbreakers/model/ListApiScopesResponse.java
+src/main/java/com/linkbreakers/model/ListContactConnectionsResponse.java
+src/main/java/com/linkbreakers/model/ListContactToolFieldsResponse.java
+src/main/java/com/linkbreakers/model/ListContactToolListsResponse.java
+src/main/java/com/linkbreakers/model/ListContactToolPipelinesResponse.java
 src/main/java/com/linkbreakers/model/ListCustomDomainsResponse.java
 src/main/java/com/linkbreakers/model/ListDashboardsResponse.java
 src/main/java/com/linkbreakers/model/ListDetectedGoogleFormsResponse.java
@@ -422,6 +441,7 @@ src/main/java/com/linkbreakers/model/ListRetargetingPixelsForLinkResponse.java
 src/main/java/com/linkbreakers/model/ListSlackChannelsResponse.java
 src/main/java/com/linkbreakers/model/ListTagsResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorAttributeKeysResponse.java
+src/main/java/com/linkbreakers/model/ListVisitorConsentsResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorCountriesResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsCsvResponse.java
 src/main/java/com/linkbreakers/model/ListVisitorsJsonResponse.java
@@ -569,6 +589,7 @@ src/main/java/com/linkbreakers/model/SubmitReviewRewardResponse.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
 src/main/java/com/linkbreakers/model/SwitchWorkspaceResponse.java
 src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
+src/main/java/com/linkbreakers/model/TestContactConnectionResponse.java
 src/main/java/com/linkbreakers/model/TestGoogleAnalyticsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
 src/main/java/com/linkbreakers/model/ThankYouPagePayload.java
@@ -589,6 +610,7 @@ src/main/java/com/linkbreakers/model/TriggeredBy.java
 src/main/java/com/linkbreakers/model/TypeDate.java
 src/main/java/com/linkbreakers/model/UpdateAgentKnowledgeDocumentResponse.java
 src/main/java/com/linkbreakers/model/UpdateAgentResponse.java
+src/main/java/com/linkbreakers/model/UpdateContactConnectionResponse.java
 src/main/java/com/linkbreakers/model/UpdateCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/UpdateDashboardResponse.java
 src/main/java/com/linkbreakers/model/UpdateDataCollectionRequest.java
@@ -637,6 +659,7 @@ src/main/java/com/linkbreakers/model/VisitorAttributeFilter.java
 src/main/java/com/linkbreakers/model/VisitorAttributeFilterOperator.java
 src/main/java/com/linkbreakers/model/VisitorAttributeKey.java
 src/main/java/com/linkbreakers/model/VisitorAttributeType.java
+src/main/java/com/linkbreakers/model/VisitorConsent.java
 src/main/java/com/linkbreakers/model/VisitorCountry.java
 src/main/java/com/linkbreakers/model/VisitorDataConditionOption.java
 src/main/java/com/linkbreakers/model/VisitorDataConditionPayload.java
