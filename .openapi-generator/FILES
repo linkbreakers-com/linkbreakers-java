@@ -152,6 +152,7 @@ src/main/java/com/linkbreakers/model/ChatUIOption.java
 src/main/java/com/linkbreakers/model/CheckCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/ClaimAgentWorkspaceRequest.java
 src/main/java/com/linkbreakers/model/ClientRedirectPayload.java
+src/main/java/com/linkbreakers/model/CompleteContactToolOAuthResponse.java
 src/main/java/com/linkbreakers/model/CompleteFormToolOAuthResponse.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthRequest.java
 src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthResponse.java
@@ -167,15 +168,19 @@ src/main/java/com/linkbreakers/model/ContactCardTraceData.java
 src/main/java/com/linkbreakers/model/ContactConnection.java
 src/main/java/com/linkbreakers/model/ContactField.java
 src/main/java/com/linkbreakers/model/ContactFieldMapping.java
+src/main/java/com/linkbreakers/model/ContactIntegrationsServiceCompleteOAuthBody.java
 src/main/java/com/linkbreakers/model/ContactIntegrationsServiceConnectToolBody.java
+src/main/java/com/linkbreakers/model/ContactIntegrationsServiceStartOAuthBody.java
 src/main/java/com/linkbreakers/model/ContactIntegrationsServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/ContactList.java
+src/main/java/com/linkbreakers/model/ContactOAuthEnvironment.java
 src/main/java/com/linkbreakers/model/ContactPipeline.java
 src/main/java/com/linkbreakers/model/ContactPipelineStage.java
 src/main/java/com/linkbreakers/model/ContactRecordKind.java
 src/main/java/com/linkbreakers/model/ContactSyncOptions.java
 src/main/java/com/linkbreakers/model/ContactTool.java
 src/main/java/com/linkbreakers/model/ContactToolCapabilities.java
+src/main/java/com/linkbreakers/model/ContactToolInfo.java
 src/main/java/com/linkbreakers/model/ContainerConfig.java
 src/main/java/com/linkbreakers/model/CornersDotOptions.java
 src/main/java/com/linkbreakers/model/CornersDotType.java
@@ -327,6 +332,7 @@ src/main/java/com/linkbreakers/model/GetAttributeValuesResponse.java
 src/main/java/com/linkbreakers/model/GetBreakdownRequest.java
 src/main/java/com/linkbreakers/model/GetBreakdownResponse.java
 src/main/java/com/linkbreakers/model/GetContactConnectionResponse.java
+src/main/java/com/linkbreakers/model/GetContactToolResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainResponse.java
 src/main/java/com/linkbreakers/model/GetCustomDomainSetupGuideResponse.java
 src/main/java/com/linkbreakers/model/GetDataCollectionResponse.java
@@ -584,6 +590,7 @@ src/main/java/com/linkbreakers/model/SpecificDateConditionPayload.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceData.java
 src/main/java/com/linkbreakers/model/SpecificDateConditionTraceOption.java
 src/main/java/com/linkbreakers/model/SpecificDateOption.java
+src/main/java/com/linkbreakers/model/StartContactToolOAuthResponse.java
 src/main/java/com/linkbreakers/model/SubmitReviewRewardRequest.java
 src/main/java/com/linkbreakers/model/SubmitReviewRewardResponse.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
