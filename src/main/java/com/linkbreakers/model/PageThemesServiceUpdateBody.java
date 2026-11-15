@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -50,10 +50,10 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * UpdatePageThemeTemplateStylingRequest updates the styling of the template&#39;s own backing theme.  Template styling is edited through this RPC rather than through UpdatePageTheme so the template&#39;s thumbnail is marked for regeneration in the same place the styling changes. Editing the backing theme directly would leave a stale thumbnail.
+ * PageThemesServiceUpdateBody
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
+public class PageThemesServiceUpdateBody {
   public static final String SERIALIZED_NAME_BADGE = "badge";
   @SerializedName(SERIALIZED_NAME_BADGE)
   @javax.annotation.Nullable
@@ -242,7 +242,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   private FontConfig titleFont;
 
   /**
-   * How visitor pages pace their content: CLASSIC shows a whole form at once, FOCUSED one question per screen.
+   * How visitor pages pace their content: CLASSIC shows a whole form at once, FOCUSED shows one question per screen.
    */
   @JsonAdapter(VisitorExperienceEnum.Adapter.class)
   public enum VisitorExperienceEnum {
@@ -300,10 +300,10 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   @javax.annotation.Nullable
   private VisitorExperienceEnum visitorExperience;
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody() {
+  public PageThemesServiceUpdateBody() {
   }
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody badge(@javax.annotation.Nullable MediaSelection badge) {
+  public PageThemesServiceUpdateBody badge(@javax.annotation.Nullable MediaSelection badge) {
     this.badge = badge;
     return this;
   }
@@ -322,7 +322,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody badgeEnabled(@javax.annotation.Nullable Boolean badgeEnabled) {
+  public PageThemesServiceUpdateBody badgeEnabled(@javax.annotation.Nullable Boolean badgeEnabled) {
     this.badgeEnabled = badgeEnabled;
     return this;
   }
@@ -341,7 +341,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody badgeIconColor(@javax.annotation.Nullable ThemeColor badgeIconColor) {
+  public PageThemesServiceUpdateBody badgeIconColor(@javax.annotation.Nullable ThemeColor badgeIconColor) {
     this.badgeIconColor = badgeIconColor;
     return this;
   }
@@ -360,7 +360,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody badgeShape(@javax.annotation.Nullable BadgeShapeEnum badgeShape) {
+  public PageThemesServiceUpdateBody badgeShape(@javax.annotation.Nullable BadgeShapeEnum badgeShape) {
     this.badgeShape = badgeShape;
     return this;
   }
@@ -379,7 +379,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody bodyFont(@javax.annotation.Nullable FontConfig bodyFont) {
+  public PageThemesServiceUpdateBody bodyFont(@javax.annotation.Nullable FontConfig bodyFont) {
     this.bodyFont = bodyFont;
     return this;
   }
@@ -398,7 +398,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody canvasColor(@javax.annotation.Nullable ThemeColor canvasColor) {
+  public PageThemesServiceUpdateBody canvasColor(@javax.annotation.Nullable ThemeColor canvasColor) {
     this.canvasColor = canvasColor;
     return this;
   }
@@ -417,7 +417,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody canvasCover(@javax.annotation.Nullable MediaSelection canvasCover) {
+  public PageThemesServiceUpdateBody canvasCover(@javax.annotation.Nullable MediaSelection canvasCover) {
     this.canvasCover = canvasCover;
     return this;
   }
@@ -436,7 +436,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody canvasCoverMode(@javax.annotation.Nullable CanvasCoverModeEnum canvasCoverMode) {
+  public PageThemesServiceUpdateBody canvasCoverMode(@javax.annotation.Nullable CanvasCoverModeEnum canvasCoverMode) {
     this.canvasCoverMode = canvasCoverMode;
     return this;
   }
@@ -455,7 +455,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody containerConfig(@javax.annotation.Nullable ContainerConfig containerConfig) {
+  public PageThemesServiceUpdateBody containerConfig(@javax.annotation.Nullable ContainerConfig containerConfig) {
     this.containerConfig = containerConfig;
     return this;
   }
@@ -474,7 +474,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody containerEnabled(@javax.annotation.Nullable Boolean containerEnabled) {
+  public PageThemesServiceUpdateBody containerEnabled(@javax.annotation.Nullable Boolean containerEnabled) {
     this.containerEnabled = containerEnabled;
     return this;
   }
@@ -493,7 +493,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody elementColor(@javax.annotation.Nullable ThemeColor elementColor) {
+  public PageThemesServiceUpdateBody elementColor(@javax.annotation.Nullable ThemeColor elementColor) {
     this.elementColor = elementColor;
     return this;
   }
@@ -512,7 +512,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody elementFont(@javax.annotation.Nullable FontConfig elementFont) {
+  public PageThemesServiceUpdateBody elementFont(@javax.annotation.Nullable FontConfig elementFont) {
     this.elementFont = elementFont;
     return this;
   }
@@ -531,13 +531,13 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody footerLogo(@javax.annotation.Nullable MediaSelection footerLogo) {
+  public PageThemesServiceUpdateBody footerLogo(@javax.annotation.Nullable MediaSelection footerLogo) {
     this.footerLogo = footerLogo;
     return this;
   }
 
   /**
-   * Get footerLogo
+   * Footer logo media selection: id of any image of at most 3 MB from the workspace&#39;s media library, or delete to remove the image.
    * @return footerLogo
    */
   @javax.annotation.Nullable
@@ -550,13 +550,13 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody footerLogoEnabled(@javax.annotation.Nullable Boolean footerLogoEnabled) {
+  public PageThemesServiceUpdateBody footerLogoEnabled(@javax.annotation.Nullable Boolean footerLogoEnabled) {
     this.footerLogoEnabled = footerLogoEnabled;
     return this;
   }
 
   /**
-   * Small company or brand logo centered at the bottom of every page using the theme.
+   * Whether to show the footer logo, a small company or brand logo centered at the bottom of every page using this theme (false hides it but keeps the image).
    * @return footerLogoEnabled
    */
   @javax.annotation.Nullable
@@ -569,7 +569,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody titleFont(@javax.annotation.Nullable FontConfig titleFont) {
+  public PageThemesServiceUpdateBody titleFont(@javax.annotation.Nullable FontConfig titleFont) {
     this.titleFont = titleFont;
     return this;
   }
@@ -588,13 +588,13 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
 
-  public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody visitorExperience(@javax.annotation.Nullable VisitorExperienceEnum visitorExperience) {
+  public PageThemesServiceUpdateBody visitorExperience(@javax.annotation.Nullable VisitorExperienceEnum visitorExperience) {
     this.visitorExperience = visitorExperience;
     return this;
   }
 
   /**
-   * How visitor pages pace their content: CLASSIC shows a whole form at once, FOCUSED one question per screen.
+   * How visitor pages pace their content: CLASSIC shows a whole form at once, FOCUSED shows one question per screen.
    * @return visitorExperience
    */
   @javax.annotation.Nullable
@@ -616,23 +616,23 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody = (PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody) o;
-    return Objects.equals(this.badge, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.badge) &&
-        Objects.equals(this.badgeEnabled, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.badgeEnabled) &&
-        Objects.equals(this.badgeIconColor, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.badgeIconColor) &&
-        Objects.equals(this.badgeShape, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.badgeShape) &&
-        Objects.equals(this.bodyFont, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.bodyFont) &&
-        Objects.equals(this.canvasColor, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.canvasColor) &&
-        Objects.equals(this.canvasCover, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.canvasCover) &&
-        Objects.equals(this.canvasCoverMode, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.canvasCoverMode) &&
-        Objects.equals(this.containerConfig, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.containerConfig) &&
-        Objects.equals(this.containerEnabled, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.containerEnabled) &&
-        Objects.equals(this.elementColor, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.elementColor) &&
-        Objects.equals(this.elementFont, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.elementFont) &&
-        Objects.equals(this.footerLogo, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.footerLogo) &&
-        Objects.equals(this.footerLogoEnabled, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.footerLogoEnabled) &&
-        Objects.equals(this.titleFont, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.titleFont) &&
-        Objects.equals(this.visitorExperience, pageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.visitorExperience);
+    PageThemesServiceUpdateBody pageThemesServiceUpdateBody = (PageThemesServiceUpdateBody) o;
+    return Objects.equals(this.badge, pageThemesServiceUpdateBody.badge) &&
+        Objects.equals(this.badgeEnabled, pageThemesServiceUpdateBody.badgeEnabled) &&
+        Objects.equals(this.badgeIconColor, pageThemesServiceUpdateBody.badgeIconColor) &&
+        Objects.equals(this.badgeShape, pageThemesServiceUpdateBody.badgeShape) &&
+        Objects.equals(this.bodyFont, pageThemesServiceUpdateBody.bodyFont) &&
+        Objects.equals(this.canvasColor, pageThemesServiceUpdateBody.canvasColor) &&
+        Objects.equals(this.canvasCover, pageThemesServiceUpdateBody.canvasCover) &&
+        Objects.equals(this.canvasCoverMode, pageThemesServiceUpdateBody.canvasCoverMode) &&
+        Objects.equals(this.containerConfig, pageThemesServiceUpdateBody.containerConfig) &&
+        Objects.equals(this.containerEnabled, pageThemesServiceUpdateBody.containerEnabled) &&
+        Objects.equals(this.elementColor, pageThemesServiceUpdateBody.elementColor) &&
+        Objects.equals(this.elementFont, pageThemesServiceUpdateBody.elementFont) &&
+        Objects.equals(this.footerLogo, pageThemesServiceUpdateBody.footerLogo) &&
+        Objects.equals(this.footerLogoEnabled, pageThemesServiceUpdateBody.footerLogoEnabled) &&
+        Objects.equals(this.titleFont, pageThemesServiceUpdateBody.titleFont) &&
+        Objects.equals(this.visitorExperience, pageThemesServiceUpdateBody.visitorExperience);
   }
 
   @Override
@@ -643,7 +643,7 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {\n");
+    sb.append("class PageThemesServiceUpdateBody {\n");
     sb.append("    badge: ").append(toIndentedString(badge)).append("\n");
     sb.append("    badgeEnabled: ").append(toIndentedString(badgeEnabled)).append("\n");
     sb.append("    badgeIconColor: ").append(toIndentedString(badgeIconColor)).append("\n");
@@ -688,20 +688,20 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody
+   * @throws IOException if the JSON Element is invalid with respect to PageThemesServiceUpdateBody
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody is not found in the empty JSON string", PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.openapiRequiredFields.toString()));
+        if (!PageThemesServiceUpdateBody.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in PageThemesServiceUpdateBody is not found in the empty JSON string", PageThemesServiceUpdateBody.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!PageThemesServiceUpdateBody.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `PageThemesServiceUpdateBody` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
@@ -772,22 +772,22 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody' and its subtypes
+       if (!PageThemesServiceUpdateBody.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'PageThemesServiceUpdateBody' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.class));
+       final TypeAdapter<PageThemesServiceUpdateBody> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(PageThemesServiceUpdateBody.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody>() {
+       return (TypeAdapter<T>) new TypeAdapter<PageThemesServiceUpdateBody>() {
            @Override
-           public void write(JsonWriter out, PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody value) throws IOException {
+           public void write(JsonWriter out, PageThemesServiceUpdateBody value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody read(JsonReader in) throws IOException {
+           public PageThemesServiceUpdateBody read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -798,18 +798,18 @@ public class PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody {
   }
 
   /**
-   * Create an instance of PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody given an JSON string
+   * Create an instance of PageThemesServiceUpdateBody given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody
-   * @throws IOException if the JSON string is invalid with respect to PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody
+   * @return An instance of PageThemesServiceUpdateBody
+   * @throws IOException if the JSON string is invalid with respect to PageThemesServiceUpdateBody
    */
-  public static PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.class);
+  public static PageThemesServiceUpdateBody fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, PageThemesServiceUpdateBody.class);
   }
 
   /**
-   * Convert an instance of PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody to an JSON string
+   * Convert an instance of PageThemesServiceUpdateBody to an JSON string
    *
    * @return JSON string
    */

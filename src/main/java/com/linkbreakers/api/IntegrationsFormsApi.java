@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -27,16 +27,14 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import com.linkbreakers.model.CompleteGoogleFormsOAuthRequest;
-import com.linkbreakers.model.CompleteGoogleFormsOAuthResponse;
+import com.linkbreakers.model.ConnectFormToolResponse;
 import com.linkbreakers.model.ErrorResponse;
-import com.linkbreakers.model.GetGoogleFormsIntegrationResponse;
-import com.linkbreakers.model.GetGoogleFormsOAuthURLResponse;
-import com.linkbreakers.model.GoogleFormsIntegrationsServiceChooseFormLinkBody;
-import com.linkbreakers.model.ListDetectedGoogleFormsResponse;
-import com.linkbreakers.model.SyncGoogleFormsResponse;
-import com.linkbreakers.model.UpdateGoogleFormsIntegrationRequest;
-import com.linkbreakers.model.UpdateGoogleFormsIntegrationResponse;
+import com.linkbreakers.model.FormIntegrationsServiceConnectBody;
+import com.linkbreakers.model.FormIntegrationsServiceUpdateBody;
+import com.linkbreakers.model.GetFormConnectionResponse;
+import com.linkbreakers.model.ListFormConnectionsResponse;
+import com.linkbreakers.model.ListFormToolFormsResponse;
+import com.linkbreakers.model.UpdateFormConnectionResponse;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -44,16 +42,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GoogleFormsIntegrationsApi {
+public class IntegrationsFormsApi {
     private ApiClient localVarApiClient;
     private int localHostIndex;
     private String localCustomBaseUrl;
 
-    public GoogleFormsIntegrationsApi() {
+    public IntegrationsFormsApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public GoogleFormsIntegrationsApi(ApiClient apiClient) {
+    public IntegrationsFormsApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
@@ -82,10 +80,10 @@ public class GoogleFormsIntegrationsApi {
     }
 
     /**
-     * Build call for googleFormsIntegrationsServiceChooseFormLink
-     * @param formId The Google Form. (required)
-     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Build call for formIntegrationsServiceConnect
+     * @param tool  (required)
+     * @param formIntegrationsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -98,7 +96,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceChooseFormLinkCall(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceConnectCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -112,11 +110,11 @@ public class GoogleFormsIntegrationsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = googleFormsIntegrationsServiceChooseFormLinkBody;
+        Object localVarPostBody = formIntegrationsServiceConnectBody;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations/forms/{formId}/link"
-            .replace("{" + "formId" + "}", localVarApiClient.escapeString(formId.toString()));
+        String localVarPath = "/v1/form-integrations/{tool}/connect"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -150,28 +148,28 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceChooseFormLinkValidateBeforeCall(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'formId' is set
-        if (formId == null) {
-            throw new ApiException("Missing the required parameter 'formId' when calling googleFormsIntegrationsServiceChooseFormLink(Async)");
+    private okhttp3.Call formIntegrationsServiceConnectValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceConnect(Async)");
         }
 
-        // verify the required parameter 'googleFormsIntegrationsServiceChooseFormLinkBody' is set
-        if (googleFormsIntegrationsServiceChooseFormLinkBody == null) {
-            throw new ApiException("Missing the required parameter 'googleFormsIntegrationsServiceChooseFormLinkBody' when calling googleFormsIntegrationsServiceChooseFormLink(Async)");
+        // verify the required parameter 'formIntegrationsServiceConnectBody' is set
+        if (formIntegrationsServiceConnectBody == null) {
+            throw new ApiException("Missing the required parameter 'formIntegrationsServiceConnectBody' when calling formIntegrationsServiceConnect(Async)");
         }
 
-        return googleFormsIntegrationsServiceChooseFormLinkCall(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey, _callback);
+        return formIntegrationsServiceConnectCall(tool, formIntegrationsServiceConnectBody, idempotencyKey, _callback);
 
     }
 
     /**
-     * Choose a Google Form&#39;s link
-     * When the same Google Form is behind several links, timing cannot tell which link a response came from. This records the link its responses belong to.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param formId The Google Form. (required)
-     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return Object
+     * Connect a form tool with an API key
+     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formIntegrationsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ConnectFormToolResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -182,18 +180,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public Object googleFormsIntegrationsServiceChooseFormLink(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<Object> localVarResp = googleFormsIntegrationsServiceChooseFormLinkWithHttpInfo(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey);
+    public ConnectFormToolResponse formIntegrationsServiceConnect(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ConnectFormToolResponse> localVarResp = formIntegrationsServiceConnectWithHttpInfo(tool, formIntegrationsServiceConnectBody, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Choose a Google Form&#39;s link
-     * When the same Google Form is behind several links, timing cannot tell which link a response came from. This records the link its responses belong to.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param formId The Google Form. (required)
-     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;Object&gt;
+     * Connect a form tool with an API key
+     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formIntegrationsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;ConnectFormToolResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -204,18 +202,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<Object> googleFormsIntegrationsServiceChooseFormLinkWithHttpInfo(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceChooseFormLinkValidateBeforeCall(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+    public ApiResponse<ConnectFormToolResponse> formIntegrationsServiceConnectWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceConnectValidateBeforeCall(tool, formIntegrationsServiceConnectBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<ConnectFormToolResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Choose a Google Form&#39;s link (asynchronously)
-     * When the same Google Form is behind several links, timing cannot tell which link a response came from. This records the link its responses belong to.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param formId The Google Form. (required)
-     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Connect a form tool with an API key (asynchronously)
+     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formIntegrationsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -228,159 +226,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceChooseFormLinkAsync(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceConnectAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ConnectFormToolResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceChooseFormLinkValidateBeforeCall(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        okhttp3.Call localVarCall = formIntegrationsServiceConnectValidateBeforeCall(tool, formIntegrationsServiceConnectBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<ConnectFormToolResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for googleFormsIntegrationsServiceCompleteOAuth
-     * @param completeGoogleFormsOAuthRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call googleFormsIntegrationsServiceCompleteOAuthCall(@javax.annotation.Nonnull CompleteGoogleFormsOAuthRequest completeGoogleFormsOAuthRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = completeGoogleFormsOAuthRequest;
-
-        // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations/oauth/complete";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceCompleteOAuthValidateBeforeCall(@javax.annotation.Nonnull CompleteGoogleFormsOAuthRequest completeGoogleFormsOAuthRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'completeGoogleFormsOAuthRequest' is set
-        if (completeGoogleFormsOAuthRequest == null) {
-            throw new ApiException("Missing the required parameter 'completeGoogleFormsOAuthRequest' when calling googleFormsIntegrationsServiceCompleteOAuth(Async)");
-        }
-
-        return googleFormsIntegrationsServiceCompleteOAuthCall(completeGoogleFormsOAuthRequest, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Complete Google OAuth
-     * Exchanges the Google authorization code for tokens and creates the workspace integration.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param completeGoogleFormsOAuthRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return CompleteGoogleFormsOAuthResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public CompleteGoogleFormsOAuthResponse googleFormsIntegrationsServiceCompleteOAuth(@javax.annotation.Nonnull CompleteGoogleFormsOAuthRequest completeGoogleFormsOAuthRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<CompleteGoogleFormsOAuthResponse> localVarResp = googleFormsIntegrationsServiceCompleteOAuthWithHttpInfo(completeGoogleFormsOAuthRequest, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Complete Google OAuth
-     * Exchanges the Google authorization code for tokens and creates the workspace integration.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param completeGoogleFormsOAuthRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;CompleteGoogleFormsOAuthResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<CompleteGoogleFormsOAuthResponse> googleFormsIntegrationsServiceCompleteOAuthWithHttpInfo(@javax.annotation.Nonnull CompleteGoogleFormsOAuthRequest completeGoogleFormsOAuthRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceCompleteOAuthValidateBeforeCall(completeGoogleFormsOAuthRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<CompleteGoogleFormsOAuthResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Complete Google OAuth (asynchronously)
-     * Exchanges the Google authorization code for tokens and creates the workspace integration.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param completeGoogleFormsOAuthRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call googleFormsIntegrationsServiceCompleteOAuthAsync(@javax.annotation.Nonnull CompleteGoogleFormsOAuthRequest completeGoogleFormsOAuthRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CompleteGoogleFormsOAuthResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceCompleteOAuthValidateBeforeCall(completeGoogleFormsOAuthRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<CompleteGoogleFormsOAuthResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for googleFormsIntegrationsServiceDelete
+     * Build call for formIntegrationsServiceDisconnect
+     * @param tool  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -393,7 +248,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceDeleteCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceDisconnectCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -410,7 +265,8 @@ public class GoogleFormsIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations";
+        String localVarPath = "/v1/form-integrations/{tool}"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -438,14 +294,20 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceDeleteValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        return googleFormsIntegrationsServiceDeleteCall(_callback);
+    private okhttp3.Call formIntegrationsServiceDisconnectValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceDisconnect(Async)");
+        }
+
+        return formIntegrationsServiceDisconnectCall(tool, _callback);
 
     }
 
     /**
-     * Disconnect Google Forms integration
-     * Disconnect and remove the Google Forms integration from the workspace.  Requires the &#x60;integrations:write&#x60; scope.
+     * Disconnect a form tool
+     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -457,14 +319,15 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public Object googleFormsIntegrationsServiceDelete() throws ApiException {
-        ApiResponse<Object> localVarResp = googleFormsIntegrationsServiceDeleteWithHttpInfo();
+    public Object formIntegrationsServiceDisconnect(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<Object> localVarResp = formIntegrationsServiceDisconnectWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * Disconnect Google Forms integration
-     * Disconnect and remove the Google Forms integration from the workspace.  Requires the &#x60;integrations:write&#x60; scope.
+     * Disconnect a form tool
+     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -476,15 +339,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<Object> googleFormsIntegrationsServiceDeleteWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceDeleteValidateBeforeCall(null);
+    public ApiResponse<Object> formIntegrationsServiceDisconnectWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceDisconnectValidateBeforeCall(tool, null);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Disconnect Google Forms integration (asynchronously)
-     * Disconnect and remove the Google Forms integration from the workspace.  Requires the &#x60;integrations:write&#x60; scope.
+     * Disconnect a form tool (asynchronously)
+     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -497,15 +361,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceDeleteAsync(final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceDisconnectAsync(@javax.annotation.Nonnull String tool, final ApiCallback<Object> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceDeleteValidateBeforeCall(_callback);
+        okhttp3.Call localVarCall = formIntegrationsServiceDisconnectValidateBeforeCall(tool, _callback);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for googleFormsIntegrationsServiceGet
+     * Build call for formIntegrationsServiceGet
+     * @param tool  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -518,7 +383,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceGetCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceGetCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -535,7 +400,8 @@ public class GoogleFormsIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations";
+        String localVarPath = "/v1/form-integrations/{tool}"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -563,15 +429,21 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceGetValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        return googleFormsIntegrationsServiceGetCall(_callback);
+    private okhttp3.Call formIntegrationsServiceGetValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceGet(Async)");
+        }
+
+        return formIntegrationsServiceGetCall(tool, _callback);
 
     }
 
     /**
-     * Get Google Forms integration
-     * Retrieve the Google Forms integration for the workspace.  Requires the &#x60;integrations:read&#x60; scope.
-     * @return GetGoogleFormsIntegrationResponse
+     * Get a form tool connection
+     * Return one form tool&#39;s connection, empty when it is not connected.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool  (required)
+     * @return GetFormConnectionResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -582,15 +454,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public GetGoogleFormsIntegrationResponse googleFormsIntegrationsServiceGet() throws ApiException {
-        ApiResponse<GetGoogleFormsIntegrationResponse> localVarResp = googleFormsIntegrationsServiceGetWithHttpInfo();
+    public GetFormConnectionResponse formIntegrationsServiceGet(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<GetFormConnectionResponse> localVarResp = formIntegrationsServiceGetWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * Get Google Forms integration
-     * Retrieve the Google Forms integration for the workspace.  Requires the &#x60;integrations:read&#x60; scope.
-     * @return ApiResponse&lt;GetGoogleFormsIntegrationResponse&gt;
+     * Get a form tool connection
+     * Return one form tool&#39;s connection, empty when it is not connected.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool  (required)
+     * @return ApiResponse&lt;GetFormConnectionResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -601,15 +474,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<GetGoogleFormsIntegrationResponse> googleFormsIntegrationsServiceGetWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceGetValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<GetGoogleFormsIntegrationResponse>(){}.getType();
+    public ApiResponse<GetFormConnectionResponse> formIntegrationsServiceGetWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceGetValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<GetFormConnectionResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get Google Forms integration (asynchronously)
-     * Retrieve the Google Forms integration for the workspace.  Requires the &#x60;integrations:read&#x60; scope.
+     * Get a form tool connection (asynchronously)
+     * Return one form tool&#39;s connection, empty when it is not connected.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -622,15 +496,15 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceGetAsync(final ApiCallback<GetGoogleFormsIntegrationResponse> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceGetAsync(@javax.annotation.Nonnull String tool, final ApiCallback<GetFormConnectionResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceGetValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<GetGoogleFormsIntegrationResponse>(){}.getType();
+        okhttp3.Call localVarCall = formIntegrationsServiceGetValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<GetFormConnectionResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for googleFormsIntegrationsServiceGetOAuthURL
+     * Build call for formIntegrationsServiceList
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -643,7 +517,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceGetOAuthURLCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceListCall(final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -660,7 +534,7 @@ public class GoogleFormsIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations/oauth-url";
+        String localVarPath = "/v1/form-integrations";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -688,15 +562,15 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceGetOAuthURLValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        return googleFormsIntegrationsServiceGetOAuthURLCall(_callback);
+    private okhttp3.Call formIntegrationsServiceListValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        return formIntegrationsServiceListCall(_callback);
 
     }
 
     /**
-     * Get Google OAuth URL
-     * Returns the Google OAuth authorization URL to initiate the connection flow.  Requires the &#x60;integrations:write&#x60; scope.
-     * @return GetGoogleFormsOAuthURLResponse
+     * List form tool connections
+     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ListFormConnectionsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -707,15 +581,15 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public GetGoogleFormsOAuthURLResponse googleFormsIntegrationsServiceGetOAuthURL() throws ApiException {
-        ApiResponse<GetGoogleFormsOAuthURLResponse> localVarResp = googleFormsIntegrationsServiceGetOAuthURLWithHttpInfo();
+    public ListFormConnectionsResponse formIntegrationsServiceList() throws ApiException {
+        ApiResponse<ListFormConnectionsResponse> localVarResp = formIntegrationsServiceListWithHttpInfo();
         return localVarResp.getData();
     }
 
     /**
-     * Get Google OAuth URL
-     * Returns the Google OAuth authorization URL to initiate the connection flow.  Requires the &#x60;integrations:write&#x60; scope.
-     * @return ApiResponse&lt;GetGoogleFormsOAuthURLResponse&gt;
+     * List form tool connections
+     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ApiResponse&lt;ListFormConnectionsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -726,15 +600,15 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<GetGoogleFormsOAuthURLResponse> googleFormsIntegrationsServiceGetOAuthURLWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceGetOAuthURLValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<GetGoogleFormsOAuthURLResponse>(){}.getType();
+    public ApiResponse<ListFormConnectionsResponse> formIntegrationsServiceListWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceListValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<ListFormConnectionsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get Google OAuth URL (asynchronously)
-     * Returns the Google OAuth authorization URL to initiate the connection flow.  Requires the &#x60;integrations:write&#x60; scope.
+     * List form tool connections (asynchronously)
+     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -747,15 +621,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceGetOAuthURLAsync(final ApiCallback<GetGoogleFormsOAuthURLResponse> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceListAsync(final ApiCallback<ListFormConnectionsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceGetOAuthURLValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<GetGoogleFormsOAuthURLResponse>(){}.getType();
+        okhttp3.Call localVarCall = formIntegrationsServiceListValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<ListFormConnectionsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for googleFormsIntegrationsServiceListDetectedForms
+     * Build call for formIntegrationsServiceListForms
+     * @param tool  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -768,7 +643,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceListDetectedFormsCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceListFormsCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -785,7 +660,8 @@ public class GoogleFormsIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations/detected-forms";
+        String localVarPath = "/v1/form-integrations/{tool}/forms"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -813,15 +689,21 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceListDetectedFormsValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        return googleFormsIntegrationsServiceListDetectedFormsCall(_callback);
+    private okhttp3.Call formIntegrationsServiceListFormsValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceListForms(Async)");
+        }
+
+        return formIntegrationsServiceListFormsCall(tool, _callback);
 
     }
 
     /**
-     * List detected Google Forms
-     * Returns Google Forms auto-detected from workspace links that have a Google Form as their redirect destination.  Requires the &#x60;integrations:read&#x60; scope.
-     * @return ListDetectedGoogleFormsResponse
+     * List the forms found behind links
+     * Return the forms of a connected tool behind the workspace&#39;s links, each with whether it is ready.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool  (required)
+     * @return ListFormToolFormsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -832,15 +714,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListDetectedGoogleFormsResponse googleFormsIntegrationsServiceListDetectedForms() throws ApiException {
-        ApiResponse<ListDetectedGoogleFormsResponse> localVarResp = googleFormsIntegrationsServiceListDetectedFormsWithHttpInfo();
+    public ListFormToolFormsResponse formIntegrationsServiceListForms(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<ListFormToolFormsResponse> localVarResp = formIntegrationsServiceListFormsWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * List detected Google Forms
-     * Returns Google Forms auto-detected from workspace links that have a Google Form as their redirect destination.  Requires the &#x60;integrations:read&#x60; scope.
-     * @return ApiResponse&lt;ListDetectedGoogleFormsResponse&gt;
+     * List the forms found behind links
+     * Return the forms of a connected tool behind the workspace&#39;s links, each with whether it is ready.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool  (required)
+     * @return ApiResponse&lt;ListFormToolFormsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -851,15 +734,16 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListDetectedGoogleFormsResponse> googleFormsIntegrationsServiceListDetectedFormsWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceListDetectedFormsValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<ListDetectedGoogleFormsResponse>(){}.getType();
+    public ApiResponse<ListFormToolFormsResponse> formIntegrationsServiceListFormsWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceListFormsValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * List detected Google Forms (asynchronously)
-     * Returns Google Forms auto-detected from workspace links that have a Google Form as their redirect destination.  Requires the &#x60;integrations:read&#x60; scope.
+     * List the forms found behind links (asynchronously)
+     * Return the forms of a connected tool behind the workspace&#39;s links, each with whether it is ready.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -872,17 +756,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceListDetectedFormsAsync(final ApiCallback<ListDetectedGoogleFormsResponse> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceListFormsAsync(@javax.annotation.Nonnull String tool, final ApiCallback<ListFormToolFormsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceListDetectedFormsValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<ListDetectedGoogleFormsResponse>(){}.getType();
+        okhttp3.Call localVarCall = formIntegrationsServiceListFormsValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for googleFormsIntegrationsServiceSyncNow
+     * Build call for formIntegrationsServicePrepareForms
+     * @param tool  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -895,7 +780,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceSyncNowCall(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServicePrepareFormsCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -912,7 +797,8 @@ public class GoogleFormsIntegrationsApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations/sync";
+        String localVarPath = "/v1/form-integrations/{tool}/forms/prepare"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -946,22 +832,28 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceSyncNowValidateBeforeCall(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling googleFormsIntegrationsServiceSyncNow(Async)");
+    private okhttp3.Call formIntegrationsServicePrepareFormsValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServicePrepareForms(Async)");
         }
 
-        return googleFormsIntegrationsServiceSyncNowCall(body, idempotencyKey, _callback);
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling formIntegrationsServicePrepareForms(Async)");
+        }
+
+        return formIntegrationsServicePrepareFormsCall(tool, body, idempotencyKey, _callback);
 
     }
 
     /**
-     * Sync now
-     * Trigger an immediate sync of new Google Forms responses from all detected forms.  Requires the &#x60;integrations:write&#x60; scope.
+     * Check the forms again
+     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return SyncGoogleFormsResponse
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ListFormToolFormsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -972,17 +864,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public SyncGoogleFormsResponse googleFormsIntegrationsServiceSyncNow(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<SyncGoogleFormsResponse> localVarResp = googleFormsIntegrationsServiceSyncNowWithHttpInfo(body, idempotencyKey);
+    public ListFormToolFormsResponse formIntegrationsServicePrepareForms(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ListFormToolFormsResponse> localVarResp = formIntegrationsServicePrepareFormsWithHttpInfo(tool, body, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Sync now
-     * Trigger an immediate sync of new Google Forms responses from all detected forms.  Requires the &#x60;integrations:write&#x60; scope.
+     * Check the forms again
+     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;SyncGoogleFormsResponse&gt;
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;ListFormToolFormsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -993,17 +886,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<SyncGoogleFormsResponse> googleFormsIntegrationsServiceSyncNowWithHttpInfo(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceSyncNowValidateBeforeCall(body, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<SyncGoogleFormsResponse>(){}.getType();
+    public ApiResponse<ListFormToolFormsResponse> formIntegrationsServicePrepareFormsWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServicePrepareFormsValidateBeforeCall(tool, body, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Sync now (asynchronously)
-     * Trigger an immediate sync of new Google Forms responses from all detected forms.  Requires the &#x60;integrations:write&#x60; scope.
+     * Check the forms again (asynchronously)
+     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1016,17 +910,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceSyncNowAsync(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<SyncGoogleFormsResponse> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServicePrepareFormsAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ListFormToolFormsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceSyncNowValidateBeforeCall(body, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<SyncGoogleFormsResponse>(){}.getType();
+        okhttp3.Call localVarCall = formIntegrationsServicePrepareFormsValidateBeforeCall(tool, body, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for googleFormsIntegrationsServiceUpdate
-     * @param updateGoogleFormsIntegrationRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Build call for formIntegrationsServiceUpdate
+     * @param tool  (required)
+     * @param formIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1039,7 +934,7 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceUpdateCall(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceUpdateCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1053,10 +948,11 @@ public class GoogleFormsIntegrationsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = updateGoogleFormsIntegrationRequest;
+        Object localVarPostBody = formIntegrationsServiceUpdateBody;
 
         // create path and map variables
-        String localVarPath = "/v1/google-forms-integrations";
+        String localVarPath = "/v1/form-integrations/{tool}"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -1090,22 +986,28 @@ public class GoogleFormsIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call googleFormsIntegrationsServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'updateGoogleFormsIntegrationRequest' is set
-        if (updateGoogleFormsIntegrationRequest == null) {
-            throw new ApiException("Missing the required parameter 'updateGoogleFormsIntegrationRequest' when calling googleFormsIntegrationsServiceUpdate(Async)");
+    private okhttp3.Call formIntegrationsServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceUpdate(Async)");
         }
 
-        return googleFormsIntegrationsServiceUpdateCall(updateGoogleFormsIntegrationRequest, idempotencyKey, _callback);
+        // verify the required parameter 'formIntegrationsServiceUpdateBody' is set
+        if (formIntegrationsServiceUpdateBody == null) {
+            throw new ApiException("Missing the required parameter 'formIntegrationsServiceUpdateBody' when calling formIntegrationsServiceUpdate(Async)");
+        }
+
+        return formIntegrationsServiceUpdateCall(tool, formIntegrationsServiceUpdateBody, idempotencyKey, _callback);
 
     }
 
     /**
-     * Update Google Forms integration
-     * Update the integration status (pause or resume syncing).  Requires the &#x60;integrations:write&#x60; scope.
-     * @param updateGoogleFormsIntegrationRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return UpdateGoogleFormsIntegrationResponse
+     * Update a form tool connection
+     * Pause or resume it, or change which links&#39; forms bring answers in and which answers are kept.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return UpdateFormConnectionResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1116,17 +1018,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public UpdateGoogleFormsIntegrationResponse googleFormsIntegrationsServiceUpdate(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<UpdateGoogleFormsIntegrationResponse> localVarResp = googleFormsIntegrationsServiceUpdateWithHttpInfo(updateGoogleFormsIntegrationRequest, idempotencyKey);
+    public UpdateFormConnectionResponse formIntegrationsServiceUpdate(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<UpdateFormConnectionResponse> localVarResp = formIntegrationsServiceUpdateWithHttpInfo(tool, formIntegrationsServiceUpdateBody, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Update Google Forms integration
-     * Update the integration status (pause or resume syncing).  Requires the &#x60;integrations:write&#x60; scope.
-     * @param updateGoogleFormsIntegrationRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;UpdateGoogleFormsIntegrationResponse&gt;
+     * Update a form tool connection
+     * Pause or resume it, or change which links&#39; forms bring answers in and which answers are kept.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;UpdateFormConnectionResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1137,17 +1040,18 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<UpdateGoogleFormsIntegrationResponse> googleFormsIntegrationsServiceUpdateWithHttpInfo(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceUpdateValidateBeforeCall(updateGoogleFormsIntegrationRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<UpdateGoogleFormsIntegrationResponse>(){}.getType();
+    public ApiResponse<UpdateFormConnectionResponse> formIntegrationsServiceUpdateWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceUpdateValidateBeforeCall(tool, formIntegrationsServiceUpdateBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<UpdateFormConnectionResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Update Google Forms integration (asynchronously)
-     * Update the integration status (pause or resume syncing).  Requires the &#x60;integrations:write&#x60; scope.
-     * @param updateGoogleFormsIntegrationRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Update a form tool connection (asynchronously)
+     * Pause or resume it, or change which links&#39; forms bring answers in and which answers are kept.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1160,10 +1064,10 @@ public class GoogleFormsIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call googleFormsIntegrationsServiceUpdateAsync(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateGoogleFormsIntegrationResponse> _callback) throws ApiException {
+    public okhttp3.Call formIntegrationsServiceUpdateAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateFormConnectionResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = googleFormsIntegrationsServiceUpdateValidateBeforeCall(updateGoogleFormsIntegrationRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<UpdateGoogleFormsIntegrationResponse>(){}.getType();
+        okhttp3.Call localVarCall = formIntegrationsServiceUpdateValidateBeforeCall(tool, formIntegrationsServiceUpdateBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<UpdateFormConnectionResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

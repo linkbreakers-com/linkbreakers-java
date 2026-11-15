@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -50,10 +50,10 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * PublicCreateQrcodeDesignRequest provisions a new reusable QR code styling preset.
+ * Provisions a new reusable QR code styling preset.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class PublicCreateQrcodeDesignRequest {
+public class CreateQrcodeDesignRequest {
   public static final String SERIALIZED_NAME_BACKGROUND_OPTIONS = "backgroundOptions";
   @SerializedName(SERIALIZED_NAME_BACKGROUND_OPTIONS)
   @javax.annotation.Nullable
@@ -231,10 +231,10 @@ public class PublicCreateQrcodeDesignRequest {
   @javax.annotation.Nullable
   private Integer width;
 
-  public PublicCreateQrcodeDesignRequest() {
+  public CreateQrcodeDesignRequest() {
   }
 
-  public PublicCreateQrcodeDesignRequest backgroundOptions(@javax.annotation.Nullable BackgroundOptions backgroundOptions) {
+  public CreateQrcodeDesignRequest backgroundOptions(@javax.annotation.Nullable BackgroundOptions backgroundOptions) {
     this.backgroundOptions = backgroundOptions;
     return this;
   }
@@ -253,13 +253,13 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest centralImageData(@javax.annotation.Nullable String centralImageData) {
+  public CreateQrcodeDesignRequest centralImageData(@javax.annotation.Nullable String centralImageData) {
     this.centralImageData = centralImageData;
     return this;
   }
 
   /**
-   * The image to use as the central image of the QR Code. The file size limit is 3MB. It must be transmitted in a base64 string format when sending it through HTTP. This endpoint has no workspace, so it cannot take an image from the media library: to use one, create the design, then set central_image_media_id with Update.
+   * The image to use as the central image of the QR Code. The file size limit is 3MB. It must be transmitted in a base64 string format when sending it through HTTP. This endpoint has no workspace, so it cannot take an image from the media library: to use one, create the design, then set centralImageMediaId with Update.
    * @return centralImageData
    */
   @javax.annotation.Nullable
@@ -272,7 +272,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest centralImageMargin(@javax.annotation.Nullable Integer centralImageMargin) {
+  public CreateQrcodeDesignRequest centralImageMargin(@javax.annotation.Nullable Integer centralImageMargin) {
     this.centralImageMargin = centralImageMargin;
     return this;
   }
@@ -291,7 +291,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest centralImageSize(@javax.annotation.Nullable Double centralImageSize) {
+  public CreateQrcodeDesignRequest centralImageSize(@javax.annotation.Nullable Double centralImageSize) {
     this.centralImageSize = centralImageSize;
     return this;
   }
@@ -310,7 +310,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest cornersDotOptions(@javax.annotation.Nullable CornersDotOptions cornersDotOptions) {
+  public CreateQrcodeDesignRequest cornersDotOptions(@javax.annotation.Nullable CornersDotOptions cornersDotOptions) {
     this.cornersDotOptions = cornersDotOptions;
     return this;
   }
@@ -329,7 +329,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest cornersSquareOptions(@javax.annotation.Nullable CornersSquareOptions cornersSquareOptions) {
+  public CreateQrcodeDesignRequest cornersSquareOptions(@javax.annotation.Nullable CornersSquareOptions cornersSquareOptions) {
     this.cornersSquareOptions = cornersSquareOptions;
     return this;
   }
@@ -348,7 +348,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest dotsOptions(@javax.annotation.Nullable DotsOptions dotsOptions) {
+  public CreateQrcodeDesignRequest dotsOptions(@javax.annotation.Nullable DotsOptions dotsOptions) {
     this.dotsOptions = dotsOptions;
     return this;
   }
@@ -367,7 +367,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest errorCorrectionLevel(@javax.annotation.Nullable String errorCorrectionLevel) {
+  public CreateQrcodeDesignRequest errorCorrectionLevel(@javax.annotation.Nullable String errorCorrectionLevel) {
     this.errorCorrectionLevel = errorCorrectionLevel;
     return this;
   }
@@ -386,7 +386,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest height(@javax.annotation.Nullable Integer height) {
+  public CreateQrcodeDesignRequest height(@javax.annotation.Nullable Integer height) {
     this.height = height;
     return this;
   }
@@ -405,7 +405,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest hideBackgroundDots(@javax.annotation.Nullable Boolean hideBackgroundDots) {
+  public CreateQrcodeDesignRequest hideBackgroundDots(@javax.annotation.Nullable Boolean hideBackgroundDots) {
     this.hideBackgroundDots = hideBackgroundDots;
     return this;
   }
@@ -424,7 +424,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest outputFileFormat(@javax.annotation.Nullable OutputFileFormatEnum outputFileFormat) {
+  public CreateQrcodeDesignRequest outputFileFormat(@javax.annotation.Nullable OutputFileFormatEnum outputFileFormat) {
     this.outputFileFormat = outputFileFormat;
     return this;
   }
@@ -443,7 +443,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest shape(@javax.annotation.Nullable ShapeEnum shape) {
+  public CreateQrcodeDesignRequest shape(@javax.annotation.Nullable ShapeEnum shape) {
     this.shape = shape;
     return this;
   }
@@ -462,7 +462,7 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
 
-  public PublicCreateQrcodeDesignRequest width(@javax.annotation.Nullable Integer width) {
+  public CreateQrcodeDesignRequest width(@javax.annotation.Nullable Integer width) {
     this.width = width;
     return this;
   }
@@ -490,20 +490,20 @@ public class PublicCreateQrcodeDesignRequest {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PublicCreateQrcodeDesignRequest publicCreateQrcodeDesignRequest = (PublicCreateQrcodeDesignRequest) o;
-    return Objects.equals(this.backgroundOptions, publicCreateQrcodeDesignRequest.backgroundOptions) &&
-        Objects.equals(this.centralImageData, publicCreateQrcodeDesignRequest.centralImageData) &&
-        Objects.equals(this.centralImageMargin, publicCreateQrcodeDesignRequest.centralImageMargin) &&
-        Objects.equals(this.centralImageSize, publicCreateQrcodeDesignRequest.centralImageSize) &&
-        Objects.equals(this.cornersDotOptions, publicCreateQrcodeDesignRequest.cornersDotOptions) &&
-        Objects.equals(this.cornersSquareOptions, publicCreateQrcodeDesignRequest.cornersSquareOptions) &&
-        Objects.equals(this.dotsOptions, publicCreateQrcodeDesignRequest.dotsOptions) &&
-        Objects.equals(this.errorCorrectionLevel, publicCreateQrcodeDesignRequest.errorCorrectionLevel) &&
-        Objects.equals(this.height, publicCreateQrcodeDesignRequest.height) &&
-        Objects.equals(this.hideBackgroundDots, publicCreateQrcodeDesignRequest.hideBackgroundDots) &&
-        Objects.equals(this.outputFileFormat, publicCreateQrcodeDesignRequest.outputFileFormat) &&
-        Objects.equals(this.shape, publicCreateQrcodeDesignRequest.shape) &&
-        Objects.equals(this.width, publicCreateQrcodeDesignRequest.width);
+    CreateQrcodeDesignRequest createQrcodeDesignRequest = (CreateQrcodeDesignRequest) o;
+    return Objects.equals(this.backgroundOptions, createQrcodeDesignRequest.backgroundOptions) &&
+        Objects.equals(this.centralImageData, createQrcodeDesignRequest.centralImageData) &&
+        Objects.equals(this.centralImageMargin, createQrcodeDesignRequest.centralImageMargin) &&
+        Objects.equals(this.centralImageSize, createQrcodeDesignRequest.centralImageSize) &&
+        Objects.equals(this.cornersDotOptions, createQrcodeDesignRequest.cornersDotOptions) &&
+        Objects.equals(this.cornersSquareOptions, createQrcodeDesignRequest.cornersSquareOptions) &&
+        Objects.equals(this.dotsOptions, createQrcodeDesignRequest.dotsOptions) &&
+        Objects.equals(this.errorCorrectionLevel, createQrcodeDesignRequest.errorCorrectionLevel) &&
+        Objects.equals(this.height, createQrcodeDesignRequest.height) &&
+        Objects.equals(this.hideBackgroundDots, createQrcodeDesignRequest.hideBackgroundDots) &&
+        Objects.equals(this.outputFileFormat, createQrcodeDesignRequest.outputFileFormat) &&
+        Objects.equals(this.shape, createQrcodeDesignRequest.shape) &&
+        Objects.equals(this.width, createQrcodeDesignRequest.width);
   }
 
   @Override
@@ -514,7 +514,7 @@ public class PublicCreateQrcodeDesignRequest {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PublicCreateQrcodeDesignRequest {\n");
+    sb.append("class CreateQrcodeDesignRequest {\n");
     sb.append("    backgroundOptions: ").append(toIndentedString(backgroundOptions)).append("\n");
     sb.append("    centralImageData: ").append(toIndentedString(centralImageData)).append("\n");
     sb.append("    centralImageMargin: ").append(toIndentedString(centralImageMargin)).append("\n");
@@ -556,20 +556,20 @@ public class PublicCreateQrcodeDesignRequest {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to PublicCreateQrcodeDesignRequest
+   * @throws IOException if the JSON Element is invalid with respect to CreateQrcodeDesignRequest
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!PublicCreateQrcodeDesignRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in PublicCreateQrcodeDesignRequest is not found in the empty JSON string", PublicCreateQrcodeDesignRequest.openapiRequiredFields.toString()));
+        if (!CreateQrcodeDesignRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in CreateQrcodeDesignRequest is not found in the empty JSON string", CreateQrcodeDesignRequest.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!PublicCreateQrcodeDesignRequest.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `PublicCreateQrcodeDesignRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!CreateQrcodeDesignRequest.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `CreateQrcodeDesignRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
@@ -615,22 +615,22 @@ public class PublicCreateQrcodeDesignRequest {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!PublicCreateQrcodeDesignRequest.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'PublicCreateQrcodeDesignRequest' and its subtypes
+       if (!CreateQrcodeDesignRequest.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'CreateQrcodeDesignRequest' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<PublicCreateQrcodeDesignRequest> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(PublicCreateQrcodeDesignRequest.class));
+       final TypeAdapter<CreateQrcodeDesignRequest> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(CreateQrcodeDesignRequest.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<PublicCreateQrcodeDesignRequest>() {
+       return (TypeAdapter<T>) new TypeAdapter<CreateQrcodeDesignRequest>() {
            @Override
-           public void write(JsonWriter out, PublicCreateQrcodeDesignRequest value) throws IOException {
+           public void write(JsonWriter out, CreateQrcodeDesignRequest value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public PublicCreateQrcodeDesignRequest read(JsonReader in) throws IOException {
+           public CreateQrcodeDesignRequest read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -641,18 +641,18 @@ public class PublicCreateQrcodeDesignRequest {
   }
 
   /**
-   * Create an instance of PublicCreateQrcodeDesignRequest given an JSON string
+   * Create an instance of CreateQrcodeDesignRequest given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of PublicCreateQrcodeDesignRequest
-   * @throws IOException if the JSON string is invalid with respect to PublicCreateQrcodeDesignRequest
+   * @return An instance of CreateQrcodeDesignRequest
+   * @throws IOException if the JSON string is invalid with respect to CreateQrcodeDesignRequest
    */
-  public static PublicCreateQrcodeDesignRequest fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, PublicCreateQrcodeDesignRequest.class);
+  public static CreateQrcodeDesignRequest fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, CreateQrcodeDesignRequest.class);
   }
 
   /**
-   * Convert an instance of PublicCreateQrcodeDesignRequest to an JSON string
+   * Convert an instance of CreateQrcodeDesignRequest to an JSON string
    *
    * @return JSON string
    */

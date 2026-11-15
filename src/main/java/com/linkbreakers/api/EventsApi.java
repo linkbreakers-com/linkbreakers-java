@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -76,142 +76,7 @@ public class EventsApi {
     }
 
     /**
-     * Build call for eventsServiceListEventTraces
-     * @param eventId Event ID to get traces for (UUID) (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call eventsServiceListEventTracesCall(@javax.annotation.Nonnull String eventId, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/v1/events/{eventId}/traces"
-            .replace("{" + "eventId" + "}", localVarApiClient.escapeString(eventId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call eventsServiceListEventTracesValidateBeforeCall(@javax.annotation.Nonnull String eventId, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'eventId' is set
-        if (eventId == null) {
-            throw new ApiException("Missing the required parameter 'eventId' when calling eventsServiceListEventTraces(Async)");
-        }
-
-        return eventsServiceListEventTracesCall(eventId, _callback);
-
-    }
-
-    /**
-     * List event traces
-     * Retrieves all workflow step traces for an event, ordered by completion time. Useful for analyzing user engagement and workflow progression.  Requires the &#x60;analytics:read&#x60; scope.
-     * @param eventId Event ID to get traces for (UUID) (required)
-     * @return ListEventTracesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ListEventTracesResponse eventsServiceListEventTraces(@javax.annotation.Nonnull String eventId) throws ApiException {
-        ApiResponse<ListEventTracesResponse> localVarResp = eventsServiceListEventTracesWithHttpInfo(eventId);
-        return localVarResp.getData();
-    }
-
-    /**
-     * List event traces
-     * Retrieves all workflow step traces for an event, ordered by completion time. Useful for analyzing user engagement and workflow progression.  Requires the &#x60;analytics:read&#x60; scope.
-     * @param eventId Event ID to get traces for (UUID) (required)
-     * @return ApiResponse&lt;ListEventTracesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<ListEventTracesResponse> eventsServiceListEventTracesWithHttpInfo(@javax.annotation.Nonnull String eventId) throws ApiException {
-        okhttp3.Call localVarCall = eventsServiceListEventTracesValidateBeforeCall(eventId, null);
-        Type localVarReturnType = new TypeToken<ListEventTracesResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * List event traces (asynchronously)
-     * Retrieves all workflow step traces for an event, ordered by completion time. Useful for analyzing user engagement and workflow progression.  Requires the &#x60;analytics:read&#x60; scope.
-     * @param eventId Event ID to get traces for (UUID) (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call eventsServiceListEventTracesAsync(@javax.annotation.Nonnull String eventId, final ApiCallback<ListEventTracesResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = eventsServiceListEventTracesValidateBeforeCall(eventId, _callback);
-        Type localVarReturnType = new TypeToken<ListEventTracesResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for eventsServiceListEvents
+     * Build call for eventsServiceList
      * @param linkId Filter events to a specific link (optional, UUID)  Optional (optional)
      * @param startDate Inclusive start timestamp for the query window (workspace timezone aware). Note: For free plan workspaces, this will be automatically adjusted to not go back more than 2 weeks. For light plan workspaces, this will be automatically adjusted to not go back more than 3 months. (optional)
      * @param endDate Inclusive end timestamp for the query window (optional)
@@ -220,8 +85,8 @@ public class EventsApi {
      * @param pageToken Cursor token to retrieve the next page of results  Cursor token to retrieve the next page of results (optional)
      * @param include Optional list of relationships to include: visitor, device, link, workspace, journey  Optional list of relationships to include: visitor, device, link, workspace, journey (optional)
      * @param visitorId Filter events to a specific visitor (optional, UUID)  Optional (optional)
-     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send link_id or directory_id, not both (optional)
-     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of link_id, directory_id and tag_id (optional)
+     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send linkId or directoryId, not both (optional)
+     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of linkId, directoryId and tagId (optional)
      * @param countries Optional country filter: visits from any of these countries (ISO 3166-1 alpha-2 codes, e.g. \&quot;FR\&quot;). Combines with the link, directory or tag filter (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback Callback for upload/download progress
@@ -236,7 +101,7 @@ public class EventsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call eventsServiceListEventsCall(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call eventsServiceListCall(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -329,8 +194,8 @@ public class EventsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call eventsServiceListEventsValidateBeforeCall(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
-        return eventsServiceListEventsCall(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor, _callback);
+    private okhttp3.Call eventsServiceListValidateBeforeCall(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+        return eventsServiceListCall(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor, _callback);
 
     }
 
@@ -345,8 +210,8 @@ public class EventsApi {
      * @param pageToken Cursor token to retrieve the next page of results  Cursor token to retrieve the next page of results (optional)
      * @param include Optional list of relationships to include: visitor, device, link, workspace, journey  Optional list of relationships to include: visitor, device, link, workspace, journey (optional)
      * @param visitorId Filter events to a specific visitor (optional, UUID)  Optional (optional)
-     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send link_id or directory_id, not both (optional)
-     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of link_id, directory_id and tag_id (optional)
+     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send linkId or directoryId, not both (optional)
+     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of linkId, directoryId and tagId (optional)
      * @param countries Optional country filter: visits from any of these countries (ISO 3166-1 alpha-2 codes, e.g. \&quot;FR\&quot;). Combines with the link, directory or tag filter (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ListEventsResponse
@@ -360,8 +225,8 @@ public class EventsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListEventsResponse eventsServiceListEvents(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor) throws ApiException {
-        ApiResponse<ListEventsResponse> localVarResp = eventsServiceListEventsWithHttpInfo(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor);
+    public ListEventsResponse eventsServiceList(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor) throws ApiException {
+        ApiResponse<ListEventsResponse> localVarResp = eventsServiceListWithHttpInfo(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor);
         return localVarResp.getData();
     }
 
@@ -376,8 +241,8 @@ public class EventsApi {
      * @param pageToken Cursor token to retrieve the next page of results  Cursor token to retrieve the next page of results (optional)
      * @param include Optional list of relationships to include: visitor, device, link, workspace, journey  Optional list of relationships to include: visitor, device, link, workspace, journey (optional)
      * @param visitorId Filter events to a specific visitor (optional, UUID)  Optional (optional)
-     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send link_id or directory_id, not both (optional)
-     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of link_id, directory_id and tag_id (optional)
+     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send linkId or directoryId, not both (optional)
+     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of linkId, directoryId and tagId (optional)
      * @param countries Optional country filter: visits from any of these countries (ISO 3166-1 alpha-2 codes, e.g. \&quot;FR\&quot;). Combines with the link, directory or tag filter (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ApiResponse&lt;ListEventsResponse&gt;
@@ -391,8 +256,8 @@ public class EventsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListEventsResponse> eventsServiceListEventsWithHttpInfo(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor) throws ApiException {
-        okhttp3.Call localVarCall = eventsServiceListEventsValidateBeforeCall(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor, null);
+    public ApiResponse<ListEventsResponse> eventsServiceListWithHttpInfo(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor) throws ApiException {
+        okhttp3.Call localVarCall = eventsServiceListValidateBeforeCall(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor, null);
         Type localVarReturnType = new TypeToken<ListEventsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -408,8 +273,8 @@ public class EventsApi {
      * @param pageToken Cursor token to retrieve the next page of results  Cursor token to retrieve the next page of results (optional)
      * @param include Optional list of relationships to include: visitor, device, link, workspace, journey  Optional list of relationships to include: visitor, device, link, workspace, journey (optional)
      * @param visitorId Filter events to a specific visitor (optional, UUID)  Optional (optional)
-     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send link_id or directory_id, not both (optional)
-     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of link_id, directory_id and tag_id (optional)
+     * @param directoryId Optional directory filter (UUID): the links of this directory and of every directory below it. Send linkId or directoryId, not both (optional)
+     * @param tagId Optional tag filter (UUID): every link carrying this tag. Send at most one of linkId, directoryId and tagId (optional)
      * @param countries Optional country filter: visits from any of these countries (ISO 3166-1 alpha-2 codes, e.g. \&quot;FR\&quot;). Combines with the link, directory or tag filter (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback The callback to be executed when the API call finishes
@@ -424,10 +289,145 @@ public class EventsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call eventsServiceListEventsAsync(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor, final ApiCallback<ListEventsResponse> _callback) throws ApiException {
+    public okhttp3.Call eventsServiceListAsync(@javax.annotation.Nullable String linkId, @javax.annotation.Nullable OffsetDateTime startDate, @javax.annotation.Nullable OffsetDateTime endDate, @javax.annotation.Nullable String responseFormat, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String visitorId, @javax.annotation.Nullable String directoryId, @javax.annotation.Nullable String tagId, @javax.annotation.Nullable List<String> countries, @javax.annotation.Nullable String cursor, final ApiCallback<ListEventsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = eventsServiceListEventsValidateBeforeCall(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor, _callback);
+        okhttp3.Call localVarCall = eventsServiceListValidateBeforeCall(linkId, startDate, endDate, responseFormat, pageSize, pageToken, include, visitorId, directoryId, tagId, countries, cursor, _callback);
         Type localVarReturnType = new TypeToken<ListEventsResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for eventsServiceListTraces
+     * @param eventId Event ID to get traces for (UUID) (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call eventsServiceListTracesCall(@javax.annotation.Nonnull String eventId, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/v1/events/{eventId}/traces"
+            .replace("{" + "eventId" + "}", localVarApiClient.escapeString(eventId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call eventsServiceListTracesValidateBeforeCall(@javax.annotation.Nonnull String eventId, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'eventId' is set
+        if (eventId == null) {
+            throw new ApiException("Missing the required parameter 'eventId' when calling eventsServiceListTraces(Async)");
+        }
+
+        return eventsServiceListTracesCall(eventId, _callback);
+
+    }
+
+    /**
+     * List event traces
+     * Retrieves all workflow step traces for an event, ordered by completion time. Useful for analyzing user engagement and workflow progression.  Requires the &#x60;analytics:read&#x60; scope.
+     * @param eventId Event ID to get traces for (UUID) (required)
+     * @return ListEventTracesResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ListEventTracesResponse eventsServiceListTraces(@javax.annotation.Nonnull String eventId) throws ApiException {
+        ApiResponse<ListEventTracesResponse> localVarResp = eventsServiceListTracesWithHttpInfo(eventId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * List event traces
+     * Retrieves all workflow step traces for an event, ordered by completion time. Useful for analyzing user engagement and workflow progression.  Requires the &#x60;analytics:read&#x60; scope.
+     * @param eventId Event ID to get traces for (UUID) (required)
+     * @return ApiResponse&lt;ListEventTracesResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<ListEventTracesResponse> eventsServiceListTracesWithHttpInfo(@javax.annotation.Nonnull String eventId) throws ApiException {
+        okhttp3.Call localVarCall = eventsServiceListTracesValidateBeforeCall(eventId, null);
+        Type localVarReturnType = new TypeToken<ListEventTracesResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * List event traces (asynchronously)
+     * Retrieves all workflow step traces for an event, ordered by completion time. Useful for analyzing user engagement and workflow progression.  Requires the &#x60;analytics:read&#x60; scope.
+     * @param eventId Event ID to get traces for (UUID) (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call eventsServiceListTracesAsync(@javax.annotation.Nonnull String eventId, final ApiCallback<ListEventTracesResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = eventsServiceListTracesValidateBeforeCall(eventId, _callback);
+        Type localVarReturnType = new TypeToken<ListEventTracesResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

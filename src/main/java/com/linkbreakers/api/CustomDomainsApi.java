@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -27,7 +27,6 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import com.linkbreakers.model.CheckCustomDomainResponse;
 import com.linkbreakers.model.CreateCustomDomainRequest;
 import com.linkbreakers.model.CreateCustomDomainResponse;
 import com.linkbreakers.model.CustomDomainsServiceUpdateBody;
@@ -36,7 +35,7 @@ import com.linkbreakers.model.GetCustomDomainResponse;
 import com.linkbreakers.model.GetCustomDomainSetupGuideResponse;
 import com.linkbreakers.model.ListCustomDomainsResponse;
 import com.linkbreakers.model.UpdateCustomDomainResponse;
-import com.linkbreakers.model.ValidationInstructionsCustomDomainResponse;
+import com.linkbreakers.model.VerifyCustomDomainResponse;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -82,153 +81,9 @@ public class CustomDomainsApi {
     }
 
     /**
-     * Build call for customDomainsServiceCheck
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call customDomainsServiceCheckCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/v1/custom-domains/{id}/check"
-            .replace("{" + "id" + "}", localVarApiClient.escapeString(id.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call customDomainsServiceCheckValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'id' is set
-        if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling customDomainsServiceCheck(Async)");
-        }
-
-        return customDomainsServiceCheckCall(id, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Check a custom domain
-     * Check a custom domain by looking up its DNS records and TLS status. This is automatically done when the domain is created. It will update the domain status.  Requires the &#x60;domains:write&#x60; scope.
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return CheckCustomDomainResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public CheckCustomDomainResponse customDomainsServiceCheck(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<CheckCustomDomainResponse> localVarResp = customDomainsServiceCheckWithHttpInfo(id, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Check a custom domain
-     * Check a custom domain by looking up its DNS records and TLS status. This is automatically done when the domain is created. It will update the domain status.  Requires the &#x60;domains:write&#x60; scope.
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;CheckCustomDomainResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<CheckCustomDomainResponse> customDomainsServiceCheckWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = customDomainsServiceCheckValidateBeforeCall(id, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<CheckCustomDomainResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Check a custom domain (asynchronously)
-     * Check a custom domain by looking up its DNS records and TLS status. This is automatically done when the domain is created. It will update the domain status.  Requires the &#x60;domains:write&#x60; scope.
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call customDomainsServiceCheckAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CheckCustomDomainResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = customDomainsServiceCheckValidateBeforeCall(id, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<CheckCustomDomainResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
      * Build call for customDomainsServiceCreate
      * @param createCustomDomainRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -306,7 +161,7 @@ public class CustomDomainsApi {
      * Create a custom domain
      * This endpoint allows users to register a new custom domain that can be used with their Linkbreakers workspace.  Requires the &#x60;domains:write&#x60; scope.
      * @param createCustomDomainRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateCustomDomainResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -327,7 +182,7 @@ public class CustomDomainsApi {
      * Create a custom domain
      * This endpoint allows users to register a new custom domain that can be used with their Linkbreakers workspace.  Requires the &#x60;domains:write&#x60; scope.
      * @param createCustomDomainRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateCustomDomainResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -349,7 +204,7 @@ public class CustomDomainsApi {
      * Create a custom domain (asynchronously)
      * This endpoint allows users to register a new custom domain that can be used with their Linkbreakers workspace.  Requires the &#x60;domains:write&#x60; scope.
      * @param createCustomDomainRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -443,7 +298,7 @@ public class CustomDomainsApi {
 
     /**
      * Delete a custom domain
-     * Removes a custom domain from the workspace, and deletes every link on it with their analytics (see link_count on the domain). This operation cannot be undone.  Requires the &#x60;domains:write&#x60; scope.
+     * Removes a custom domain from the workspace, and deletes every link on it with their analytics (see linkCount on the domain). This operation cannot be undone.  Requires the &#x60;domains:write&#x60; scope.
      * @param id The ID of the custom domain to delete (UUID) (required)
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -464,7 +319,7 @@ public class CustomDomainsApi {
 
     /**
      * Delete a custom domain
-     * Removes a custom domain from the workspace, and deletes every link on it with their analytics (see link_count on the domain). This operation cannot be undone.  Requires the &#x60;domains:write&#x60; scope.
+     * Removes a custom domain from the workspace, and deletes every link on it with their analytics (see linkCount on the domain). This operation cannot be undone.  Requires the &#x60;domains:write&#x60; scope.
      * @param id The ID of the custom domain to delete (UUID) (required)
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -486,7 +341,7 @@ public class CustomDomainsApi {
 
     /**
      * Delete a custom domain (asynchronously)
-     * Removes a custom domain from the workspace, and deletes every link on it with their analytics (see link_count on the domain). This operation cannot be undone.  Requires the &#x60;domains:write&#x60; scope.
+     * Removes a custom domain from the workspace, and deletes every link on it with their analytics (see linkCount on the domain). This operation cannot be undone.  Requires the &#x60;domains:write&#x60; scope.
      * @param id The ID of the custom domain to delete (UUID) (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -780,9 +635,9 @@ public class CustomDomainsApi {
     }
     /**
      * Build call for customDomainsServiceList
-     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificate_expires_at.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
+     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificateExpiresAt.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
      * @param pageSize Maximum number of custom domains to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -865,9 +720,9 @@ public class CustomDomainsApi {
     /**
      * List custom domains
      * Retrieves the custom domains for your workspace  Requires the &#x60;domains:read&#x60; scope.
-     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificate_expires_at.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
+     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificateExpiresAt.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
      * @param pageSize Maximum number of custom domains to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ListCustomDomainsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -888,9 +743,9 @@ public class CustomDomainsApi {
     /**
      * List custom domains
      * Retrieves the custom domains for your workspace  Requires the &#x60;domains:read&#x60; scope.
-     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificate_expires_at.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
+     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificateExpiresAt.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
      * @param pageSize Maximum number of custom domains to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ApiResponse&lt;ListCustomDomainsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -912,9 +767,9 @@ public class CustomDomainsApi {
     /**
      * List custom domains (asynchronously)
      * Retrieves the custom domains for your workspace  Requires the &#x60;domains:read&#x60; scope.
-     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificate_expires_at.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
+     * @param status Filter by the status of the custom domains to list. Optional.   - STATUS_UNSPECIFIED: The status is not specified  - STATUS_INACTIVE: The domain is inactive. It was created but not checked yet.  - STATUS_DOMAIN_PENDING: The domain is pending. Last time it was checked, it was not pointing to the correct Linkbreakers subdomain.  - STATUS_VERIFICATION_PENDING: The domain is pending verification. Please verify through TXT record.  - STATUS_CERTIFICATE_PENDING: The domain is pending certificate. The SSL certificate is not yet ready.  - STATUS_ACTIVE: The domain is fully active  - STATUS_RENEWAL_PENDING: The domain is still serving traffic on a valid certificate, but the renewal of that certificate cannot be validated. It stops working at certificateExpiresAt.  - STATUS_EXPIRED: The certificate expired or was withdrawn. The domain no longer serves HTTPS. (optional)
      * @param pageSize Maximum number of custom domains to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -939,7 +794,7 @@ public class CustomDomainsApi {
      * Build call for customDomainsServiceUpdate
      * @param id The ID of the custom domain to update (UUID) (required)
      * @param customDomainsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1024,7 +879,7 @@ public class CustomDomainsApi {
      * Update settings for a custom domain, such as the root destination URL.  Requires the &#x60;domains:write&#x60; scope.
      * @param id The ID of the custom domain to update (UUID) (required)
      * @param customDomainsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdateCustomDomainResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1046,7 +901,7 @@ public class CustomDomainsApi {
      * Update settings for a custom domain, such as the root destination URL.  Requires the &#x60;domains:write&#x60; scope.
      * @param id The ID of the custom domain to update (UUID) (required)
      * @param customDomainsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdateCustomDomainResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1069,7 +924,7 @@ public class CustomDomainsApi {
      * Update settings for a custom domain, such as the root destination URL.  Requires the &#x60;domains:write&#x60; scope.
      * @param id The ID of the custom domain to update (UUID) (required)
      * @param customDomainsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1090,8 +945,9 @@ public class CustomDomainsApi {
         return localVarCall;
     }
     /**
-     * Build call for customDomainsServiceValidationInstructions
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
+     * Build call for customDomainsServiceVerify
+     * @param id The ID of the custom domain to verify (UUID) (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1099,12 +955,12 @@ public class CustomDomainsApi {
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
         <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call customDomainsServiceValidationInstructionsCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call customDomainsServiceVerifyCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1121,7 +977,7 @@ public class CustomDomainsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/custom-domains/{id}/validation_instructions"
+        String localVarPath = "/v1/custom-domains/{id}:verify"
             .replace("{" + "id" + "}", localVarApiClient.escapeString(id.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -1145,66 +1001,74 @@ public class CustomDomainsApi {
             localVarHeaderParams.put("Content-Type", localVarContentType);
         }
 
+        if (idempotencyKey != null) {
+            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
+        }
+
+
         String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call customDomainsServiceValidationInstructionsValidateBeforeCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call customDomainsServiceVerifyValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling customDomainsServiceValidationInstructions(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling customDomainsServiceVerify(Async)");
         }
 
-        return customDomainsServiceValidationInstructionsCall(id, _callback);
+        return customDomainsServiceVerifyCall(id, idempotencyKey, _callback);
 
     }
 
     /**
-     * Get the validation instructions
-     * Get the instructions for validating a custom domain. There may be a delay before the instructions are available.  Requires the &#x60;domains:read&#x60; scope.
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
-     * @return ValidationInstructionsCustomDomainResponse
+     * Verify a custom domain
+     * Verifies a custom domain by looking up its DNS records and TLS status, and updates the domain&#39;s status. This is done automatically when the domain is created.  Requires the &#x60;domains:write&#x60; scope.
+     * @param id The ID of the custom domain to verify (UUID) (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return VerifyCustomDomainResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
         <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ValidationInstructionsCustomDomainResponse customDomainsServiceValidationInstructions(@javax.annotation.Nonnull String id) throws ApiException {
-        ApiResponse<ValidationInstructionsCustomDomainResponse> localVarResp = customDomainsServiceValidationInstructionsWithHttpInfo(id);
+    public VerifyCustomDomainResponse customDomainsServiceVerify(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<VerifyCustomDomainResponse> localVarResp = customDomainsServiceVerifyWithHttpInfo(id, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Get the validation instructions
-     * Get the instructions for validating a custom domain. There may be a delay before the instructions are available.  Requires the &#x60;domains:read&#x60; scope.
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
-     * @return ApiResponse&lt;ValidationInstructionsCustomDomainResponse&gt;
+     * Verify a custom domain
+     * Verifies a custom domain by looking up its DNS records and TLS status, and updates the domain&#39;s status. This is done automatically when the domain is created.  Requires the &#x60;domains:write&#x60; scope.
+     * @param id The ID of the custom domain to verify (UUID) (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;VerifyCustomDomainResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
         <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ValidationInstructionsCustomDomainResponse> customDomainsServiceValidationInstructionsWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
-        okhttp3.Call localVarCall = customDomainsServiceValidationInstructionsValidateBeforeCall(id, null);
-        Type localVarReturnType = new TypeToken<ValidationInstructionsCustomDomainResponse>(){}.getType();
+    public ApiResponse<VerifyCustomDomainResponse> customDomainsServiceVerifyWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = customDomainsServiceVerifyValidateBeforeCall(id, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<VerifyCustomDomainResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get the validation instructions (asynchronously)
-     * Get the instructions for validating a custom domain. There may be a delay before the instructions are available.  Requires the &#x60;domains:read&#x60; scope.
-     * @param id The ID of the custom domain to retrieve (UUID) (required)
+     * Verify a custom domain (asynchronously)
+     * Verifies a custom domain by looking up its DNS records and TLS status, and updates the domain&#39;s status. This is done automatically when the domain is created.  Requires the &#x60;domains:write&#x60; scope.
+     * @param id The ID of the custom domain to verify (UUID) (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1212,15 +1076,15 @@ public class CustomDomainsApi {
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
         <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call customDomainsServiceValidationInstructionsAsync(@javax.annotation.Nonnull String id, final ApiCallback<ValidationInstructionsCustomDomainResponse> _callback) throws ApiException {
+    public okhttp3.Call customDomainsServiceVerifyAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<VerifyCustomDomainResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = customDomainsServiceValidationInstructionsValidateBeforeCall(id, _callback);
-        Type localVarReturnType = new TypeToken<ValidationInstructionsCustomDomainResponse>(){}.getType();
+        okhttp3.Call localVarCall = customDomainsServiceVerifyValidateBeforeCall(id, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<VerifyCustomDomainResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

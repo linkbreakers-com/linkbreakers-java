@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -27,15 +27,13 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import com.linkbreakers.model.AssistantCompleteAttachmentUploadResponse;
-import com.linkbreakers.model.AssistantCreateAttachmentUploadRequest;
-import com.linkbreakers.model.AssistantCreateAttachmentUploadResponse;
-import com.linkbreakers.model.AssistantGetConversationResponse;
-import com.linkbreakers.model.AssistantMarkConversationReadRequest;
-import com.linkbreakers.model.AssistantMarkConversationReadResponse;
-import com.linkbreakers.model.AssistantUploadFileRequest;
-import com.linkbreakers.model.AssistantUploadFileResponse;
 import com.linkbreakers.model.ErrorResponse;
+import com.linkbreakers.model.GetGoogleFormsIntegrationResponse;
+import com.linkbreakers.model.GoogleFormsIntegrationsServiceChooseFormLinkBody;
+import com.linkbreakers.model.ListDetectedGoogleFormsResponse;
+import com.linkbreakers.model.SyncGoogleFormsResponse;
+import com.linkbreakers.model.UpdateGoogleFormsIntegrationRequest;
+import com.linkbreakers.model.UpdateGoogleFormsIntegrationResponse;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -43,16 +41,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AssistantApi {
+public class IntegrationsGoogleFormsApi {
     private ApiClient localVarApiClient;
     private int localHostIndex;
     private String localCustomBaseUrl;
 
-    public AssistantApi() {
+    public IntegrationsGoogleFormsApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public AssistantApi(ApiClient apiClient) {
+    public IntegrationsGoogleFormsApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
@@ -81,9 +79,161 @@ public class AssistantApi {
     }
 
     /**
-     * Build call for assistantServiceClearConversation
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
+     * Build call for googleFormsIntegrationsServiceChooseFormLink
+     * @param formId The Google Form. (required)
+     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call googleFormsIntegrationsServiceChooseFormLinkCall(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = googleFormsIntegrationsServiceChooseFormLinkBody;
+
+        // create path and map variables
+        String localVarPath = "/v1/google-forms-integrations/forms/{formId}/link"
+            .replace("{" + "formId" + "}", localVarApiClient.escapeString(formId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        if (idempotencyKey != null) {
+            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
+        }
+
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call googleFormsIntegrationsServiceChooseFormLinkValidateBeforeCall(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'formId' is set
+        if (formId == null) {
+            throw new ApiException("Missing the required parameter 'formId' when calling googleFormsIntegrationsServiceChooseFormLink(Async)");
+        }
+
+        // verify the required parameter 'googleFormsIntegrationsServiceChooseFormLinkBody' is set
+        if (googleFormsIntegrationsServiceChooseFormLinkBody == null) {
+            throw new ApiException("Missing the required parameter 'googleFormsIntegrationsServiceChooseFormLinkBody' when calling googleFormsIntegrationsServiceChooseFormLink(Async)");
+        }
+
+        return googleFormsIntegrationsServiceChooseFormLinkCall(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey, _callback);
+
+    }
+
+    /**
+     * Choose a Google Form&#39;s link
+     * When the same Google Form is behind several links, timing cannot tell which link a response came from. This records the link its responses belong to.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param formId The Google Form. (required)
+     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return Object
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public Object googleFormsIntegrationsServiceChooseFormLink(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<Object> localVarResp = googleFormsIntegrationsServiceChooseFormLinkWithHttpInfo(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Choose a Google Form&#39;s link
+     * When the same Google Form is behind several links, timing cannot tell which link a response came from. This records the link its responses belong to.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param formId The Google Form. (required)
+     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;Object&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<Object> googleFormsIntegrationsServiceChooseFormLinkWithHttpInfo(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceChooseFormLinkValidateBeforeCall(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Choose a Google Form&#39;s link (asynchronously)
+     * When the same Google Form is behind several links, timing cannot tell which link a response came from. This records the link its responses belong to.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param formId The Google Form. (required)
+     * @param googleFormsIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call googleFormsIntegrationsServiceChooseFormLinkAsync(@javax.annotation.Nonnull String formId, @javax.annotation.Nonnull GoogleFormsIntegrationsServiceChooseFormLinkBody googleFormsIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<Object> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceChooseFormLinkValidateBeforeCall(formId, googleFormsIntegrationsServiceChooseFormLinkBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for googleFormsIntegrationsServiceDelete
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -96,7 +246,7 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceClearConversationCall(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceDeleteCall(final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -113,21 +263,13 @@ public class AssistantApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/assistant/conversation";
+        String localVarPath = "/v1/google-forms-integrations";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (contextType != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("contextType", contextType));
-        }
-
-        if (contextId != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("contextId", contextId));
-        }
 
         final String[] localVarAccepts = {
             "application/json"
@@ -149,16 +291,14 @@ public class AssistantApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call assistantServiceClearConversationValidateBeforeCall(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId, final ApiCallback _callback) throws ApiException {
-        return assistantServiceClearConversationCall(contextType, contextId, _callback);
+    private okhttp3.Call googleFormsIntegrationsServiceDeleteValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        return googleFormsIntegrationsServiceDeleteCall(_callback);
 
     }
 
     /**
-     * Clear assistant conversation
-     * Clear the conversation history for a specific context.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
+     * Disconnect Google Forms integration
+     * Disconnect and remove the Google Forms integration from the workspace.  Requires the &#x60;integrations:write&#x60; scope.
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -170,16 +310,14 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public Object assistantServiceClearConversation(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId) throws ApiException {
-        ApiResponse<Object> localVarResp = assistantServiceClearConversationWithHttpInfo(contextType, contextId);
+    public Object googleFormsIntegrationsServiceDelete() throws ApiException {
+        ApiResponse<Object> localVarResp = googleFormsIntegrationsServiceDeleteWithHttpInfo();
         return localVarResp.getData();
     }
 
     /**
-     * Clear assistant conversation
-     * Clear the conversation history for a specific context.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
+     * Disconnect Google Forms integration
+     * Disconnect and remove the Google Forms integration from the workspace.  Requires the &#x60;integrations:write&#x60; scope.
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -191,17 +329,15 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<Object> assistantServiceClearConversationWithHttpInfo(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId) throws ApiException {
-        okhttp3.Call localVarCall = assistantServiceClearConversationValidateBeforeCall(contextType, contextId, null);
+    public ApiResponse<Object> googleFormsIntegrationsServiceDeleteWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceDeleteValidateBeforeCall(null);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Clear assistant conversation (asynchronously)
-     * Clear the conversation history for a specific context.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
+     * Disconnect Google Forms integration (asynchronously)
+     * Disconnect and remove the Google Forms integration from the workspace.  Requires the &#x60;integrations:write&#x60; scope.
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -214,315 +350,15 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceClearConversationAsync(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId, final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceDeleteAsync(final ApiCallback<Object> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = assistantServiceClearConversationValidateBeforeCall(contextType, contextId, _callback);
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceDeleteValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for assistantServiceCompleteAttachmentUpload
-     * @param fileId The attachment&#39;s id, from CreateAttachmentUpload (required)
-     * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call assistantServiceCompleteAttachmentUploadCall(@javax.annotation.Nonnull String fileId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = body;
-
-        // create path and map variables
-        String localVarPath = "/v1/assistant/uploads/{fileId}:complete"
-            .replace("{" + "fileId" + "}", localVarApiClient.escapeString(fileId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call assistantServiceCompleteAttachmentUploadValidateBeforeCall(@javax.annotation.Nonnull String fileId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'fileId' is set
-        if (fileId == null) {
-            throw new ApiException("Missing the required parameter 'fileId' when calling assistantServiceCompleteAttachmentUpload(Async)");
-        }
-
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling assistantServiceCompleteAttachmentUpload(Async)");
-        }
-
-        return assistantServiceCompleteAttachmentUploadCall(fileId, body, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Complete a direct attachment upload
-     * Check the file PUT to the upload_url and make the attachment ready to send with a message.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param fileId The attachment&#39;s id, from CreateAttachmentUpload (required)
-     * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return AssistantCompleteAttachmentUploadResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public AssistantCompleteAttachmentUploadResponse assistantServiceCompleteAttachmentUpload(@javax.annotation.Nonnull String fileId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<AssistantCompleteAttachmentUploadResponse> localVarResp = assistantServiceCompleteAttachmentUploadWithHttpInfo(fileId, body, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Complete a direct attachment upload
-     * Check the file PUT to the upload_url and make the attachment ready to send with a message.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param fileId The attachment&#39;s id, from CreateAttachmentUpload (required)
-     * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;AssistantCompleteAttachmentUploadResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<AssistantCompleteAttachmentUploadResponse> assistantServiceCompleteAttachmentUploadWithHttpInfo(@javax.annotation.Nonnull String fileId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = assistantServiceCompleteAttachmentUploadValidateBeforeCall(fileId, body, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<AssistantCompleteAttachmentUploadResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Complete a direct attachment upload (asynchronously)
-     * Check the file PUT to the upload_url and make the attachment ready to send with a message.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param fileId The attachment&#39;s id, from CreateAttachmentUpload (required)
-     * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call assistantServiceCompleteAttachmentUploadAsync(@javax.annotation.Nonnull String fileId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<AssistantCompleteAttachmentUploadResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = assistantServiceCompleteAttachmentUploadValidateBeforeCall(fileId, body, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<AssistantCompleteAttachmentUploadResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for assistantServiceCreateAttachmentUpload
-     * @param assistantCreateAttachmentUploadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call assistantServiceCreateAttachmentUploadCall(@javax.annotation.Nonnull AssistantCreateAttachmentUploadRequest assistantCreateAttachmentUploadRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = assistantCreateAttachmentUploadRequest;
-
-        // create path and map variables
-        String localVarPath = "/v1/assistant/uploads";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call assistantServiceCreateAttachmentUploadValidateBeforeCall(@javax.annotation.Nonnull AssistantCreateAttachmentUploadRequest assistantCreateAttachmentUploadRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'assistantCreateAttachmentUploadRequest' is set
-        if (assistantCreateAttachmentUploadRequest == null) {
-            throw new ApiException("Missing the required parameter 'assistantCreateAttachmentUploadRequest' when calling assistantServiceCreateAttachmentUpload(Async)");
-        }
-
-        return assistantServiceCreateAttachmentUploadCall(assistantCreateAttachmentUploadRequest, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Start a direct attachment upload
-     * Reserve an attachment of up to 50 MB and get a presigned upload_url to PUT its bytes to, then call CompleteAttachmentUpload.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantCreateAttachmentUploadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return AssistantCreateAttachmentUploadResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public AssistantCreateAttachmentUploadResponse assistantServiceCreateAttachmentUpload(@javax.annotation.Nonnull AssistantCreateAttachmentUploadRequest assistantCreateAttachmentUploadRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<AssistantCreateAttachmentUploadResponse> localVarResp = assistantServiceCreateAttachmentUploadWithHttpInfo(assistantCreateAttachmentUploadRequest, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Start a direct attachment upload
-     * Reserve an attachment of up to 50 MB and get a presigned upload_url to PUT its bytes to, then call CompleteAttachmentUpload.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantCreateAttachmentUploadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;AssistantCreateAttachmentUploadResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<AssistantCreateAttachmentUploadResponse> assistantServiceCreateAttachmentUploadWithHttpInfo(@javax.annotation.Nonnull AssistantCreateAttachmentUploadRequest assistantCreateAttachmentUploadRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = assistantServiceCreateAttachmentUploadValidateBeforeCall(assistantCreateAttachmentUploadRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<AssistantCreateAttachmentUploadResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Start a direct attachment upload (asynchronously)
-     * Reserve an attachment of up to 50 MB and get a presigned upload_url to PUT its bytes to, then call CompleteAttachmentUpload.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantCreateAttachmentUploadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call assistantServiceCreateAttachmentUploadAsync(@javax.annotation.Nonnull AssistantCreateAttachmentUploadRequest assistantCreateAttachmentUploadRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<AssistantCreateAttachmentUploadResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = assistantServiceCreateAttachmentUploadValidateBeforeCall(assistantCreateAttachmentUploadRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<AssistantCreateAttachmentUploadResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for assistantServiceGetConversation
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
+     * Build call for googleFormsIntegrationsServiceGet
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -535,7 +371,7 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceGetConversationCall(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceGetCall(final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -552,21 +388,13 @@ public class AssistantApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/assistant/conversation";
+        String localVarPath = "/v1/google-forms-integrations";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (contextType != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("contextType", contextType));
-        }
-
-        if (contextId != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("contextId", contextId));
-        }
 
         final String[] localVarAccepts = {
             "application/json"
@@ -588,17 +416,15 @@ public class AssistantApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call assistantServiceGetConversationValidateBeforeCall(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId, final ApiCallback _callback) throws ApiException {
-        return assistantServiceGetConversationCall(contextType, contextId, _callback);
+    private okhttp3.Call googleFormsIntegrationsServiceGetValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        return googleFormsIntegrationsServiceGetCall(_callback);
 
     }
 
     /**
-     * Get assistant conversation
-     * Get the display-ready chat history for a specific context.  Requires the &#x60;assistant:read&#x60; scope.
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
-     * @return AssistantGetConversationResponse
+     * Get Google Forms integration
+     * Retrieve the Google Forms integration for the workspace.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return GetGoogleFormsIntegrationResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -609,17 +435,15 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public AssistantGetConversationResponse assistantServiceGetConversation(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId) throws ApiException {
-        ApiResponse<AssistantGetConversationResponse> localVarResp = assistantServiceGetConversationWithHttpInfo(contextType, contextId);
+    public GetGoogleFormsIntegrationResponse googleFormsIntegrationsServiceGet() throws ApiException {
+        ApiResponse<GetGoogleFormsIntegrationResponse> localVarResp = googleFormsIntegrationsServiceGetWithHttpInfo();
         return localVarResp.getData();
     }
 
     /**
-     * Get assistant conversation
-     * Get the display-ready chat history for a specific context.  Requires the &#x60;assistant:read&#x60; scope.
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
-     * @return ApiResponse&lt;AssistantGetConversationResponse&gt;
+     * Get Google Forms integration
+     * Retrieve the Google Forms integration for the workspace.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ApiResponse&lt;GetGoogleFormsIntegrationResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -630,17 +454,15 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<AssistantGetConversationResponse> assistantServiceGetConversationWithHttpInfo(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId) throws ApiException {
-        okhttp3.Call localVarCall = assistantServiceGetConversationValidateBeforeCall(contextType, contextId, null);
-        Type localVarReturnType = new TypeToken<AssistantGetConversationResponse>(){}.getType();
+    public ApiResponse<GetGoogleFormsIntegrationResponse> googleFormsIntegrationsServiceGetWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceGetValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<GetGoogleFormsIntegrationResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get assistant conversation (asynchronously)
-     * Get the display-ready chat history for a specific context.  Requires the &#x60;assistant:read&#x60; scope.
-     * @param contextType  - ASSISTANT_CONTEXT_TYPE_LINK_ANALYTICS: Building a link&#39;s analytics dashboard. context_id is the LINK id, not a dashboard id — the dashboard does not exist yet while the user and the assistant are still agreeing on what it should show. Once it exists, editing it happens under ASSISTANT_CONTEXT_TYPE_ANALYTICS_DASHBOARD instead.  - ASSISTANT_CONTEXT_TYPE_WORKSPACE: The workspace-wide assistant, with no resource selected. The context id is the WORKSPACE id: this thread is not about any one link, dashboard or design, and every capability the resource-scoped assistants have is available from it. One conversation per workspace, so it survives navigation. (optional)
-     * @param contextId  (optional)
+     * Get Google Forms integration (asynchronously)
+     * Retrieve the Google Forms integration for the workspace.  Requires the &#x60;integrations:read&#x60; scope.
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -653,17 +475,15 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceGetConversationAsync(@javax.annotation.Nullable String contextType, @javax.annotation.Nullable String contextId, final ApiCallback<AssistantGetConversationResponse> _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceGetAsync(final ApiCallback<GetGoogleFormsIntegrationResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = assistantServiceGetConversationValidateBeforeCall(contextType, contextId, _callback);
-        Type localVarReturnType = new TypeToken<AssistantGetConversationResponse>(){}.getType();
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceGetValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<GetGoogleFormsIntegrationResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for assistantServiceMarkConversationRead
-     * @param assistantMarkConversationReadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Build call for googleFormsIntegrationsServiceListDetectedForms
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -671,12 +491,12 @@ public class AssistantApi {
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
         <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceMarkConversationReadCall(@javax.annotation.Nonnull AssistantMarkConversationReadRequest assistantMarkConversationReadRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceListDetectedFormsCall(final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -690,10 +510,137 @@ public class AssistantApi {
             basePath = null;
         }
 
-        Object localVarPostBody = assistantMarkConversationReadRequest;
+        Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/assistant/conversation/read";
+        String localVarPath = "/v1/google-forms-integrations/detected-forms";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call googleFormsIntegrationsServiceListDetectedFormsValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        return googleFormsIntegrationsServiceListDetectedFormsCall(_callback);
+
+    }
+
+    /**
+     * List detected Google Forms
+     * Returns Google Forms auto-detected from workspace links that have a Google Form as their redirect destination.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ListDetectedGoogleFormsResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ListDetectedGoogleFormsResponse googleFormsIntegrationsServiceListDetectedForms() throws ApiException {
+        ApiResponse<ListDetectedGoogleFormsResponse> localVarResp = googleFormsIntegrationsServiceListDetectedFormsWithHttpInfo();
+        return localVarResp.getData();
+    }
+
+    /**
+     * List detected Google Forms
+     * Returns Google Forms auto-detected from workspace links that have a Google Form as their redirect destination.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ApiResponse&lt;ListDetectedGoogleFormsResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<ListDetectedGoogleFormsResponse> googleFormsIntegrationsServiceListDetectedFormsWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceListDetectedFormsValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<ListDetectedGoogleFormsResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * List detected Google Forms (asynchronously)
+     * Returns Google Forms auto-detected from workspace links that have a Google Form as their redirect destination.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call googleFormsIntegrationsServiceListDetectedFormsAsync(final ApiCallback<ListDetectedGoogleFormsResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceListDetectedFormsValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<ListDetectedGoogleFormsResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for googleFormsIntegrationsServiceSyncNow
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call googleFormsIntegrationsServiceSyncNowCall(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/v1/google-forms-integrations/sync";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -727,22 +674,22 @@ public class AssistantApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call assistantServiceMarkConversationReadValidateBeforeCall(@javax.annotation.Nonnull AssistantMarkConversationReadRequest assistantMarkConversationReadRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'assistantMarkConversationReadRequest' is set
-        if (assistantMarkConversationReadRequest == null) {
-            throw new ApiException("Missing the required parameter 'assistantMarkConversationReadRequest' when calling assistantServiceMarkConversationRead(Async)");
+    private okhttp3.Call googleFormsIntegrationsServiceSyncNowValidateBeforeCall(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling googleFormsIntegrationsServiceSyncNow(Async)");
         }
 
-        return assistantServiceMarkConversationReadCall(assistantMarkConversationReadRequest, idempotencyKey, _callback);
+        return googleFormsIntegrationsServiceSyncNowCall(body, idempotencyKey, _callback);
 
     }
 
     /**
-     * Mark assistant conversation read
-     * Record that the member has seen every assistant reply in this conversation. Call it when the thread is actually on screen, not when history is fetched.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantMarkConversationReadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return AssistantMarkConversationReadResponse
+     * Sync now
+     * Trigger an immediate sync of new Google Forms responses from all detected forms.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return SyncGoogleFormsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -753,17 +700,17 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public AssistantMarkConversationReadResponse assistantServiceMarkConversationRead(@javax.annotation.Nonnull AssistantMarkConversationReadRequest assistantMarkConversationReadRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<AssistantMarkConversationReadResponse> localVarResp = assistantServiceMarkConversationReadWithHttpInfo(assistantMarkConversationReadRequest, idempotencyKey);
+    public SyncGoogleFormsResponse googleFormsIntegrationsServiceSyncNow(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<SyncGoogleFormsResponse> localVarResp = googleFormsIntegrationsServiceSyncNowWithHttpInfo(body, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Mark assistant conversation read
-     * Record that the member has seen every assistant reply in this conversation. Call it when the thread is actually on screen, not when history is fetched.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantMarkConversationReadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;AssistantMarkConversationReadResponse&gt;
+     * Sync now
+     * Trigger an immediate sync of new Google Forms responses from all detected forms.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;SyncGoogleFormsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -774,17 +721,17 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<AssistantMarkConversationReadResponse> assistantServiceMarkConversationReadWithHttpInfo(@javax.annotation.Nonnull AssistantMarkConversationReadRequest assistantMarkConversationReadRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = assistantServiceMarkConversationReadValidateBeforeCall(assistantMarkConversationReadRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<AssistantMarkConversationReadResponse>(){}.getType();
+    public ApiResponse<SyncGoogleFormsResponse> googleFormsIntegrationsServiceSyncNowWithHttpInfo(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceSyncNowValidateBeforeCall(body, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<SyncGoogleFormsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Mark assistant conversation read (asynchronously)
-     * Record that the member has seen every assistant reply in this conversation. Call it when the thread is actually on screen, not when history is fetched.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantMarkConversationReadRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Sync now (asynchronously)
+     * Trigger an immediate sync of new Google Forms responses from all detected forms.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -797,17 +744,17 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceMarkConversationReadAsync(@javax.annotation.Nonnull AssistantMarkConversationReadRequest assistantMarkConversationReadRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<AssistantMarkConversationReadResponse> _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceSyncNowAsync(@javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<SyncGoogleFormsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = assistantServiceMarkConversationReadValidateBeforeCall(assistantMarkConversationReadRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<AssistantMarkConversationReadResponse>(){}.getType();
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceSyncNowValidateBeforeCall(body, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<SyncGoogleFormsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for assistantServiceUploadFile
-     * @param assistantUploadFileRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Build call for googleFormsIntegrationsServiceUpdate
+     * @param updateGoogleFormsIntegrationRequest  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -820,7 +767,7 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceUploadFileCall(@javax.annotation.Nonnull AssistantUploadFileRequest assistantUploadFileRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceUpdateCall(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -834,10 +781,10 @@ public class AssistantApi {
             basePath = null;
         }
 
-        Object localVarPostBody = assistantUploadFileRequest;
+        Object localVarPostBody = updateGoogleFormsIntegrationRequest;
 
         // create path and map variables
-        String localVarPath = "/v1/assistant/upload";
+        String localVarPath = "/v1/google-forms-integrations";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -867,26 +814,26 @@ public class AssistantApi {
 
 
         String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(basePath, localVarPath, "PATCH", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call assistantServiceUploadFileValidateBeforeCall(@javax.annotation.Nonnull AssistantUploadFileRequest assistantUploadFileRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'assistantUploadFileRequest' is set
-        if (assistantUploadFileRequest == null) {
-            throw new ApiException("Missing the required parameter 'assistantUploadFileRequest' when calling assistantServiceUploadFile(Async)");
+    private okhttp3.Call googleFormsIntegrationsServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'updateGoogleFormsIntegrationRequest' is set
+        if (updateGoogleFormsIntegrationRequest == null) {
+            throw new ApiException("Missing the required parameter 'updateGoogleFormsIntegrationRequest' when calling googleFormsIntegrationsServiceUpdate(Async)");
         }
 
-        return assistantServiceUploadFileCall(assistantUploadFileRequest, idempotencyKey, _callback);
+        return googleFormsIntegrationsServiceUpdateCall(updateGoogleFormsIntegrationRequest, idempotencyKey, _callback);
 
     }
 
     /**
-     * Upload file for assistant chat
-     * Upload a small file, base64 encoded, to attach to the next assistant message. Returns a temporary file ID. Larger files go through CreateAttachmentUpload.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantUploadFileRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return AssistantUploadFileResponse
+     * Update Google Forms integration
+     * Update the integration status (pause or resume syncing).  Requires the &#x60;integrations:write&#x60; scope.
+     * @param updateGoogleFormsIntegrationRequest  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return UpdateGoogleFormsIntegrationResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -897,17 +844,17 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public AssistantUploadFileResponse assistantServiceUploadFile(@javax.annotation.Nonnull AssistantUploadFileRequest assistantUploadFileRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<AssistantUploadFileResponse> localVarResp = assistantServiceUploadFileWithHttpInfo(assistantUploadFileRequest, idempotencyKey);
+    public UpdateGoogleFormsIntegrationResponse googleFormsIntegrationsServiceUpdate(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<UpdateGoogleFormsIntegrationResponse> localVarResp = googleFormsIntegrationsServiceUpdateWithHttpInfo(updateGoogleFormsIntegrationRequest, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Upload file for assistant chat
-     * Upload a small file, base64 encoded, to attach to the next assistant message. Returns a temporary file ID. Larger files go through CreateAttachmentUpload.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantUploadFileRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;AssistantUploadFileResponse&gt;
+     * Update Google Forms integration
+     * Update the integration status (pause or resume syncing).  Requires the &#x60;integrations:write&#x60; scope.
+     * @param updateGoogleFormsIntegrationRequest  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;UpdateGoogleFormsIntegrationResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -918,17 +865,17 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<AssistantUploadFileResponse> assistantServiceUploadFileWithHttpInfo(@javax.annotation.Nonnull AssistantUploadFileRequest assistantUploadFileRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = assistantServiceUploadFileValidateBeforeCall(assistantUploadFileRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<AssistantUploadFileResponse>(){}.getType();
+    public ApiResponse<UpdateGoogleFormsIntegrationResponse> googleFormsIntegrationsServiceUpdateWithHttpInfo(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceUpdateValidateBeforeCall(updateGoogleFormsIntegrationRequest, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<UpdateGoogleFormsIntegrationResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Upload file for assistant chat (asynchronously)
-     * Upload a small file, base64 encoded, to attach to the next assistant message. Returns a temporary file ID. Larger files go through CreateAttachmentUpload.  Requires the &#x60;assistant:write&#x60; scope.
-     * @param assistantUploadFileRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Update Google Forms integration (asynchronously)
+     * Update the integration status (pause or resume syncing).  Requires the &#x60;integrations:write&#x60; scope.
+     * @param updateGoogleFormsIntegrationRequest  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -941,10 +888,10 @@ public class AssistantApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call assistantServiceUploadFileAsync(@javax.annotation.Nonnull AssistantUploadFileRequest assistantUploadFileRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<AssistantUploadFileResponse> _callback) throws ApiException {
+    public okhttp3.Call googleFormsIntegrationsServiceUpdateAsync(@javax.annotation.Nonnull UpdateGoogleFormsIntegrationRequest updateGoogleFormsIntegrationRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateGoogleFormsIntegrationResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = assistantServiceUploadFileValidateBeforeCall(assistantUploadFileRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<AssistantUploadFileResponse>(){}.getType();
+        okhttp3.Call localVarCall = googleFormsIntegrationsServiceUpdateValidateBeforeCall(updateGoogleFormsIntegrationRequest, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<UpdateGoogleFormsIntegrationResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

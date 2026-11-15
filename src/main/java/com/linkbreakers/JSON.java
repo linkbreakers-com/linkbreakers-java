@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -111,8 +111,8 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AgentsServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AgentsServiceUpdateKnowledgeDocumentBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AnalyticsDashboard.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AnalyticsDashboardServiceGenerateWidgetSummaryBody.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AnalyticsDashboardServiceUpdateDashboardBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AnalyticsDashboardsServiceGenerateWidgetSummaryBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AnalyticsDashboardsServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.AnalyticsWidgetResult.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ApiScopeInfo.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ApiTag.CustomTypeAdapterFactory());
@@ -157,7 +157,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ChatDisplayMessage.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ChatUIAction.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ChatUIOption.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CheckCustomDomainResponse.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CheckShortlinkAvailabilityResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ClaimAgentWorkspaceRequest.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ClientRedirectPayload.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CompleteContactToolOAuthResponse.CustomTypeAdapterFactory());
@@ -220,6 +220,8 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreateOpenMediaLinkResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreatePageThemeTemplateRequest.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreatePageThemeTemplateResponse.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreateQrcodeDesignRequest.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreateQrcodeDesignResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreateQrcodeTemplateRequest.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreateQrcodeTemplateResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.CreateThankYouLinkRequest.CustomTypeAdapterFactory());
@@ -283,7 +285,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventTrace.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventTraceData.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventsMetric.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventsServiceCreateEventTraceBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventsServiceCreateTraceBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventsServiceUpdateDeviceBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventsTimeSeries.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.EventsTimeSeriesData.CustomTypeAdapterFactory());
@@ -301,6 +303,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.FormTraceDataField.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.FunnelBranch.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.FunnelStep.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.GenerateShortlinkResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.GenerateWidgetSummaryResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.GeoDataPoint.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.GetAgentClaimRequest.CustomTypeAdapterFactory());
@@ -385,6 +388,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.Link.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.LinkIntegration.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.LinkSetting.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.LinkSettingsServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.LinksBulkCreateResult.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.LinksServiceRenderQrcodeImagesBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.LinksServiceUpdateBody.CustomTypeAdapterFactory());
@@ -452,9 +456,9 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeStyling.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeTemplate.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeTemplateImages.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeTemplatesServiceUpdatePageThemeTemplateBody.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeTemplatesServiceUpdatePageThemeTemplateStylingBody.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemesServiceUpdatePageThemeBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeTemplatesServiceUpdateBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemeTemplatesServiceUpdateStylingBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PageThemesServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PasswordPayload.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PasswordTraceData.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PlanLimit.CustomTypeAdapterFactory());
@@ -462,8 +466,6 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PlanTrial.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PricingPlan.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ProtobufAny.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublicCreateQrcodeDesignRequest.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublicCreateQrcodeDesignResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublicListPageThemeTemplatesResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublicListQrcodeTemplatesResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublicPageThemeTemplate.CustomTypeAdapterFactory());
@@ -472,10 +474,10 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublishPageThemeTemplateResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.PublishQrcodeTemplateResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeDesign.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeDesignServiceUpdateBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeDesignsServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeRenderItem.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeTemplate.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeTemplatesServiceUpdateQrcodeTemplateBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.QrcodeTemplatesServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.RedirectTraceData.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.RenderQrcodeImagesResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.RenderedQrcode.CustomTypeAdapterFactory());
@@ -496,10 +498,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.RetargetingPixels.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ReviewPlatformProfile.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ReviewReward.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.SettingsServiceUpdateLinkSettingBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.SharedLocation.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ShortlinkAvailabilityResponse.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ShortlinkRandomResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.SlackChannel.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.SlackIntegration.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.SocialLinkButton.CustomTypeAdapterFactory());
@@ -583,6 +582,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ValidateWorkflowResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ValidationInstructionsCustomDomainResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.ValidationInstructionsCustomDomainResponseValidation.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.VerifyCustomDomainResponse.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.VisitTypeConditionOption.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.VisitTypeConditionPayload.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.VisitTypeConditionTraceData.CustomTypeAdapterFactory());
@@ -614,7 +614,7 @@ public class JSON {
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStep.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStepBranch.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStepPayload.CustomTypeAdapterFactory());
-        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStepsServiceConnectStepBody.CustomTypeAdapterFactory());
+        gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStepsServiceConnectBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStepsServiceCreateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.WorkflowStepsServiceUpdateBody.CustomTypeAdapterFactory());
         gsonBuilder.registerTypeAdapterFactory(new com.linkbreakers.model.Workspace.CustomTypeAdapterFactory());

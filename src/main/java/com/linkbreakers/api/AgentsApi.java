@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -86,7 +86,7 @@ public class AgentsApi {
     /**
      * Build call for agentsServiceCreate
      * @param createAgentRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -164,7 +164,7 @@ public class AgentsApi {
      * Create an agent
      * Create an agent. Presets left unset take their defaults.  Requires the &#x60;agents:write&#x60; scope.
      * @param createAgentRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateAgentResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -185,7 +185,7 @@ public class AgentsApi {
      * Create an agent
      * Create an agent. Presets left unset take their defaults.  Requires the &#x60;agents:write&#x60; scope.
      * @param createAgentRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateAgentResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -207,7 +207,7 @@ public class AgentsApi {
      * Create an agent (asynchronously)
      * Create an agent. Presets left unset take their defaults.  Requires the &#x60;agents:write&#x60; scope.
      * @param createAgentRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -231,7 +231,7 @@ public class AgentsApi {
      * Build call for agentsServiceCreateKnowledgeDocument
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param agentsServiceCreateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -316,7 +316,7 @@ public class AgentsApi {
      * Add a Markdown document to an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param agentsServiceCreateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateAgentKnowledgeDocumentResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -338,7 +338,7 @@ public class AgentsApi {
      * Add a Markdown document to an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param agentsServiceCreateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateAgentKnowledgeDocumentResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -361,7 +361,7 @@ public class AgentsApi {
      * Add a Markdown document to an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param agentsServiceCreateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -799,7 +799,7 @@ public class AgentsApi {
     /**
      * Build call for agentsServiceList
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
-     * @param pageToken Token from a previous response&#39;s next_page_token. (optional)
+     * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -879,7 +879,7 @@ public class AgentsApi {
      * List agents
      * List the workspace&#39;s agents, without their knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
-     * @param pageToken Token from a previous response&#39;s next_page_token. (optional)
+     * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ListAgentsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -901,7 +901,7 @@ public class AgentsApi {
      * List agents
      * List the workspace&#39;s agents, without their knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
-     * @param pageToken Token from a previous response&#39;s next_page_token. (optional)
+     * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ApiResponse&lt;ListAgentsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -924,7 +924,7 @@ public class AgentsApi {
      * List agents (asynchronously)
      * List the workspace&#39;s agents, without their knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
-     * @param pageToken Token from a previous response&#39;s next_page_token. (optional)
+     * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -1074,7 +1074,7 @@ public class AgentsApi {
      * Build call for agentsServiceUpdate
      * @param id The agent&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1159,7 +1159,7 @@ public class AgentsApi {
      * Change an agent&#39;s settings. Fields left unset keep their value.  Requires the &#x60;agents:write&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdateAgentResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1181,7 +1181,7 @@ public class AgentsApi {
      * Change an agent&#39;s settings. Fields left unset keep their value.  Requires the &#x60;agents:write&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdateAgentResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1204,7 +1204,7 @@ public class AgentsApi {
      * Change an agent&#39;s settings. Fields left unset keep their value.  Requires the &#x60;agents:write&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1229,7 +1229,7 @@ public class AgentsApi {
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param id The document&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1321,7 +1321,7 @@ public class AgentsApi {
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param id The document&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdateAgentKnowledgeDocumentResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1344,7 +1344,7 @@ public class AgentsApi {
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param id The document&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdateAgentKnowledgeDocumentResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1368,7 +1368,7 @@ public class AgentsApi {
      * @param agentId The agent&#39;s ID (UUID). (required)
      * @param id The document&#39;s ID (UUID). (required)
      * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object

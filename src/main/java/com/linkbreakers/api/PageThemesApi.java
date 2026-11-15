@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -32,10 +32,9 @@ import com.linkbreakers.model.ApplyPageThemeTemplateResponse;
 import com.linkbreakers.model.BulkUpdatePageThemesRequest;
 import com.linkbreakers.model.BulkUpdatePageThemesResponse;
 import com.linkbreakers.model.ErrorResponse;
-import com.linkbreakers.model.FindMatchingPageThemeTemplateResponse;
 import com.linkbreakers.model.GetPageThemeResponse;
 import com.linkbreakers.model.ListPageThemesResponse;
-import com.linkbreakers.model.PageThemesServiceUpdatePageThemeBody;
+import com.linkbreakers.model.PageThemesServiceUpdateBody;
 import com.linkbreakers.model.UpdatePageThemeResponse;
 
 import java.lang.reflect.Type;
@@ -82,147 +81,9 @@ public class PageThemesApi {
     }
 
     /**
-     * Build call for pageThemeTemplatesServiceFindMatchingPageThemeTemplate
-     * @param linkId Link whose current page theme should be matched (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call pageThemeTemplatesServiceFindMatchingPageThemeTemplateCall(@javax.annotation.Nonnull String linkId, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/v1/page-themes/matching-template";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (linkId != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("linkId", linkId));
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call pageThemeTemplatesServiceFindMatchingPageThemeTemplateValidateBeforeCall(@javax.annotation.Nonnull String linkId, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'linkId' is set
-        if (linkId == null) {
-            throw new ApiException("Missing the required parameter 'linkId' when calling pageThemeTemplatesServiceFindMatchingPageThemeTemplate(Async)");
-        }
-
-        return pageThemeTemplatesServiceFindMatchingPageThemeTemplateCall(linkId, _callback);
-
-    }
-
-    /**
-     * Find a page theme template matching a link&#39;s styling
-     * Returns the page theme template available to the workspace whose styling is identical to the link&#39;s current page theme, if one exists. Saving the theme as a template again would only duplicate it.  Requires the &#x60;page_themes:read&#x60; scope.
-     * @param linkId Link whose current page theme should be matched (required)
-     * @return FindMatchingPageThemeTemplateResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public FindMatchingPageThemeTemplateResponse pageThemeTemplatesServiceFindMatchingPageThemeTemplate(@javax.annotation.Nonnull String linkId) throws ApiException {
-        ApiResponse<FindMatchingPageThemeTemplateResponse> localVarResp = pageThemeTemplatesServiceFindMatchingPageThemeTemplateWithHttpInfo(linkId);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Find a page theme template matching a link&#39;s styling
-     * Returns the page theme template available to the workspace whose styling is identical to the link&#39;s current page theme, if one exists. Saving the theme as a template again would only duplicate it.  Requires the &#x60;page_themes:read&#x60; scope.
-     * @param linkId Link whose current page theme should be matched (required)
-     * @return ApiResponse&lt;FindMatchingPageThemeTemplateResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<FindMatchingPageThemeTemplateResponse> pageThemeTemplatesServiceFindMatchingPageThemeTemplateWithHttpInfo(@javax.annotation.Nonnull String linkId) throws ApiException {
-        okhttp3.Call localVarCall = pageThemeTemplatesServiceFindMatchingPageThemeTemplateValidateBeforeCall(linkId, null);
-        Type localVarReturnType = new TypeToken<FindMatchingPageThemeTemplateResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Find a page theme template matching a link&#39;s styling (asynchronously)
-     * Returns the page theme template available to the workspace whose styling is identical to the link&#39;s current page theme, if one exists. Saving the theme as a template again would only duplicate it.  Requires the &#x60;page_themes:read&#x60; scope.
-     * @param linkId Link whose current page theme should be matched (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call pageThemeTemplatesServiceFindMatchingPageThemeTemplateAsync(@javax.annotation.Nonnull String linkId, final ApiCallback<FindMatchingPageThemeTemplateResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = pageThemeTemplatesServiceFindMatchingPageThemeTemplateValidateBeforeCall(linkId, _callback);
-        Type localVarReturnType = new TypeToken<FindMatchingPageThemeTemplateResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for pageThemesServiceApplyPageThemeTemplate
+     * Build call for pageThemesServiceApplyTemplate
      * @param applyPageThemeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -236,7 +97,7 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceApplyPageThemeTemplateCall(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceApplyTemplateCall(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -287,13 +148,13 @@ public class PageThemesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call pageThemesServiceApplyPageThemeTemplateValidateBeforeCall(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call pageThemesServiceApplyTemplateValidateBeforeCall(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'applyPageThemeTemplateRequest' is set
         if (applyPageThemeTemplateRequest == null) {
-            throw new ApiException("Missing the required parameter 'applyPageThemeTemplateRequest' when calling pageThemesServiceApplyPageThemeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'applyPageThemeTemplateRequest' when calling pageThemesServiceApplyTemplate(Async)");
         }
 
-        return pageThemesServiceApplyPageThemeTemplateCall(applyPageThemeTemplateRequest, idempotencyKey, _callback);
+        return pageThemesServiceApplyTemplateCall(applyPageThemeTemplateRequest, idempotencyKey, _callback);
 
     }
 
@@ -301,7 +162,7 @@ public class PageThemesApi {
      * Apply a page theme template to a link
      * Copies a template&#39;s styling into the link&#39;s own page theme. The link keeps its own theme row, so the template can later be edited or deleted without changing any page that was styled from it. Cover, badge and footer logo media are copied into the caller&#39;s workspace when the template carries them.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param applyPageThemeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApplyPageThemeTemplateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -314,8 +175,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApplyPageThemeTemplateResponse pageThemesServiceApplyPageThemeTemplate(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ApplyPageThemeTemplateResponse> localVarResp = pageThemesServiceApplyPageThemeTemplateWithHttpInfo(applyPageThemeTemplateRequest, idempotencyKey);
+    public ApplyPageThemeTemplateResponse pageThemesServiceApplyTemplate(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ApplyPageThemeTemplateResponse> localVarResp = pageThemesServiceApplyTemplateWithHttpInfo(applyPageThemeTemplateRequest, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -323,7 +184,7 @@ public class PageThemesApi {
      * Apply a page theme template to a link
      * Copies a template&#39;s styling into the link&#39;s own page theme. The link keeps its own theme row, so the template can later be edited or deleted without changing any page that was styled from it. Cover, badge and footer logo media are copied into the caller&#39;s workspace when the template carries them.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param applyPageThemeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;ApplyPageThemeTemplateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -336,8 +197,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ApplyPageThemeTemplateResponse> pageThemesServiceApplyPageThemeTemplateWithHttpInfo(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = pageThemesServiceApplyPageThemeTemplateValidateBeforeCall(applyPageThemeTemplateRequest, idempotencyKey, null);
+    public ApiResponse<ApplyPageThemeTemplateResponse> pageThemesServiceApplyTemplateWithHttpInfo(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = pageThemesServiceApplyTemplateValidateBeforeCall(applyPageThemeTemplateRequest, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<ApplyPageThemeTemplateResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -346,7 +207,7 @@ public class PageThemesApi {
      * Apply a page theme template to a link (asynchronously)
      * Copies a template&#39;s styling into the link&#39;s own page theme. The link keeps its own theme row, so the template can later be edited or deleted without changing any page that was styled from it. Cover, badge and footer logo media are copied into the caller&#39;s workspace when the template carries them.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param applyPageThemeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -360,17 +221,17 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceApplyPageThemeTemplateAsync(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ApplyPageThemeTemplateResponse> _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceApplyTemplateAsync(@javax.annotation.Nonnull ApplyPageThemeTemplateRequest applyPageThemeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ApplyPageThemeTemplateResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = pageThemesServiceApplyPageThemeTemplateValidateBeforeCall(applyPageThemeTemplateRequest, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = pageThemesServiceApplyTemplateValidateBeforeCall(applyPageThemeTemplateRequest, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<ApplyPageThemeTemplateResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for pageThemesServiceBulkUpdatePageThemes
+     * Build call for pageThemesServiceBulkUpdate
      * @param bulkUpdatePageThemesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -383,7 +244,7 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceBulkUpdatePageThemesCall(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceBulkUpdateCall(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -434,13 +295,13 @@ public class PageThemesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call pageThemesServiceBulkUpdatePageThemesValidateBeforeCall(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call pageThemesServiceBulkUpdateValidateBeforeCall(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'bulkUpdatePageThemesRequest' is set
         if (bulkUpdatePageThemesRequest == null) {
-            throw new ApiException("Missing the required parameter 'bulkUpdatePageThemesRequest' when calling pageThemesServiceBulkUpdatePageThemes(Async)");
+            throw new ApiException("Missing the required parameter 'bulkUpdatePageThemesRequest' when calling pageThemesServiceBulkUpdate(Async)");
         }
 
-        return pageThemesServiceBulkUpdatePageThemesCall(bulkUpdatePageThemesRequest, idempotencyKey, _callback);
+        return pageThemesServiceBulkUpdateCall(bulkUpdatePageThemesRequest, idempotencyKey, _callback);
 
     }
 
@@ -448,7 +309,7 @@ public class PageThemesApi {
      * Restyle many links&#39; page themes
      * Applies a template, values or both to the page theme of up to 50 links named by id or short link. A later entry replaces an earlier one for the links it names. Each link succeeds or fails on its own: read the result of each one.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param bulkUpdatePageThemesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return BulkUpdatePageThemesResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -460,8 +321,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public BulkUpdatePageThemesResponse pageThemesServiceBulkUpdatePageThemes(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<BulkUpdatePageThemesResponse> localVarResp = pageThemesServiceBulkUpdatePageThemesWithHttpInfo(bulkUpdatePageThemesRequest, idempotencyKey);
+    public BulkUpdatePageThemesResponse pageThemesServiceBulkUpdate(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<BulkUpdatePageThemesResponse> localVarResp = pageThemesServiceBulkUpdateWithHttpInfo(bulkUpdatePageThemesRequest, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -469,7 +330,7 @@ public class PageThemesApi {
      * Restyle many links&#39; page themes
      * Applies a template, values or both to the page theme of up to 50 links named by id or short link. A later entry replaces an earlier one for the links it names. Each link succeeds or fails on its own: read the result of each one.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param bulkUpdatePageThemesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;BulkUpdatePageThemesResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -481,8 +342,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<BulkUpdatePageThemesResponse> pageThemesServiceBulkUpdatePageThemesWithHttpInfo(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = pageThemesServiceBulkUpdatePageThemesValidateBeforeCall(bulkUpdatePageThemesRequest, idempotencyKey, null);
+    public ApiResponse<BulkUpdatePageThemesResponse> pageThemesServiceBulkUpdateWithHttpInfo(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = pageThemesServiceBulkUpdateValidateBeforeCall(bulkUpdatePageThemesRequest, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<BulkUpdatePageThemesResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -491,7 +352,7 @@ public class PageThemesApi {
      * Restyle many links&#39; page themes (asynchronously)
      * Applies a template, values or both to the page theme of up to 50 links named by id or short link. A later entry replaces an earlier one for the links it names. Each link succeeds or fails on its own: read the result of each one.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param bulkUpdatePageThemesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -504,15 +365,15 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceBulkUpdatePageThemesAsync(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<BulkUpdatePageThemesResponse> _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceBulkUpdateAsync(@javax.annotation.Nonnull BulkUpdatePageThemesRequest bulkUpdatePageThemesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<BulkUpdatePageThemesResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = pageThemesServiceBulkUpdatePageThemesValidateBeforeCall(bulkUpdatePageThemesRequest, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = pageThemesServiceBulkUpdateValidateBeforeCall(bulkUpdatePageThemesRequest, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<BulkUpdatePageThemesResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for pageThemesServiceGetPageTheme
+     * Build call for pageThemesServiceGet
      * @param id Page theme ID to retrieve (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -527,7 +388,7 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceGetPageThemeCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceGetCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -573,13 +434,13 @@ public class PageThemesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call pageThemesServiceGetPageThemeValidateBeforeCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call pageThemesServiceGetValidateBeforeCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling pageThemesServiceGetPageTheme(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling pageThemesServiceGet(Async)");
         }
 
-        return pageThemesServiceGetPageThemeCall(id, _callback);
+        return pageThemesServiceGetCall(id, _callback);
 
     }
 
@@ -599,8 +460,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public GetPageThemeResponse pageThemesServiceGetPageTheme(@javax.annotation.Nonnull String id) throws ApiException {
-        ApiResponse<GetPageThemeResponse> localVarResp = pageThemesServiceGetPageThemeWithHttpInfo(id);
+    public GetPageThemeResponse pageThemesServiceGet(@javax.annotation.Nonnull String id) throws ApiException {
+        ApiResponse<GetPageThemeResponse> localVarResp = pageThemesServiceGetWithHttpInfo(id);
         return localVarResp.getData();
     }
 
@@ -620,8 +481,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<GetPageThemeResponse> pageThemesServiceGetPageThemeWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
-        okhttp3.Call localVarCall = pageThemesServiceGetPageThemeValidateBeforeCall(id, null);
+    public ApiResponse<GetPageThemeResponse> pageThemesServiceGetWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+        okhttp3.Call localVarCall = pageThemesServiceGetValidateBeforeCall(id, null);
         Type localVarReturnType = new TypeToken<GetPageThemeResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -643,17 +504,17 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceGetPageThemeAsync(@javax.annotation.Nonnull String id, final ApiCallback<GetPageThemeResponse> _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceGetAsync(@javax.annotation.Nonnull String id, final ApiCallback<GetPageThemeResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = pageThemesServiceGetPageThemeValidateBeforeCall(id, _callback);
+        okhttp3.Call localVarCall = pageThemesServiceGetValidateBeforeCall(id, _callback);
         Type localVarReturnType = new TypeToken<GetPageThemeResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for pageThemesServiceListPageThemes
+     * Build call for pageThemesServiceList
      * @param pageSize Maximum number of page themes to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -667,7 +528,7 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceListPageThemesCall(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceListCall(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -724,8 +585,8 @@ public class PageThemesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call pageThemesServiceListPageThemesValidateBeforeCall(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
-        return pageThemesServiceListPageThemesCall(pageSize, pageToken, cursor, _callback);
+    private okhttp3.Call pageThemesServiceListValidateBeforeCall(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+        return pageThemesServiceListCall(pageSize, pageToken, cursor, _callback);
 
     }
 
@@ -733,7 +594,7 @@ public class PageThemesApi {
      * List page themes for the current workspace
      * Retrieves all page themes belonging to the caller&#39;s workspace.  Requires the &#x60;page_themes:read&#x60; scope.
      * @param pageSize Maximum number of page themes to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ListPageThemesResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -746,8 +607,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListPageThemesResponse pageThemesServiceListPageThemes(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor) throws ApiException {
-        ApiResponse<ListPageThemesResponse> localVarResp = pageThemesServiceListPageThemesWithHttpInfo(pageSize, pageToken, cursor);
+    public ListPageThemesResponse pageThemesServiceList(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor) throws ApiException {
+        ApiResponse<ListPageThemesResponse> localVarResp = pageThemesServiceListWithHttpInfo(pageSize, pageToken, cursor);
         return localVarResp.getData();
     }
 
@@ -755,7 +616,7 @@ public class PageThemesApi {
      * List page themes for the current workspace
      * Retrieves all page themes belonging to the caller&#39;s workspace.  Requires the &#x60;page_themes:read&#x60; scope.
      * @param pageSize Maximum number of page themes to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ApiResponse&lt;ListPageThemesResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -768,8 +629,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListPageThemesResponse> pageThemesServiceListPageThemesWithHttpInfo(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor) throws ApiException {
-        okhttp3.Call localVarCall = pageThemesServiceListPageThemesValidateBeforeCall(pageSize, pageToken, cursor, null);
+    public ApiResponse<ListPageThemesResponse> pageThemesServiceListWithHttpInfo(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor) throws ApiException {
+        okhttp3.Call localVarCall = pageThemesServiceListValidateBeforeCall(pageSize, pageToken, cursor, null);
         Type localVarReturnType = new TypeToken<ListPageThemesResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -778,7 +639,7 @@ public class PageThemesApi {
      * List page themes for the current workspace (asynchronously)
      * Retrieves all page themes belonging to the caller&#39;s workspace.  Requires the &#x60;page_themes:read&#x60; scope.
      * @param pageSize Maximum number of page themes to return. Defaults to 100, capped at 1000. (optional)
-     * @param pageToken Cursor from a previous response&#39;s next_page_token. Empty starts at the first page. Pages are ordered by (created_at, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
+     * @param pageToken Cursor from a previous response&#39;s nextPageToken. Empty starts at the first page. Pages are ordered by (createdAt, id), which never change, so a record cannot move between pages while a client is walking them. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -792,18 +653,18 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceListPageThemesAsync(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor, final ApiCallback<ListPageThemesResponse> _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceListAsync(@javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String cursor, final ApiCallback<ListPageThemesResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = pageThemesServiceListPageThemesValidateBeforeCall(pageSize, pageToken, cursor, _callback);
+        okhttp3.Call localVarCall = pageThemesServiceListValidateBeforeCall(pageSize, pageToken, cursor, _callback);
         Type localVarReturnType = new TypeToken<ListPageThemesResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for pageThemesServiceUpdatePageTheme
+     * Build call for pageThemesServiceUpdate
      * @param id Page theme ID to update (required)
-     * @param pageThemesServiceUpdatePageThemeBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param pageThemesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -818,7 +679,7 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceUpdatePageThemeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdatePageThemeBody pageThemesServiceUpdatePageThemeBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceUpdateCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdateBody pageThemesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -832,7 +693,7 @@ public class PageThemesApi {
             basePath = null;
         }
 
-        Object localVarPostBody = pageThemesServiceUpdatePageThemeBody;
+        Object localVarPostBody = pageThemesServiceUpdateBody;
 
         // create path and map variables
         String localVarPath = "/v1/page-themes/{id}"
@@ -870,18 +731,18 @@ public class PageThemesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call pageThemesServiceUpdatePageThemeValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdatePageThemeBody pageThemesServiceUpdatePageThemeBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call pageThemesServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdateBody pageThemesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling pageThemesServiceUpdatePageTheme(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling pageThemesServiceUpdate(Async)");
         }
 
-        // verify the required parameter 'pageThemesServiceUpdatePageThemeBody' is set
-        if (pageThemesServiceUpdatePageThemeBody == null) {
-            throw new ApiException("Missing the required parameter 'pageThemesServiceUpdatePageThemeBody' when calling pageThemesServiceUpdatePageTheme(Async)");
+        // verify the required parameter 'pageThemesServiceUpdateBody' is set
+        if (pageThemesServiceUpdateBody == null) {
+            throw new ApiException("Missing the required parameter 'pageThemesServiceUpdateBody' when calling pageThemesServiceUpdate(Async)");
         }
 
-        return pageThemesServiceUpdatePageThemeCall(id, pageThemesServiceUpdatePageThemeBody, idempotencyKey, _callback);
+        return pageThemesServiceUpdateCall(id, pageThemesServiceUpdateBody, idempotencyKey, _callback);
 
     }
 
@@ -889,8 +750,8 @@ public class PageThemesApi {
      * Update a page theme
      * Updates an existing page theme. Cannot update page themes that are currently attached to links.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param id Page theme ID to update (required)
-     * @param pageThemesServiceUpdatePageThemeBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param pageThemesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdatePageThemeResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -904,8 +765,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public UpdatePageThemeResponse pageThemesServiceUpdatePageTheme(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdatePageThemeBody pageThemesServiceUpdatePageThemeBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<UpdatePageThemeResponse> localVarResp = pageThemesServiceUpdatePageThemeWithHttpInfo(id, pageThemesServiceUpdatePageThemeBody, idempotencyKey);
+    public UpdatePageThemeResponse pageThemesServiceUpdate(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdateBody pageThemesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<UpdatePageThemeResponse> localVarResp = pageThemesServiceUpdateWithHttpInfo(id, pageThemesServiceUpdateBody, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -913,8 +774,8 @@ public class PageThemesApi {
      * Update a page theme
      * Updates an existing page theme. Cannot update page themes that are currently attached to links.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param id Page theme ID to update (required)
-     * @param pageThemesServiceUpdatePageThemeBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param pageThemesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdatePageThemeResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -928,8 +789,8 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<UpdatePageThemeResponse> pageThemesServiceUpdatePageThemeWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdatePageThemeBody pageThemesServiceUpdatePageThemeBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = pageThemesServiceUpdatePageThemeValidateBeforeCall(id, pageThemesServiceUpdatePageThemeBody, idempotencyKey, null);
+    public ApiResponse<UpdatePageThemeResponse> pageThemesServiceUpdateWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdateBody pageThemesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = pageThemesServiceUpdateValidateBeforeCall(id, pageThemesServiceUpdateBody, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<UpdatePageThemeResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -938,8 +799,8 @@ public class PageThemesApi {
      * Update a page theme (asynchronously)
      * Updates an existing page theme. Cannot update page themes that are currently attached to links.  Requires the &#x60;page_themes:write&#x60; scope.
      * @param id Page theme ID to update (required)
-     * @param pageThemesServiceUpdatePageThemeBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param pageThemesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -954,9 +815,9 @@ public class PageThemesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call pageThemesServiceUpdatePageThemeAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdatePageThemeBody pageThemesServiceUpdatePageThemeBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdatePageThemeResponse> _callback) throws ApiException {
+    public okhttp3.Call pageThemesServiceUpdateAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull PageThemesServiceUpdateBody pageThemesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdatePageThemeResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = pageThemesServiceUpdatePageThemeValidateBeforeCall(id, pageThemesServiceUpdatePageThemeBody, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = pageThemesServiceUpdateValidateBeforeCall(id, pageThemesServiceUpdateBody, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<UpdatePageThemeResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

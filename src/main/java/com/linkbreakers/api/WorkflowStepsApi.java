@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -40,7 +40,7 @@ import com.linkbreakers.model.ListWorkflowStepsResponse;
 import com.linkbreakers.model.ResolveStepCollisionsResponse;
 import com.linkbreakers.model.UpdateWorkflowStepResponse;
 import com.linkbreakers.model.ValidateWorkflowResponse;
-import com.linkbreakers.model.WorkflowStepsServiceConnectStepBody;
+import com.linkbreakers.model.WorkflowStepsServiceConnectBody;
 import com.linkbreakers.model.WorkflowStepsServiceCreateBody;
 import com.linkbreakers.model.WorkflowStepsServiceUpdateBody;
 
@@ -91,7 +91,7 @@ public class WorkflowStepsApi {
      * Build call for workflowStepsServiceAutoLayoutWorkflow
      * @param linkId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -176,7 +176,7 @@ public class WorkflowStepsApi {
      * Arranges all workflow steps in a clean left-to-right DAG layout. Useful after building a workflow from scratch.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return AutoLayoutWorkflowResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -198,7 +198,7 @@ public class WorkflowStepsApi {
      * Arranges all workflow steps in a clean left-to-right DAG layout. Useful after building a workflow from scratch.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;AutoLayoutWorkflowResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -221,7 +221,7 @@ public class WorkflowStepsApi {
      * Arranges all workflow steps in a clean left-to-right DAG layout. Useful after building a workflow from scratch.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -242,9 +242,9 @@ public class WorkflowStepsApi {
         return localVarCall;
     }
     /**
-     * Build call for workflowStepsServiceBulkInsertWorkflowStep
+     * Build call for workflowStepsServiceBulkInsert
      * @param bulkInsertWorkflowStepRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -257,7 +257,7 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceBulkInsertWorkflowStepCall(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceBulkInsertCall(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -308,13 +308,13 @@ public class WorkflowStepsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call workflowStepsServiceBulkInsertWorkflowStepValidateBeforeCall(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call workflowStepsServiceBulkInsertValidateBeforeCall(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'bulkInsertWorkflowStepRequest' is set
         if (bulkInsertWorkflowStepRequest == null) {
-            throw new ApiException("Missing the required parameter 'bulkInsertWorkflowStepRequest' when calling workflowStepsServiceBulkInsertWorkflowStep(Async)");
+            throw new ApiException("Missing the required parameter 'bulkInsertWorkflowStepRequest' when calling workflowStepsServiceBulkInsert(Async)");
         }
 
-        return workflowStepsServiceBulkInsertWorkflowStepCall(bulkInsertWorkflowStepRequest, idempotencyKey, _callback);
+        return workflowStepsServiceBulkInsertCall(bulkInsertWorkflowStepRequest, idempotencyKey, _callback);
 
     }
 
@@ -322,7 +322,7 @@ public class WorkflowStepsApi {
      * Insert one step into many links&#39; workflows
      * Inserts the same step, usually a condition, into the workflow of up to 50 links, named by id or short link. Each link succeeds or fails on its own: read the result of each one. Calling again for a link that succeeded inserts a second step. A link with BULK_EDIT_NOT_STARTED was left untouched because the call ran out of time: send those again in a new call.  Requires the &#x60;workflows:write&#x60; scope.
      * @param bulkInsertWorkflowStepRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return BulkInsertWorkflowStepResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -334,8 +334,8 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public BulkInsertWorkflowStepResponse workflowStepsServiceBulkInsertWorkflowStep(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<BulkInsertWorkflowStepResponse> localVarResp = workflowStepsServiceBulkInsertWorkflowStepWithHttpInfo(bulkInsertWorkflowStepRequest, idempotencyKey);
+    public BulkInsertWorkflowStepResponse workflowStepsServiceBulkInsert(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<BulkInsertWorkflowStepResponse> localVarResp = workflowStepsServiceBulkInsertWithHttpInfo(bulkInsertWorkflowStepRequest, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -343,7 +343,7 @@ public class WorkflowStepsApi {
      * Insert one step into many links&#39; workflows
      * Inserts the same step, usually a condition, into the workflow of up to 50 links, named by id or short link. Each link succeeds or fails on its own: read the result of each one. Calling again for a link that succeeded inserts a second step. A link with BULK_EDIT_NOT_STARTED was left untouched because the call ran out of time: send those again in a new call.  Requires the &#x60;workflows:write&#x60; scope.
      * @param bulkInsertWorkflowStepRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;BulkInsertWorkflowStepResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -355,8 +355,8 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<BulkInsertWorkflowStepResponse> workflowStepsServiceBulkInsertWorkflowStepWithHttpInfo(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = workflowStepsServiceBulkInsertWorkflowStepValidateBeforeCall(bulkInsertWorkflowStepRequest, idempotencyKey, null);
+    public ApiResponse<BulkInsertWorkflowStepResponse> workflowStepsServiceBulkInsertWithHttpInfo(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = workflowStepsServiceBulkInsertValidateBeforeCall(bulkInsertWorkflowStepRequest, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<BulkInsertWorkflowStepResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -365,7 +365,7 @@ public class WorkflowStepsApi {
      * Insert one step into many links&#39; workflows (asynchronously)
      * Inserts the same step, usually a condition, into the workflow of up to 50 links, named by id or short link. Each link succeeds or fails on its own: read the result of each one. Calling again for a link that succeeded inserts a second step. A link with BULK_EDIT_NOT_STARTED was left untouched because the call ran out of time: send those again in a new call.  Requires the &#x60;workflows:write&#x60; scope.
      * @param bulkInsertWorkflowStepRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -378,20 +378,20 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceBulkInsertWorkflowStepAsync(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<BulkInsertWorkflowStepResponse> _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceBulkInsertAsync(@javax.annotation.Nonnull BulkInsertWorkflowStepRequest bulkInsertWorkflowStepRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<BulkInsertWorkflowStepResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = workflowStepsServiceBulkInsertWorkflowStepValidateBeforeCall(bulkInsertWorkflowStepRequest, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = workflowStepsServiceBulkInsertValidateBeforeCall(bulkInsertWorkflowStepRequest, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<BulkInsertWorkflowStepResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for workflowStepsServiceConnectStep
+     * Build call for workflowStepsServiceConnect
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to connect. \&quot;next\&quot; for atomic steps, or a button id, option id, range id, country code, or \&quot;else\&quot; for composite steps. (required)
-     * @param workflowStepsServiceConnectStepBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param workflowStepsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -404,7 +404,7 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceConnectStepCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectStepBody workflowStepsServiceConnectStepBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceConnectCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectBody workflowStepsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -418,7 +418,7 @@ public class WorkflowStepsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = workflowStepsServiceConnectStepBody;
+        Object localVarPostBody = workflowStepsServiceConnectBody;
 
         // create path and map variables
         String localVarPath = "/v1/links/{linkId}/workflow-steps/{stepId}/branches/{branchId}/connection"
@@ -458,28 +458,28 @@ public class WorkflowStepsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call workflowStepsServiceConnectStepValidateBeforeCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectStepBody workflowStepsServiceConnectStepBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call workflowStepsServiceConnectValidateBeforeCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectBody workflowStepsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'linkId' is set
         if (linkId == null) {
-            throw new ApiException("Missing the required parameter 'linkId' when calling workflowStepsServiceConnectStep(Async)");
+            throw new ApiException("Missing the required parameter 'linkId' when calling workflowStepsServiceConnect(Async)");
         }
 
         // verify the required parameter 'stepId' is set
         if (stepId == null) {
-            throw new ApiException("Missing the required parameter 'stepId' when calling workflowStepsServiceConnectStep(Async)");
+            throw new ApiException("Missing the required parameter 'stepId' when calling workflowStepsServiceConnect(Async)");
         }
 
         // verify the required parameter 'branchId' is set
         if (branchId == null) {
-            throw new ApiException("Missing the required parameter 'branchId' when calling workflowStepsServiceConnectStep(Async)");
+            throw new ApiException("Missing the required parameter 'branchId' when calling workflowStepsServiceConnect(Async)");
         }
 
-        // verify the required parameter 'workflowStepsServiceConnectStepBody' is set
-        if (workflowStepsServiceConnectStepBody == null) {
-            throw new ApiException("Missing the required parameter 'workflowStepsServiceConnectStepBody' when calling workflowStepsServiceConnectStep(Async)");
+        // verify the required parameter 'workflowStepsServiceConnectBody' is set
+        if (workflowStepsServiceConnectBody == null) {
+            throw new ApiException("Missing the required parameter 'workflowStepsServiceConnectBody' when calling workflowStepsServiceConnect(Async)");
         }
 
-        return workflowStepsServiceConnectStepCall(linkId, stepId, branchId, workflowStepsServiceConnectStepBody, idempotencyKey, _callback);
+        return workflowStepsServiceConnectCall(linkId, stepId, branchId, workflowStepsServiceConnectBody, idempotencyKey, _callback);
 
     }
 
@@ -489,8 +489,8 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to connect. \&quot;next\&quot; for atomic steps, or a button id, option id, range id, country code, or \&quot;else\&quot; for composite steps. (required)
-     * @param workflowStepsServiceConnectStepBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param workflowStepsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ConnectWorkflowStepResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -502,8 +502,8 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ConnectWorkflowStepResponse workflowStepsServiceConnectStep(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectStepBody workflowStepsServiceConnectStepBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ConnectWorkflowStepResponse> localVarResp = workflowStepsServiceConnectStepWithHttpInfo(linkId, stepId, branchId, workflowStepsServiceConnectStepBody, idempotencyKey);
+    public ConnectWorkflowStepResponse workflowStepsServiceConnect(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectBody workflowStepsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ConnectWorkflowStepResponse> localVarResp = workflowStepsServiceConnectWithHttpInfo(linkId, stepId, branchId, workflowStepsServiceConnectBody, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -513,8 +513,8 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to connect. \&quot;next\&quot; for atomic steps, or a button id, option id, range id, country code, or \&quot;else\&quot; for composite steps. (required)
-     * @param workflowStepsServiceConnectStepBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param workflowStepsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;ConnectWorkflowStepResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -526,8 +526,8 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ConnectWorkflowStepResponse> workflowStepsServiceConnectStepWithHttpInfo(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectStepBody workflowStepsServiceConnectStepBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = workflowStepsServiceConnectStepValidateBeforeCall(linkId, stepId, branchId, workflowStepsServiceConnectStepBody, idempotencyKey, null);
+    public ApiResponse<ConnectWorkflowStepResponse> workflowStepsServiceConnectWithHttpInfo(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectBody workflowStepsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = workflowStepsServiceConnectValidateBeforeCall(linkId, stepId, branchId, workflowStepsServiceConnectBody, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<ConnectWorkflowStepResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -538,8 +538,8 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to connect. \&quot;next\&quot; for atomic steps, or a button id, option id, range id, country code, or \&quot;else\&quot; for composite steps. (required)
-     * @param workflowStepsServiceConnectStepBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param workflowStepsServiceConnectBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -552,9 +552,9 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceConnectStepAsync(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectStepBody workflowStepsServiceConnectStepBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ConnectWorkflowStepResponse> _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceConnectAsync(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, @javax.annotation.Nonnull WorkflowStepsServiceConnectBody workflowStepsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ConnectWorkflowStepResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = workflowStepsServiceConnectStepValidateBeforeCall(linkId, stepId, branchId, workflowStepsServiceConnectStepBody, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = workflowStepsServiceConnectValidateBeforeCall(linkId, stepId, branchId, workflowStepsServiceConnectBody, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<ConnectWorkflowStepResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -563,7 +563,7 @@ public class WorkflowStepsApi {
      * Build call for workflowStepsServiceCreate
      * @param linkId The ID of the link to create the workflow step for (UUID) (required)
      * @param workflowStepsServiceCreateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -648,7 +648,7 @@ public class WorkflowStepsApi {
      * This endpoint allows users to create a new workflow step for a link. Workflow steps define the behavior of links, such as redirection destinations.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId The ID of the link to create the workflow step for (UUID) (required)
      * @param workflowStepsServiceCreateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateWorkflowStepResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -670,7 +670,7 @@ public class WorkflowStepsApi {
      * This endpoint allows users to create a new workflow step for a link. Workflow steps define the behavior of links, such as redirection destinations.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId The ID of the link to create the workflow step for (UUID) (required)
      * @param workflowStepsServiceCreateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateWorkflowStepResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -693,7 +693,7 @@ public class WorkflowStepsApi {
      * This endpoint allows users to create a new workflow step for a link. Workflow steps define the behavior of links, such as redirection destinations.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId The ID of the link to create the workflow step for (UUID) (required)
      * @param workflowStepsServiceCreateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -859,7 +859,7 @@ public class WorkflowStepsApi {
         return localVarCall;
     }
     /**
-     * Build call for workflowStepsServiceDisconnectStep
+     * Build call for workflowStepsServiceDisconnect
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to clear. See ConnectWorkflowStepRequest.branch_id. (required)
@@ -875,7 +875,7 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceDisconnectStepCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceDisconnectCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -923,29 +923,29 @@ public class WorkflowStepsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call workflowStepsServiceDisconnectStepValidateBeforeCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call workflowStepsServiceDisconnectValidateBeforeCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'linkId' is set
         if (linkId == null) {
-            throw new ApiException("Missing the required parameter 'linkId' when calling workflowStepsServiceDisconnectStep(Async)");
+            throw new ApiException("Missing the required parameter 'linkId' when calling workflowStepsServiceDisconnect(Async)");
         }
 
         // verify the required parameter 'stepId' is set
         if (stepId == null) {
-            throw new ApiException("Missing the required parameter 'stepId' when calling workflowStepsServiceDisconnectStep(Async)");
+            throw new ApiException("Missing the required parameter 'stepId' when calling workflowStepsServiceDisconnect(Async)");
         }
 
         // verify the required parameter 'branchId' is set
         if (branchId == null) {
-            throw new ApiException("Missing the required parameter 'branchId' when calling workflowStepsServiceDisconnectStep(Async)");
+            throw new ApiException("Missing the required parameter 'branchId' when calling workflowStepsServiceDisconnect(Async)");
         }
 
-        return workflowStepsServiceDisconnectStepCall(linkId, stepId, branchId, _callback);
+        return workflowStepsServiceDisconnectCall(linkId, stepId, branchId, _callback);
 
     }
 
     /**
      * Clear one exit of a workflow step
-     * Leaves the branch with no destination. Clearing a branch that is already clear succeeds. See ConnectStep for what a branch id is.  Requires the &#x60;workflows:write&#x60; scope.
+     * Leaves the branch with no destination. Clearing a branch that is already clear succeeds. See Connect for what a branch id is.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to clear. See ConnectWorkflowStepRequest.branch_id. (required)
@@ -960,14 +960,14 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public DisconnectWorkflowStepResponse workflowStepsServiceDisconnectStep(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId) throws ApiException {
-        ApiResponse<DisconnectWorkflowStepResponse> localVarResp = workflowStepsServiceDisconnectStepWithHttpInfo(linkId, stepId, branchId);
+    public DisconnectWorkflowStepResponse workflowStepsServiceDisconnect(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId) throws ApiException {
+        ApiResponse<DisconnectWorkflowStepResponse> localVarResp = workflowStepsServiceDisconnectWithHttpInfo(linkId, stepId, branchId);
         return localVarResp.getData();
     }
 
     /**
      * Clear one exit of a workflow step
-     * Leaves the branch with no destination. Clearing a branch that is already clear succeeds. See ConnectStep for what a branch id is.  Requires the &#x60;workflows:write&#x60; scope.
+     * Leaves the branch with no destination. Clearing a branch that is already clear succeeds. See Connect for what a branch id is.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to clear. See ConnectWorkflowStepRequest.branch_id. (required)
@@ -982,15 +982,15 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<DisconnectWorkflowStepResponse> workflowStepsServiceDisconnectStepWithHttpInfo(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId) throws ApiException {
-        okhttp3.Call localVarCall = workflowStepsServiceDisconnectStepValidateBeforeCall(linkId, stepId, branchId, null);
+    public ApiResponse<DisconnectWorkflowStepResponse> workflowStepsServiceDisconnectWithHttpInfo(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId) throws ApiException {
+        okhttp3.Call localVarCall = workflowStepsServiceDisconnectValidateBeforeCall(linkId, stepId, branchId, null);
         Type localVarReturnType = new TypeToken<DisconnectWorkflowStepResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
      * Clear one exit of a workflow step (asynchronously)
-     * Leaves the branch with no destination. Clearing a branch that is already clear succeeds. See ConnectStep for what a branch id is.  Requires the &#x60;workflows:write&#x60; scope.
+     * Leaves the branch with no destination. Clearing a branch that is already clear succeeds. See Connect for what a branch id is.  Requires the &#x60;workflows:write&#x60; scope.
      * @param linkId The ID of the link (UUID) (required)
      * @param stepId The ID of the step the connection leaves from (UUID) (required)
      * @param branchId Which exit of that step to clear. See ConnectWorkflowStepRequest.branch_id. (required)
@@ -1006,9 +1006,9 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceDisconnectStepAsync(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, final ApiCallback<DisconnectWorkflowStepResponse> _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceDisconnectAsync(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull String branchId, final ApiCallback<DisconnectWorkflowStepResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = workflowStepsServiceDisconnectStepValidateBeforeCall(linkId, stepId, branchId, _callback);
+        okhttp3.Call localVarCall = workflowStepsServiceDisconnectValidateBeforeCall(linkId, stepId, branchId, _callback);
         Type localVarReturnType = new TypeToken<DisconnectWorkflowStepResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -1224,7 +1224,7 @@ public class WorkflowStepsApi {
 
     /**
      * Get wallet pass support
-     * Tells which wallets a contact card&#39;s wallet pass option (wallet_pass_enabled) can currently add the card to. A wallet that is not available shows no button to visitors.  Requires the &#x60;workflows:read&#x60; scope.
+     * Tells which wallets a contact card&#39;s wallet pass option (walletPassEnabled) can currently add the card to. A wallet that is not available shows no button to visitors.  Requires the &#x60;workflows:read&#x60; scope.
      * @return GetWalletPassSupportResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1243,7 +1243,7 @@ public class WorkflowStepsApi {
 
     /**
      * Get wallet pass support
-     * Tells which wallets a contact card&#39;s wallet pass option (wallet_pass_enabled) can currently add the card to. A wallet that is not available shows no button to visitors.  Requires the &#x60;workflows:read&#x60; scope.
+     * Tells which wallets a contact card&#39;s wallet pass option (walletPassEnabled) can currently add the card to. A wallet that is not available shows no button to visitors.  Requires the &#x60;workflows:read&#x60; scope.
      * @return ApiResponse&lt;GetWalletPassSupportResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1263,7 +1263,7 @@ public class WorkflowStepsApi {
 
     /**
      * Get wallet pass support (asynchronously)
-     * Tells which wallets a contact card&#39;s wallet pass option (wallet_pass_enabled) can currently add the card to. A wallet that is not available shows no button to visitors.  Requires the &#x60;workflows:read&#x60; scope.
+     * Tells which wallets a contact card&#39;s wallet pass option (walletPassEnabled) can currently add the card to. A wallet that is not available shows no button to visitors.  Requires the &#x60;workflows:read&#x60; scope.
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1443,11 +1443,11 @@ public class WorkflowStepsApi {
         return localVarCall;
     }
     /**
-     * Build call for workflowStepsServiceResolveStepCollisions
+     * Build call for workflowStepsServiceResolveCollisions
      * @param linkId  (required)
      * @param stepId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1460,7 +1460,7 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceResolveStepCollisionsCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceResolveCollisionsCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1513,23 +1513,23 @@ public class WorkflowStepsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call workflowStepsServiceResolveStepCollisionsValidateBeforeCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call workflowStepsServiceResolveCollisionsValidateBeforeCall(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'linkId' is set
         if (linkId == null) {
-            throw new ApiException("Missing the required parameter 'linkId' when calling workflowStepsServiceResolveStepCollisions(Async)");
+            throw new ApiException("Missing the required parameter 'linkId' when calling workflowStepsServiceResolveCollisions(Async)");
         }
 
         // verify the required parameter 'stepId' is set
         if (stepId == null) {
-            throw new ApiException("Missing the required parameter 'stepId' when calling workflowStepsServiceResolveStepCollisions(Async)");
+            throw new ApiException("Missing the required parameter 'stepId' when calling workflowStepsServiceResolveCollisions(Async)");
         }
 
         // verify the required parameter 'body' is set
         if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling workflowStepsServiceResolveStepCollisions(Async)");
+            throw new ApiException("Missing the required parameter 'body' when calling workflowStepsServiceResolveCollisions(Async)");
         }
 
-        return workflowStepsServiceResolveStepCollisionsCall(linkId, stepId, body, idempotencyKey, _callback);
+        return workflowStepsServiceResolveCollisionsCall(linkId, stepId, body, idempotencyKey, _callback);
 
     }
 
@@ -1539,7 +1539,7 @@ public class WorkflowStepsApi {
      * @param linkId  (required)
      * @param stepId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ResolveStepCollisionsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1551,8 +1551,8 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ResolveStepCollisionsResponse workflowStepsServiceResolveStepCollisions(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ResolveStepCollisionsResponse> localVarResp = workflowStepsServiceResolveStepCollisionsWithHttpInfo(linkId, stepId, body, idempotencyKey);
+    public ResolveStepCollisionsResponse workflowStepsServiceResolveCollisions(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ResolveStepCollisionsResponse> localVarResp = workflowStepsServiceResolveCollisionsWithHttpInfo(linkId, stepId, body, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -1562,7 +1562,7 @@ public class WorkflowStepsApi {
      * @param linkId  (required)
      * @param stepId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;ResolveStepCollisionsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1574,8 +1574,8 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ResolveStepCollisionsResponse> workflowStepsServiceResolveStepCollisionsWithHttpInfo(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = workflowStepsServiceResolveStepCollisionsValidateBeforeCall(linkId, stepId, body, idempotencyKey, null);
+    public ApiResponse<ResolveStepCollisionsResponse> workflowStepsServiceResolveCollisionsWithHttpInfo(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = workflowStepsServiceResolveCollisionsValidateBeforeCall(linkId, stepId, body, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<ResolveStepCollisionsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1586,7 +1586,7 @@ public class WorkflowStepsApi {
      * @param linkId  (required)
      * @param stepId  (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1599,9 +1599,9 @@ public class WorkflowStepsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call workflowStepsServiceResolveStepCollisionsAsync(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ResolveStepCollisionsResponse> _callback) throws ApiException {
+    public okhttp3.Call workflowStepsServiceResolveCollisionsAsync(@javax.annotation.Nonnull String linkId, @javax.annotation.Nonnull String stepId, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ResolveStepCollisionsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = workflowStepsServiceResolveStepCollisionsValidateBeforeCall(linkId, stepId, body, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = workflowStepsServiceResolveCollisionsValidateBeforeCall(linkId, stepId, body, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<ResolveStepCollisionsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -1611,7 +1611,7 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param id The ID of the workflow step to update (UUID) (required)
      * @param workflowStepsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1703,7 +1703,7 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param id The ID of the workflow step to update (UUID) (required)
      * @param workflowStepsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdateWorkflowStepResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1726,7 +1726,7 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param id The ID of the workflow step to update (UUID) (required)
      * @param workflowStepsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdateWorkflowStepResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1750,7 +1750,7 @@ public class WorkflowStepsApi {
      * @param linkId The ID of the link (UUID) (required)
      * @param id The ID of the workflow step to update (UUID) (required)
      * @param workflowStepsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1842,8 +1842,8 @@ public class WorkflowStepsApi {
     }
 
     /**
-     * 
-     * Requires the &#x60;workflows:read&#x60; scope.
+     * Validate a link&#39;s workflow
+     * Check the link&#39;s workflow for problems before visitors meet them: a start (Link Visit) that leads nowhere, steps no path from the start reaches, and steps other than exits that lead nowhere. An empty list of issues means the workflow is sound.  Requires the &#x60;workflows:read&#x60; scope.
      * @param linkId  (required)
      * @return ValidateWorkflowResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1862,8 +1862,8 @@ public class WorkflowStepsApi {
     }
 
     /**
-     * 
-     * Requires the &#x60;workflows:read&#x60; scope.
+     * Validate a link&#39;s workflow
+     * Check the link&#39;s workflow for problems before visitors meet them: a start (Link Visit) that leads nowhere, steps no path from the start reaches, and steps other than exits that lead nowhere. An empty list of issues means the workflow is sound.  Requires the &#x60;workflows:read&#x60; scope.
      * @param linkId  (required)
      * @return ApiResponse&lt;ValidateWorkflowResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1883,8 +1883,8 @@ public class WorkflowStepsApi {
     }
 
     /**
-     *  (asynchronously)
-     * Requires the &#x60;workflows:read&#x60; scope.
+     * Validate a link&#39;s workflow (asynchronously)
+     * Check the link&#39;s workflow for problems before visitors meet them: a start (Link Visit) that leads nowhere, steps no path from the start reaches, and steps other than exits that lead nowhere. An empty list of issues means the workflow is sound.  Requires the &#x60;workflows:read&#x60; scope.
      * @param linkId  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call

@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -37,9 +37,7 @@ import com.linkbreakers.model.PublicListQrcodeTemplatesResponse;
 import com.linkbreakers.model.PublicQrcodeTemplate;
 import com.linkbreakers.model.PublishQrcodeTemplateResponse;
 import com.linkbreakers.model.QrcodeTemplate;
-import com.linkbreakers.model.QrcodeTemplatesServiceUpdateQrcodeTemplateBody;
-import com.linkbreakers.model.ResolveQrcodeTemplateImagesRequest;
-import com.linkbreakers.model.ResolveQrcodeTemplateImagesResponse;
+import com.linkbreakers.model.QrcodeTemplatesServiceUpdateBody;
 import com.linkbreakers.model.UpdateQrcodeTemplateResponse;
 
 import java.lang.reflect.Type;
@@ -86,9 +84,9 @@ public class QrCodeTemplatesApi {
     }
 
     /**
-     * Build call for qrcodeTemplatesServiceCreateQrcodeTemplate
+     * Build call for qrcodeTemplatesServiceCreate
      * @param createQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -101,7 +99,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceCreateQrcodeTemplateCall(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceCreateCall(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -152,13 +150,13 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceCreateQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call qrcodeTemplatesServiceCreateValidateBeforeCall(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'createQrcodeTemplateRequest' is set
         if (createQrcodeTemplateRequest == null) {
-            throw new ApiException("Missing the required parameter 'createQrcodeTemplateRequest' when calling qrcodeTemplatesServiceCreateQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'createQrcodeTemplateRequest' when calling qrcodeTemplatesServiceCreate(Async)");
         }
 
-        return qrcodeTemplatesServiceCreateQrcodeTemplateCall(createQrcodeTemplateRequest, idempotencyKey, _callback);
+        return qrcodeTemplatesServiceCreateCall(createQrcodeTemplateRequest, idempotencyKey, _callback);
 
     }
 
@@ -166,7 +164,7 @@ public class QrCodeTemplatesApi {
      * Create a new QR code template
      * Create a new QR code template using a fresh design. The design must not be used by any other links or templates.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param createQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateQrcodeTemplateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -178,8 +176,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public CreateQrcodeTemplateResponse qrcodeTemplatesServiceCreateQrcodeTemplate(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<CreateQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServiceCreateQrcodeTemplateWithHttpInfo(createQrcodeTemplateRequest, idempotencyKey);
+    public CreateQrcodeTemplateResponse qrcodeTemplatesServiceCreate(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<CreateQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServiceCreateWithHttpInfo(createQrcodeTemplateRequest, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -187,7 +185,7 @@ public class QrCodeTemplatesApi {
      * Create a new QR code template
      * Create a new QR code template using a fresh design. The design must not be used by any other links or templates.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param createQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateQrcodeTemplateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -199,8 +197,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<CreateQrcodeTemplateResponse> qrcodeTemplatesServiceCreateQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceCreateQrcodeTemplateValidateBeforeCall(createQrcodeTemplateRequest, idempotencyKey, null);
+    public ApiResponse<CreateQrcodeTemplateResponse> qrcodeTemplatesServiceCreateWithHttpInfo(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceCreateValidateBeforeCall(createQrcodeTemplateRequest, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<CreateQrcodeTemplateResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -209,7 +207,7 @@ public class QrCodeTemplatesApi {
      * Create a new QR code template (asynchronously)
      * Create a new QR code template using a fresh design. The design must not be used by any other links or templates.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param createQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -222,15 +220,15 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceCreateQrcodeTemplateAsync(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CreateQrcodeTemplateResponse> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceCreateAsync(@javax.annotation.Nonnull CreateQrcodeTemplateRequest createQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CreateQrcodeTemplateResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceCreateQrcodeTemplateValidateBeforeCall(createQrcodeTemplateRequest, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceCreateValidateBeforeCall(createQrcodeTemplateRequest, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<CreateQrcodeTemplateResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServiceDeleteQrcodeTemplate
+     * Build call for qrcodeTemplatesServiceDelete
      * @param id  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -245,7 +243,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceDeleteQrcodeTemplateCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceDeleteCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -291,13 +289,13 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceDeleteQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call qrcodeTemplatesServiceDeleteValidateBeforeCall(@javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServiceDeleteQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServiceDelete(Async)");
         }
 
-        return qrcodeTemplatesServiceDeleteQrcodeTemplateCall(id, _callback);
+        return qrcodeTemplatesServiceDeleteCall(id, _callback);
 
     }
 
@@ -317,8 +315,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public Object qrcodeTemplatesServiceDeleteQrcodeTemplate(@javax.annotation.Nonnull String id) throws ApiException {
-        ApiResponse<Object> localVarResp = qrcodeTemplatesServiceDeleteQrcodeTemplateWithHttpInfo(id);
+    public Object qrcodeTemplatesServiceDelete(@javax.annotation.Nonnull String id) throws ApiException {
+        ApiResponse<Object> localVarResp = qrcodeTemplatesServiceDeleteWithHttpInfo(id);
         return localVarResp.getData();
     }
 
@@ -338,8 +336,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<Object> qrcodeTemplatesServiceDeleteQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceDeleteQrcodeTemplateValidateBeforeCall(id, null);
+    public ApiResponse<Object> qrcodeTemplatesServiceDeleteWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceDeleteValidateBeforeCall(id, null);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -361,15 +359,15 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceDeleteQrcodeTemplateAsync(@javax.annotation.Nonnull String id, final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceDeleteAsync(@javax.annotation.Nonnull String id, final ApiCallback<Object> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceDeleteQrcodeTemplateValidateBeforeCall(id, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceDeleteValidateBeforeCall(id, _callback);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServiceGetQrcodeTemplate
+     * Build call for qrcodeTemplatesServiceGet
      * @param id  (required)
      * @param include  (optional)
      * @param _callback Callback for upload/download progress
@@ -384,7 +382,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceGetQrcodeTemplateCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceGetCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -434,13 +432,13 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceGetQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call qrcodeTemplatesServiceGetValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServiceGetQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServiceGet(Async)");
         }
 
-        return qrcodeTemplatesServiceGetQrcodeTemplateCall(id, include, _callback);
+        return qrcodeTemplatesServiceGetCall(id, include, _callback);
 
     }
 
@@ -460,8 +458,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public QrcodeTemplate qrcodeTemplatesServiceGetQrcodeTemplate(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include) throws ApiException {
-        ApiResponse<QrcodeTemplate> localVarResp = qrcodeTemplatesServiceGetQrcodeTemplateWithHttpInfo(id, include);
+    public QrcodeTemplate qrcodeTemplatesServiceGet(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include) throws ApiException {
+        ApiResponse<QrcodeTemplate> localVarResp = qrcodeTemplatesServiceGetWithHttpInfo(id, include);
         return localVarResp.getData();
     }
 
@@ -481,8 +479,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<QrcodeTemplate> qrcodeTemplatesServiceGetQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceGetQrcodeTemplateValidateBeforeCall(id, include, null);
+    public ApiResponse<QrcodeTemplate> qrcodeTemplatesServiceGetWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceGetValidateBeforeCall(id, include, null);
         Type localVarReturnType = new TypeToken<QrcodeTemplate>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -504,17 +502,160 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceGetQrcodeTemplateAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include, final ApiCallback<QrcodeTemplate> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceGetAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nullable List<String> include, final ApiCallback<QrcodeTemplate> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceGetQrcodeTemplateValidateBeforeCall(id, include, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceGetValidateBeforeCall(id, include, _callback);
         Type localVarReturnType = new TypeToken<QrcodeTemplate>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServiceImportQrcodeTemplate
+     * Build call for qrcodeTemplatesServiceGetPublic
+     * @param slug  (required)
+     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call qrcodeTemplatesServiceGetPublicCall(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/v1/public/qrcode-templates/{slug}"
+            .replace("{" + "slug" + "}", localVarApiClient.escapeString(slug.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        if (include != null) {
+            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "include", include));
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call qrcodeTemplatesServiceGetPublicValidateBeforeCall(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'slug' is set
+        if (slug == null) {
+            throw new ApiException("Missing the required parameter 'slug' when calling qrcodeTemplatesServiceGetPublic(Async)");
+        }
+
+        return qrcodeTemplatesServiceGetPublicCall(slug, include, _callback);
+
+    }
+
+    /**
+     * Get a public QR code template
+     * Retrieve a single published QR code template that is visible in the public gallery.
+     * @param slug  (required)
+     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
+     * @return PublicQrcodeTemplate
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public PublicQrcodeTemplate qrcodeTemplatesServiceGetPublic(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include) throws ApiException {
+        ApiResponse<PublicQrcodeTemplate> localVarResp = qrcodeTemplatesServiceGetPublicWithHttpInfo(slug, include);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get a public QR code template
+     * Retrieve a single published QR code template that is visible in the public gallery.
+     * @param slug  (required)
+     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
+     * @return ApiResponse&lt;PublicQrcodeTemplate&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<PublicQrcodeTemplate> qrcodeTemplatesServiceGetPublicWithHttpInfo(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceGetPublicValidateBeforeCall(slug, include, null);
+        Type localVarReturnType = new TypeToken<PublicQrcodeTemplate>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get a public QR code template (asynchronously)
+     * Retrieve a single published QR code template that is visible in the public gallery.
+     * @param slug  (required)
+     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call qrcodeTemplatesServiceGetPublicAsync(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include, final ApiCallback<PublicQrcodeTemplate> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceGetPublicValidateBeforeCall(slug, include, _callback);
+        Type localVarReturnType = new TypeToken<PublicQrcodeTemplate>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for qrcodeTemplatesServiceImport
      * @param importQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -527,7 +668,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceImportQrcodeTemplateCall(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceImportCall(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -578,13 +719,13 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceImportQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call qrcodeTemplatesServiceImportValidateBeforeCall(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'importQrcodeTemplateRequest' is set
         if (importQrcodeTemplateRequest == null) {
-            throw new ApiException("Missing the required parameter 'importQrcodeTemplateRequest' when calling qrcodeTemplatesServiceImportQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'importQrcodeTemplateRequest' when calling qrcodeTemplatesServiceImport(Async)");
         }
 
-        return qrcodeTemplatesServiceImportQrcodeTemplateCall(importQrcodeTemplateRequest, idempotencyKey, _callback);
+        return qrcodeTemplatesServiceImportCall(importQrcodeTemplateRequest, idempotencyKey, _callback);
 
     }
 
@@ -592,7 +733,7 @@ public class QrCodeTemplatesApi {
      * Import a public QR code template
      * Import a public QR code template into your workspace by slug. Creates a private copy owned by your workspace.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param importQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ImportQrcodeTemplateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -604,8 +745,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ImportQrcodeTemplateResponse qrcodeTemplatesServiceImportQrcodeTemplate(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ImportQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServiceImportQrcodeTemplateWithHttpInfo(importQrcodeTemplateRequest, idempotencyKey);
+    public ImportQrcodeTemplateResponse qrcodeTemplatesServiceImport(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ImportQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServiceImportWithHttpInfo(importQrcodeTemplateRequest, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -613,7 +754,7 @@ public class QrCodeTemplatesApi {
      * Import a public QR code template
      * Import a public QR code template into your workspace by slug. Creates a private copy owned by your workspace.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param importQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;ImportQrcodeTemplateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -625,8 +766,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ImportQrcodeTemplateResponse> qrcodeTemplatesServiceImportQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceImportQrcodeTemplateValidateBeforeCall(importQrcodeTemplateRequest, idempotencyKey, null);
+    public ApiResponse<ImportQrcodeTemplateResponse> qrcodeTemplatesServiceImportWithHttpInfo(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceImportValidateBeforeCall(importQrcodeTemplateRequest, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<ImportQrcodeTemplateResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -635,7 +776,7 @@ public class QrCodeTemplatesApi {
      * Import a public QR code template (asynchronously)
      * Import a public QR code template into your workspace by slug. Creates a private copy owned by your workspace.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param importQrcodeTemplateRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -648,15 +789,15 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceImportQrcodeTemplateAsync(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ImportQrcodeTemplateResponse> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceImportAsync(@javax.annotation.Nonnull ImportQrcodeTemplateRequest importQrcodeTemplateRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ImportQrcodeTemplateResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceImportQrcodeTemplateValidateBeforeCall(importQrcodeTemplateRequest, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceImportValidateBeforeCall(importQrcodeTemplateRequest, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<ImportQrcodeTemplateResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServiceListQrcodeTemplates
+     * Build call for qrcodeTemplatesServiceList
      * @param include  (optional)
      * @param search  (optional)
      * @param pageSize  (optional)
@@ -675,7 +816,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceListQrcodeTemplatesCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceListCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -744,8 +885,8 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceListQrcodeTemplatesValidateBeforeCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
-        return qrcodeTemplatesServiceListQrcodeTemplatesCall(include, search, pageSize, pageToken, scope, cursor, _callback);
+    private okhttp3.Call qrcodeTemplatesServiceListValidateBeforeCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+        return qrcodeTemplatesServiceListCall(include, search, pageSize, pageToken, scope, cursor, _callback);
 
     }
 
@@ -769,8 +910,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListQrcodeTemplatesResponse qrcodeTemplatesServiceListQrcodeTemplates(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor) throws ApiException {
-        ApiResponse<ListQrcodeTemplatesResponse> localVarResp = qrcodeTemplatesServiceListQrcodeTemplatesWithHttpInfo(include, search, pageSize, pageToken, scope, cursor);
+    public ListQrcodeTemplatesResponse qrcodeTemplatesServiceList(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor) throws ApiException {
+        ApiResponse<ListQrcodeTemplatesResponse> localVarResp = qrcodeTemplatesServiceListWithHttpInfo(include, search, pageSize, pageToken, scope, cursor);
         return localVarResp.getData();
     }
 
@@ -794,8 +935,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListQrcodeTemplatesResponse> qrcodeTemplatesServiceListQrcodeTemplatesWithHttpInfo(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceListQrcodeTemplatesValidateBeforeCall(include, search, pageSize, pageToken, scope, cursor, null);
+    public ApiResponse<ListQrcodeTemplatesResponse> qrcodeTemplatesServiceListWithHttpInfo(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceListValidateBeforeCall(include, search, pageSize, pageToken, scope, cursor, null);
         Type localVarReturnType = new TypeToken<ListQrcodeTemplatesResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -821,158 +962,15 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceListQrcodeTemplatesAsync(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor, final ApiCallback<ListQrcodeTemplatesResponse> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceListAsync(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String scope, @javax.annotation.Nullable String cursor, final ApiCallback<ListQrcodeTemplatesResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceListQrcodeTemplatesValidateBeforeCall(include, search, pageSize, pageToken, scope, cursor, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceListValidateBeforeCall(include, search, pageSize, pageToken, scope, cursor, _callback);
         Type localVarReturnType = new TypeToken<ListQrcodeTemplatesResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServicePublicGetQrcodeTemplate
-     * @param slug  (required)
-     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call qrcodeTemplatesServicePublicGetQrcodeTemplateCall(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/v1/public/qrcode-templates/{slug}"
-            .replace("{" + "slug" + "}", localVarApiClient.escapeString(slug.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (include != null) {
-            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "include", include));
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] {  };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServicePublicGetQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'slug' is set
-        if (slug == null) {
-            throw new ApiException("Missing the required parameter 'slug' when calling qrcodeTemplatesServicePublicGetQrcodeTemplate(Async)");
-        }
-
-        return qrcodeTemplatesServicePublicGetQrcodeTemplateCall(slug, include, _callback);
-
-    }
-
-    /**
-     * Get a public QR code template
-     * Retrieve a single published QR code template that is visible in the public gallery.
-     * @param slug  (required)
-     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
-     * @return PublicQrcodeTemplate
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public PublicQrcodeTemplate qrcodeTemplatesServicePublicGetQrcodeTemplate(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include) throws ApiException {
-        ApiResponse<PublicQrcodeTemplate> localVarResp = qrcodeTemplatesServicePublicGetQrcodeTemplateWithHttpInfo(slug, include);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get a public QR code template
-     * Retrieve a single published QR code template that is visible in the public gallery.
-     * @param slug  (required)
-     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
-     * @return ApiResponse&lt;PublicQrcodeTemplate&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<PublicQrcodeTemplate> qrcodeTemplatesServicePublicGetQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServicePublicGetQrcodeTemplateValidateBeforeCall(slug, include, null);
-        Type localVarReturnType = new TypeToken<PublicQrcodeTemplate>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get a public QR code template (asynchronously)
-     * Retrieve a single published QR code template that is visible in the public gallery.
-     * @param slug  (required)
-     * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call qrcodeTemplatesServicePublicGetQrcodeTemplateAsync(@javax.annotation.Nonnull String slug, @javax.annotation.Nullable List<String> include, final ApiCallback<PublicQrcodeTemplate> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = qrcodeTemplatesServicePublicGetQrcodeTemplateValidateBeforeCall(slug, include, _callback);
-        Type localVarReturnType = new TypeToken<PublicQrcodeTemplate>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for qrcodeTemplatesServicePublicListQrcodeTemplates
+     * Build call for qrcodeTemplatesServiceListPublic
      * @param include Related objects to include in the response  List of related objects to include. Supported values: &#39;workspace&#39; (optional)
      * @param search Search query applied to template name/description (optional)
      * @param pageSize Maximum number of templates to return (defaults to 20) (optional)
@@ -991,7 +989,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServicePublicListQrcodeTemplatesCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceListPublicCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1060,8 +1058,8 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServicePublicListQrcodeTemplatesValidateBeforeCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
-        return qrcodeTemplatesServicePublicListQrcodeTemplatesCall(include, search, pageSize, pageToken, workspaceId, cursor, _callback);
+    private okhttp3.Call qrcodeTemplatesServiceListPublicValidateBeforeCall(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor, final ApiCallback _callback) throws ApiException {
+        return qrcodeTemplatesServiceListPublicCall(include, search, pageSize, pageToken, workspaceId, cursor, _callback);
 
     }
 
@@ -1085,8 +1083,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public PublicListQrcodeTemplatesResponse qrcodeTemplatesServicePublicListQrcodeTemplates(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor) throws ApiException {
-        ApiResponse<PublicListQrcodeTemplatesResponse> localVarResp = qrcodeTemplatesServicePublicListQrcodeTemplatesWithHttpInfo(include, search, pageSize, pageToken, workspaceId, cursor);
+    public PublicListQrcodeTemplatesResponse qrcodeTemplatesServiceListPublic(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor) throws ApiException {
+        ApiResponse<PublicListQrcodeTemplatesResponse> localVarResp = qrcodeTemplatesServiceListPublicWithHttpInfo(include, search, pageSize, pageToken, workspaceId, cursor);
         return localVarResp.getData();
     }
 
@@ -1110,8 +1108,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<PublicListQrcodeTemplatesResponse> qrcodeTemplatesServicePublicListQrcodeTemplatesWithHttpInfo(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServicePublicListQrcodeTemplatesValidateBeforeCall(include, search, pageSize, pageToken, workspaceId, cursor, null);
+    public ApiResponse<PublicListQrcodeTemplatesResponse> qrcodeTemplatesServiceListPublicWithHttpInfo(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceListPublicValidateBeforeCall(include, search, pageSize, pageToken, workspaceId, cursor, null);
         Type localVarReturnType = new TypeToken<PublicListQrcodeTemplatesResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1137,18 +1135,18 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServicePublicListQrcodeTemplatesAsync(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor, final ApiCallback<PublicListQrcodeTemplatesResponse> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceListPublicAsync(@javax.annotation.Nullable List<String> include, @javax.annotation.Nullable String search, @javax.annotation.Nullable Long pageSize, @javax.annotation.Nullable String pageToken, @javax.annotation.Nullable String workspaceId, @javax.annotation.Nullable String cursor, final ApiCallback<PublicListQrcodeTemplatesResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServicePublicListQrcodeTemplatesValidateBeforeCall(include, search, pageSize, pageToken, workspaceId, cursor, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceListPublicValidateBeforeCall(include, search, pageSize, pageToken, workspaceId, cursor, _callback);
         Type localVarReturnType = new TypeToken<PublicListQrcodeTemplatesResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServicePublishQrcodeTemplate
+     * Build call for qrcodeTemplatesServicePublish
      * @param id The ID of the QR code template to publish (UUID) (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1161,7 +1159,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServicePublishQrcodeTemplateCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServicePublishCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1213,18 +1211,18 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServicePublishQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call qrcodeTemplatesServicePublishValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServicePublishQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServicePublish(Async)");
         }
 
         // verify the required parameter 'body' is set
         if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling qrcodeTemplatesServicePublishQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'body' when calling qrcodeTemplatesServicePublish(Async)");
         }
 
-        return qrcodeTemplatesServicePublishQrcodeTemplateCall(id, body, idempotencyKey, _callback);
+        return qrcodeTemplatesServicePublishCall(id, body, idempotencyKey, _callback);
 
     }
 
@@ -1233,7 +1231,7 @@ public class QrCodeTemplatesApi {
      * Publish a QR code template to make it available in the public gallery. Requires workspace to be public and template to have slug, description, and name.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param id The ID of the QR code template to publish (UUID) (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return PublishQrcodeTemplateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1245,8 +1243,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public PublishQrcodeTemplateResponse qrcodeTemplatesServicePublishQrcodeTemplate(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<PublishQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServicePublishQrcodeTemplateWithHttpInfo(id, body, idempotencyKey);
+    public PublishQrcodeTemplateResponse qrcodeTemplatesServicePublish(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<PublishQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServicePublishWithHttpInfo(id, body, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -1255,7 +1253,7 @@ public class QrCodeTemplatesApi {
      * Publish a QR code template to make it available in the public gallery. Requires workspace to be public and template to have slug, description, and name.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param id The ID of the QR code template to publish (UUID) (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;PublishQrcodeTemplateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1267,8 +1265,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<PublishQrcodeTemplateResponse> qrcodeTemplatesServicePublishQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServicePublishQrcodeTemplateValidateBeforeCall(id, body, idempotencyKey, null);
+    public ApiResponse<PublishQrcodeTemplateResponse> qrcodeTemplatesServicePublishWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServicePublishValidateBeforeCall(id, body, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<PublishQrcodeTemplateResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1278,7 +1276,7 @@ public class QrCodeTemplatesApi {
      * Publish a QR code template to make it available in the public gallery. Requires workspace to be public and template to have slug, description, and name.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param id The ID of the QR code template to publish (UUID) (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1291,162 +1289,18 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServicePublishQrcodeTemplateAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<PublishQrcodeTemplateResponse> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServicePublishAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<PublishQrcodeTemplateResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServicePublishQrcodeTemplateValidateBeforeCall(id, body, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServicePublishValidateBeforeCall(id, body, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<PublishQrcodeTemplateResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for qrcodeTemplatesServiceResolveQrcodeTemplateImages
-     * @param resolveQrcodeTemplateImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call qrcodeTemplatesServiceResolveQrcodeTemplateImagesCall(@javax.annotation.Nonnull ResolveQrcodeTemplateImagesRequest resolveQrcodeTemplateImagesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = resolveQrcodeTemplateImagesRequest;
-
-        // create path and map variables
-        String localVarPath = "/v1/qrcode-templates/images:resolve";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceResolveQrcodeTemplateImagesValidateBeforeCall(@javax.annotation.Nonnull ResolveQrcodeTemplateImagesRequest resolveQrcodeTemplateImagesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'resolveQrcodeTemplateImagesRequest' is set
-        if (resolveQrcodeTemplateImagesRequest == null) {
-            throw new ApiException("Missing the required parameter 'resolveQrcodeTemplateImagesRequest' when calling qrcodeTemplatesServiceResolveQrcodeTemplateImages(Async)");
-        }
-
-        return qrcodeTemplatesServiceResolveQrcodeTemplateImagesCall(resolveQrcodeTemplateImagesRequest, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Resolve QR code template thumbnails
-     * Return freshly signed thumbnail URLs for the given templates. The URLs expire, so callers fetch them when they need to render rather than storing them.  Requires the &#x60;qrcodes:read&#x60; scope.
-     * @param resolveQrcodeTemplateImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ResolveQrcodeTemplateImagesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ResolveQrcodeTemplateImagesResponse qrcodeTemplatesServiceResolveQrcodeTemplateImages(@javax.annotation.Nonnull ResolveQrcodeTemplateImagesRequest resolveQrcodeTemplateImagesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ResolveQrcodeTemplateImagesResponse> localVarResp = qrcodeTemplatesServiceResolveQrcodeTemplateImagesWithHttpInfo(resolveQrcodeTemplateImagesRequest, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Resolve QR code template thumbnails
-     * Return freshly signed thumbnail URLs for the given templates. The URLs expire, so callers fetch them when they need to render rather than storing them.  Requires the &#x60;qrcodes:read&#x60; scope.
-     * @param resolveQrcodeTemplateImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;ResolveQrcodeTemplateImagesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<ResolveQrcodeTemplateImagesResponse> qrcodeTemplatesServiceResolveQrcodeTemplateImagesWithHttpInfo(@javax.annotation.Nonnull ResolveQrcodeTemplateImagesRequest resolveQrcodeTemplateImagesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceResolveQrcodeTemplateImagesValidateBeforeCall(resolveQrcodeTemplateImagesRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<ResolveQrcodeTemplateImagesResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Resolve QR code template thumbnails (asynchronously)
-     * Return freshly signed thumbnail URLs for the given templates. The URLs expire, so callers fetch them when they need to render rather than storing them.  Requires the &#x60;qrcodes:read&#x60; scope.
-     * @param resolveQrcodeTemplateImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call qrcodeTemplatesServiceResolveQrcodeTemplateImagesAsync(@javax.annotation.Nonnull ResolveQrcodeTemplateImagesRequest resolveQrcodeTemplateImagesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ResolveQrcodeTemplateImagesResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceResolveQrcodeTemplateImagesValidateBeforeCall(resolveQrcodeTemplateImagesRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<ResolveQrcodeTemplateImagesResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for qrcodeTemplatesServiceUpdateQrcodeTemplate
+     * Build call for qrcodeTemplatesServiceUpdate
      * @param id The ID of the QR code template to update (UUID) (required)
-     * @param qrcodeTemplatesServiceUpdateQrcodeTemplateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param qrcodeTemplatesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1459,7 +1313,7 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceUpdateQrcodeTemplateCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateQrcodeTemplateBody qrcodeTemplatesServiceUpdateQrcodeTemplateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceUpdateCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateBody qrcodeTemplatesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1473,7 +1327,7 @@ public class QrCodeTemplatesApi {
             basePath = null;
         }
 
-        Object localVarPostBody = qrcodeTemplatesServiceUpdateQrcodeTemplateBody;
+        Object localVarPostBody = qrcodeTemplatesServiceUpdateBody;
 
         // create path and map variables
         String localVarPath = "/v1/qrcode-templates/{id}"
@@ -1511,18 +1365,18 @@ public class QrCodeTemplatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call qrcodeTemplatesServiceUpdateQrcodeTemplateValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateQrcodeTemplateBody qrcodeTemplatesServiceUpdateQrcodeTemplateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call qrcodeTemplatesServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateBody qrcodeTemplatesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServiceUpdateQrcodeTemplate(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling qrcodeTemplatesServiceUpdate(Async)");
         }
 
-        // verify the required parameter 'qrcodeTemplatesServiceUpdateQrcodeTemplateBody' is set
-        if (qrcodeTemplatesServiceUpdateQrcodeTemplateBody == null) {
-            throw new ApiException("Missing the required parameter 'qrcodeTemplatesServiceUpdateQrcodeTemplateBody' when calling qrcodeTemplatesServiceUpdateQrcodeTemplate(Async)");
+        // verify the required parameter 'qrcodeTemplatesServiceUpdateBody' is set
+        if (qrcodeTemplatesServiceUpdateBody == null) {
+            throw new ApiException("Missing the required parameter 'qrcodeTemplatesServiceUpdateBody' when calling qrcodeTemplatesServiceUpdate(Async)");
         }
 
-        return qrcodeTemplatesServiceUpdateQrcodeTemplateCall(id, qrcodeTemplatesServiceUpdateQrcodeTemplateBody, idempotencyKey, _callback);
+        return qrcodeTemplatesServiceUpdateCall(id, qrcodeTemplatesServiceUpdateBody, idempotencyKey, _callback);
 
     }
 
@@ -1530,8 +1384,8 @@ public class QrCodeTemplatesApi {
      * Update a workspace QR code template
      * Modify the name or description of a QR code template owned by the authenticated workspace.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param id The ID of the QR code template to update (UUID) (required)
-     * @param qrcodeTemplatesServiceUpdateQrcodeTemplateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param qrcodeTemplatesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdateQrcodeTemplateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1543,8 +1397,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public UpdateQrcodeTemplateResponse qrcodeTemplatesServiceUpdateQrcodeTemplate(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateQrcodeTemplateBody qrcodeTemplatesServiceUpdateQrcodeTemplateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<UpdateQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServiceUpdateQrcodeTemplateWithHttpInfo(id, qrcodeTemplatesServiceUpdateQrcodeTemplateBody, idempotencyKey);
+    public UpdateQrcodeTemplateResponse qrcodeTemplatesServiceUpdate(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateBody qrcodeTemplatesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<UpdateQrcodeTemplateResponse> localVarResp = qrcodeTemplatesServiceUpdateWithHttpInfo(id, qrcodeTemplatesServiceUpdateBody, idempotencyKey);
         return localVarResp.getData();
     }
 
@@ -1552,8 +1406,8 @@ public class QrCodeTemplatesApi {
      * Update a workspace QR code template
      * Modify the name or description of a QR code template owned by the authenticated workspace.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param id The ID of the QR code template to update (UUID) (required)
-     * @param qrcodeTemplatesServiceUpdateQrcodeTemplateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param qrcodeTemplatesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdateQrcodeTemplateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1565,8 +1419,8 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<UpdateQrcodeTemplateResponse> qrcodeTemplatesServiceUpdateQrcodeTemplateWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateQrcodeTemplateBody qrcodeTemplatesServiceUpdateQrcodeTemplateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceUpdateQrcodeTemplateValidateBeforeCall(id, qrcodeTemplatesServiceUpdateQrcodeTemplateBody, idempotencyKey, null);
+    public ApiResponse<UpdateQrcodeTemplateResponse> qrcodeTemplatesServiceUpdateWithHttpInfo(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateBody qrcodeTemplatesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceUpdateValidateBeforeCall(id, qrcodeTemplatesServiceUpdateBody, idempotencyKey, null);
         Type localVarReturnType = new TypeToken<UpdateQrcodeTemplateResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1575,8 +1429,8 @@ public class QrCodeTemplatesApi {
      * Update a workspace QR code template (asynchronously)
      * Modify the name or description of a QR code template owned by the authenticated workspace.  Requires the &#x60;qrcodes:write&#x60; scope.
      * @param id The ID of the QR code template to update (UUID) (required)
-     * @param qrcodeTemplatesServiceUpdateQrcodeTemplateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param qrcodeTemplatesServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1589,9 +1443,9 @@ public class QrCodeTemplatesApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call qrcodeTemplatesServiceUpdateQrcodeTemplateAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateQrcodeTemplateBody qrcodeTemplatesServiceUpdateQrcodeTemplateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateQrcodeTemplateResponse> _callback) throws ApiException {
+    public okhttp3.Call qrcodeTemplatesServiceUpdateAsync(@javax.annotation.Nonnull String id, @javax.annotation.Nonnull QrcodeTemplatesServiceUpdateBody qrcodeTemplatesServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateQrcodeTemplateResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = qrcodeTemplatesServiceUpdateQrcodeTemplateValidateBeforeCall(id, qrcodeTemplatesServiceUpdateQrcodeTemplateBody, idempotencyKey, _callback);
+        okhttp3.Call localVarCall = qrcodeTemplatesServiceUpdateValidateBeforeCall(id, qrcodeTemplatesServiceUpdateBody, idempotencyKey, _callback);
         Type localVarReturnType = new TypeToken<UpdateQrcodeTemplateResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

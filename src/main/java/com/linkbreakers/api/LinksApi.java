@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -27,6 +27,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
+import com.linkbreakers.model.CheckShortlinkAvailabilityResponse;
 import com.linkbreakers.model.CreateBulkLinksRequest;
 import com.linkbreakers.model.CreateBulkLinksResponse;
 import com.linkbreakers.model.CreateContactLinkRequest;
@@ -38,16 +39,13 @@ import com.linkbreakers.model.CreateOpenMediaLinkResponse;
 import com.linkbreakers.model.CreateThankYouLinkRequest;
 import com.linkbreakers.model.CreateThankYouLinkResponse;
 import com.linkbreakers.model.ErrorResponse;
+import com.linkbreakers.model.GenerateShortlinkResponse;
 import com.linkbreakers.model.GetLinkResponse;
 import com.linkbreakers.model.Job;
 import com.linkbreakers.model.LinksServiceRenderQrcodeImagesBody;
 import com.linkbreakers.model.LinksServiceUpdateBody;
 import com.linkbreakers.model.ListLinksResponse;
 import com.linkbreakers.model.RenderQrcodeImagesResponse;
-import com.linkbreakers.model.ResolveQrcodeImagesRequest;
-import com.linkbreakers.model.ResolveQrcodeImagesResponse;
-import com.linkbreakers.model.ShortlinkAvailabilityResponse;
-import com.linkbreakers.model.ShortlinkRandomResponse;
 import com.linkbreakers.model.UpdateLinkResponse;
 
 import java.lang.reflect.Type;
@@ -94,9 +92,150 @@ public class LinksApi {
     }
 
     /**
+     * Build call for linksServiceCheckShortlinkAvailability
+     * @param shortlink The shortlink to check availability for. (optional)
+     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call linksServiceCheckShortlinkAvailabilityCall(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/v1/links/shortlink-availability";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        if (shortlink != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("shortlink", shortlink));
+        }
+
+        if (customDomainId != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("customDomainId", customDomainId));
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call linksServiceCheckShortlinkAvailabilityValidateBeforeCall(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId, final ApiCallback _callback) throws ApiException {
+        return linksServiceCheckShortlinkAvailabilityCall(shortlink, customDomainId, _callback);
+
+    }
+
+    /**
+     * Check shortlink availability
+     * Checks if a shortlink is available for use to create a new link. A custom domain can be provided to check against. It typically checks the shortlink slugs and shortlink IDs already present within the system.  Requires the &#x60;links:read&#x60; scope.
+     * @param shortlink The shortlink to check availability for. (optional)
+     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
+     * @return CheckShortlinkAvailabilityResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public CheckShortlinkAvailabilityResponse linksServiceCheckShortlinkAvailability(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId) throws ApiException {
+        ApiResponse<CheckShortlinkAvailabilityResponse> localVarResp = linksServiceCheckShortlinkAvailabilityWithHttpInfo(shortlink, customDomainId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Check shortlink availability
+     * Checks if a shortlink is available for use to create a new link. A custom domain can be provided to check against. It typically checks the shortlink slugs and shortlink IDs already present within the system.  Requires the &#x60;links:read&#x60; scope.
+     * @param shortlink The shortlink to check availability for. (optional)
+     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
+     * @return ApiResponse&lt;CheckShortlinkAvailabilityResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<CheckShortlinkAvailabilityResponse> linksServiceCheckShortlinkAvailabilityWithHttpInfo(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId) throws ApiException {
+        okhttp3.Call localVarCall = linksServiceCheckShortlinkAvailabilityValidateBeforeCall(shortlink, customDomainId, null);
+        Type localVarReturnType = new TypeToken<CheckShortlinkAvailabilityResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Check shortlink availability (asynchronously)
+     * Checks if a shortlink is available for use to create a new link. A custom domain can be provided to check against. It typically checks the shortlink slugs and shortlink IDs already present within the system.  Requires the &#x60;links:read&#x60; scope.
+     * @param shortlink The shortlink to check availability for. (optional)
+     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call linksServiceCheckShortlinkAvailabilityAsync(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId, final ApiCallback<CheckShortlinkAvailabilityResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = linksServiceCheckShortlinkAvailabilityValidateBeforeCall(shortlink, customDomainId, _callback);
+        Type localVarReturnType = new TypeToken<CheckShortlinkAvailabilityResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for linksServiceCreate
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -174,7 +313,7 @@ public class LinksApi {
      * Create a new link
      * This endpoint allows users to create a new shortened URL link in their Linkbreakers workspace. The URL will be checked for malicious content before being shortened.  Requires the &#x60;links:write&#x60; scope.
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateLinkResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -195,7 +334,7 @@ public class LinksApi {
      * Create a new link
      * This endpoint allows users to create a new shortened URL link in their Linkbreakers workspace. The URL will be checked for malicious content before being shortened.  Requires the &#x60;links:write&#x60; scope.
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateLinkResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -217,7 +356,7 @@ public class LinksApi {
      * Create a new link (asynchronously)
      * This endpoint allows users to create a new shortened URL link in their Linkbreakers workspace. The URL will be checked for malicious content before being shortened.  Requires the &#x60;links:write&#x60; scope.
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -240,7 +379,7 @@ public class LinksApi {
     /**
      * Build call for linksServiceCreateBatch
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -315,10 +454,10 @@ public class LinksApi {
     }
 
     /**
-     * Create multiple links in a single request
+     * Create multiple links from a bare JSON array
      * Creates links in batch using the same per-link options as Create. This operation is transactional: if one link fails validation or insertion, no links from the batch are created.  Requires the &#x60;links:write&#x60; scope.
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateBulkLinksResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -336,10 +475,10 @@ public class LinksApi {
     }
 
     /**
-     * Create multiple links in a single request
+     * Create multiple links from a bare JSON array
      * Creates links in batch using the same per-link options as Create. This operation is transactional: if one link fails validation or insertion, no links from the batch are created.  Requires the &#x60;links:write&#x60; scope.
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateBulkLinksResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -358,10 +497,10 @@ public class LinksApi {
     }
 
     /**
-     * Create multiple links in a single request (asynchronously)
+     * Create multiple links from a bare JSON array (asynchronously)
      * Creates links in batch using the same per-link options as Create. This operation is transactional: if one link fails validation or insertion, no links from the batch are created.  Requires the &#x60;links:write&#x60; scope.
      * @param createLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -384,7 +523,7 @@ public class LinksApi {
     /**
      * Build call for linksServiceCreateBulk
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -462,7 +601,7 @@ public class LinksApi {
      * Create multiple links in a single request
      * Creates links in batch using the same per-link options as Create. This operation is transactional: if one link fails validation or insertion, no links from the batch are created.  Requires the &#x60;links:write&#x60; scope.
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateBulkLinksResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -483,7 +622,7 @@ public class LinksApi {
      * Create multiple links in a single request
      * Creates links in batch using the same per-link options as Create. This operation is transactional: if one link fails validation or insertion, no links from the batch are created.  Requires the &#x60;links:write&#x60; scope.
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateBulkLinksResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -505,7 +644,7 @@ public class LinksApi {
      * Create multiple links in a single request (asynchronously)
      * Creates links in batch using the same per-link options as Create. This operation is transactional: if one link fails validation or insertion, no links from the batch are created.  Requires the &#x60;links:write&#x60; scope.
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -528,7 +667,7 @@ public class LinksApi {
     /**
      * Build call for linksServiceCreateBulkAsync
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -606,7 +745,7 @@ public class LinksApi {
      * Create links in bulk in the background
      * Accepts the same batch as POST /v1/links/bulk, answers 202 Accepted at once with a job and a Location header, and creates the links in the background. Poll GET /v1/jobs/{id} for the result. The batch is transactional: when the job fails, no link was created.  Requires the &#x60;links:write&#x60; scope.
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return Job
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -627,7 +766,7 @@ public class LinksApi {
      * Create links in bulk in the background
      * Accepts the same batch as POST /v1/links/bulk, answers 202 Accepted at once with a job and a Location header, and creates the links in the background. Poll GET /v1/jobs/{id} for the result. The batch is transactional: when the job fails, no link was created.  Requires the &#x60;links:write&#x60; scope.
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;Job&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -649,7 +788,7 @@ public class LinksApi {
      * Create links in bulk in the background (asynchronously)
      * Accepts the same batch as POST /v1/links/bulk, answers 202 Accepted at once with a job and a Location header, and creates the links in the background. Poll GET /v1/jobs/{id} for the result. The batch is transactional: when the job fails, no link was created.  Requires the &#x60;links:write&#x60; scope.
      * @param createBulkLinksRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -672,7 +811,7 @@ public class LinksApi {
     /**
      * Build call for linksServiceCreateContactLink
      * @param createContactLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -750,7 +889,7 @@ public class LinksApi {
      * Create a new contact card link
      * This endpoint allows users to create a new vCard contact link in their Linkbreakers workspace. The link will generate a vCard file for contact information sharing.  Requires the &#x60;links:write&#x60; scope.
      * @param createContactLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateContactLinkResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -771,7 +910,7 @@ public class LinksApi {
      * Create a new contact card link
      * This endpoint allows users to create a new vCard contact link in their Linkbreakers workspace. The link will generate a vCard file for contact information sharing.  Requires the &#x60;links:write&#x60; scope.
      * @param createContactLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateContactLinkResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -793,7 +932,7 @@ public class LinksApi {
      * Create a new contact card link (asynchronously)
      * This endpoint allows users to create a new vCard contact link in their Linkbreakers workspace. The link will generate a vCard file for contact information sharing.  Requires the &#x60;links:write&#x60; scope.
      * @param createContactLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -816,7 +955,7 @@ public class LinksApi {
     /**
      * Build call for linksServiceCreateOpenMediaLink
      * @param createOpenMediaLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -892,9 +1031,9 @@ public class LinksApi {
 
     /**
      * Create a new media link
-     * Creates a link, and its QR code, that hands visitors one piece of media from the media library: a PDF (a menu or brochure), an image (PNG, JPEG, WebP, SVG) or an MP4 video. Upload the media first (POST /v1/media, or a direct upload for media over 3 MB; no usage is needed), then pass its media_id. Any media of the library can be opened. The Open media step is the exit step. Swap the media later by pointing the step at another media item.  Requires the &#x60;links:write&#x60; scope.
+     * Creates a link, and its QR code, that hands visitors one piece of media from the media library: a PDF (a menu or brochure), an image (PNG, JPEG, WebP, SVG) or an MP4 video. Upload the media first (POST /v1/media, or a direct upload for media over 3 MB; no usage is needed), then pass its mediaId. Any media of the library can be opened. The Open media step is the exit step. Swap the media later by pointing the step at another media item.  Requires the &#x60;links:write&#x60; scope.
      * @param createOpenMediaLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateOpenMediaLinkResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -913,9 +1052,9 @@ public class LinksApi {
 
     /**
      * Create a new media link
-     * Creates a link, and its QR code, that hands visitors one piece of media from the media library: a PDF (a menu or brochure), an image (PNG, JPEG, WebP, SVG) or an MP4 video. Upload the media first (POST /v1/media, or a direct upload for media over 3 MB; no usage is needed), then pass its media_id. Any media of the library can be opened. The Open media step is the exit step. Swap the media later by pointing the step at another media item.  Requires the &#x60;links:write&#x60; scope.
+     * Creates a link, and its QR code, that hands visitors one piece of media from the media library: a PDF (a menu or brochure), an image (PNG, JPEG, WebP, SVG) or an MP4 video. Upload the media first (POST /v1/media, or a direct upload for media over 3 MB; no usage is needed), then pass its mediaId. Any media of the library can be opened. The Open media step is the exit step. Swap the media later by pointing the step at another media item.  Requires the &#x60;links:write&#x60; scope.
      * @param createOpenMediaLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateOpenMediaLinkResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -935,9 +1074,9 @@ public class LinksApi {
 
     /**
      * Create a new media link (asynchronously)
-     * Creates a link, and its QR code, that hands visitors one piece of media from the media library: a PDF (a menu or brochure), an image (PNG, JPEG, WebP, SVG) or an MP4 video. Upload the media first (POST /v1/media, or a direct upload for media over 3 MB; no usage is needed), then pass its media_id. Any media of the library can be opened. The Open media step is the exit step. Swap the media later by pointing the step at another media item.  Requires the &#x60;links:write&#x60; scope.
+     * Creates a link, and its QR code, that hands visitors one piece of media from the media library: a PDF (a menu or brochure), an image (PNG, JPEG, WebP, SVG) or an MP4 video. Upload the media first (POST /v1/media, or a direct upload for media over 3 MB; no usage is needed), then pass its mediaId. Any media of the library can be opened. The Open media step is the exit step. Swap the media later by pointing the step at another media item.  Requires the &#x60;links:write&#x60; scope.
      * @param createOpenMediaLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -960,7 +1099,7 @@ public class LinksApi {
     /**
      * Build call for linksServiceCreateThankYouLink
      * @param createThankYouLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1038,7 +1177,7 @@ public class LinksApi {
      * Create a new thank you page link
      * This endpoint allows users to create a new link with a thank you page as the exit step.  Requires the &#x60;links:write&#x60; scope.
      * @param createThankYouLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return CreateThankYouLinkResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1059,7 +1198,7 @@ public class LinksApi {
      * Create a new thank you page link
      * This endpoint allows users to create a new link with a thank you page as the exit step.  Requires the &#x60;links:write&#x60; scope.
      * @param createThankYouLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;CreateThankYouLinkResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1081,7 +1220,7 @@ public class LinksApi {
      * Create a new thank you page link (asynchronously)
      * This endpoint allows users to create a new link with a thank you page as the exit step.  Requires the &#x60;links:write&#x60; scope.
      * @param createThankYouLinkRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1237,6 +1376,131 @@ public class LinksApi {
         return localVarCall;
     }
     /**
+     * Build call for linksServiceGenerateShortlink
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call linksServiceGenerateShortlinkCall(final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/v1/links/shortlink-random";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call linksServiceGenerateShortlinkValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        return linksServiceGenerateShortlinkCall(_callback);
+
+    }
+
+    /**
+     * Generate a shortlink
+     * Generates a random shortlink that is still available, to use for a new link.  Requires the &#x60;links:read&#x60; scope.
+     * @return GenerateShortlinkResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public GenerateShortlinkResponse linksServiceGenerateShortlink() throws ApiException {
+        ApiResponse<GenerateShortlinkResponse> localVarResp = linksServiceGenerateShortlinkWithHttpInfo();
+        return localVarResp.getData();
+    }
+
+    /**
+     * Generate a shortlink
+     * Generates a random shortlink that is still available, to use for a new link.  Requires the &#x60;links:read&#x60; scope.
+     * @return ApiResponse&lt;GenerateShortlinkResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<GenerateShortlinkResponse> linksServiceGenerateShortlinkWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = linksServiceGenerateShortlinkValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<GenerateShortlinkResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Generate a shortlink (asynchronously)
+     * Generates a random shortlink that is still available, to use for a new link.  Requires the &#x60;links:read&#x60; scope.
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call linksServiceGenerateShortlinkAsync(final ApiCallback<GenerateShortlinkResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = linksServiceGenerateShortlinkValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<GenerateShortlinkResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for linksServiceGet
      * @param id The ID of the link to retrieve (UUID) (required)
      * @param include List of related resources to include in the response. Supported values: \&quot;customDomain\&quot;, \&quot;qrcodeDesign\&quot;, \&quot;qrcodeSignedUrl\&quot;, \&quot;tags\&quot;, \&quot;pageTheme\&quot;. Use \&quot;qrcodeSignedUrl\&quot; to fetch signed QR image URLs—they are omitted by default to keep requests fast. (optional)
@@ -1386,9 +1650,9 @@ public class LinksApi {
      * @param include List of related resources to include in the response. Supported values: \&quot;customDomain\&quot;, \&quot;qrcodeDesign\&quot;, \&quot;qrcodeSignedUrl\&quot;, \&quot;tags\&quot;, \&quot;pageTheme\&quot;. Use \&quot;qrcodeSignedUrl\&quot; to fetch signed QR image URLs—they are omitted by default to keep requests fast. (optional)
      * @param tags Tags to filter links by (matches links containing any of the provided tags) (optional)
      * @param search Search query to filter links by name or shortlink  Search query to filter links by name or shortlink (optional)
-     * @param sortBy Field to sort links by (defaults to updated_at if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updated_at)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
+     * @param sortBy Field to sort links by (defaults to updatedAt if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updatedAt)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
      * @param sortDirection Sort direction (defaults to descending if not specified)  Sort direction (ascending or descending)   - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)  - SORT_DIRECTION_ASC: Sort in ascending order  - SORT_DIRECTION_DESC: Sort in descending order (optional)
-     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directory_id is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directory_id is set, returns links in that directory. When directory_id is empty, returns root-level links (no directory). (optional)
+     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directoryId is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directoryId is set, returns links in that directory. When directoryId is empty, returns root-level links (no directory). (optional)
      * @param directoryId Directory ID to scope to when view is LINK_VIEW_DIRECTORY. When empty with LINK_VIEW_DIRECTORY, returns root-level links. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback Callback for upload/download progress
@@ -1506,9 +1770,9 @@ public class LinksApi {
      * @param include List of related resources to include in the response. Supported values: \&quot;customDomain\&quot;, \&quot;qrcodeDesign\&quot;, \&quot;qrcodeSignedUrl\&quot;, \&quot;tags\&quot;, \&quot;pageTheme\&quot;. Use \&quot;qrcodeSignedUrl\&quot; to fetch signed QR image URLs—they are omitted by default to keep requests fast. (optional)
      * @param tags Tags to filter links by (matches links containing any of the provided tags) (optional)
      * @param search Search query to filter links by name or shortlink  Search query to filter links by name or shortlink (optional)
-     * @param sortBy Field to sort links by (defaults to updated_at if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updated_at)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
+     * @param sortBy Field to sort links by (defaults to updatedAt if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updatedAt)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
      * @param sortDirection Sort direction (defaults to descending if not specified)  Sort direction (ascending or descending)   - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)  - SORT_DIRECTION_ASC: Sort in ascending order  - SORT_DIRECTION_DESC: Sort in descending order (optional)
-     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directory_id is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directory_id is set, returns links in that directory. When directory_id is empty, returns root-level links (no directory). (optional)
+     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directoryId is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directoryId is set, returns links in that directory. When directoryId is empty, returns root-level links (no directory). (optional)
      * @param directoryId Directory ID to scope to when view is LINK_VIEW_DIRECTORY. When empty with LINK_VIEW_DIRECTORY, returns root-level links. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ListLinksResponse
@@ -1535,9 +1799,9 @@ public class LinksApi {
      * @param include List of related resources to include in the response. Supported values: \&quot;customDomain\&quot;, \&quot;qrcodeDesign\&quot;, \&quot;qrcodeSignedUrl\&quot;, \&quot;tags\&quot;, \&quot;pageTheme\&quot;. Use \&quot;qrcodeSignedUrl\&quot; to fetch signed QR image URLs—they are omitted by default to keep requests fast. (optional)
      * @param tags Tags to filter links by (matches links containing any of the provided tags) (optional)
      * @param search Search query to filter links by name or shortlink  Search query to filter links by name or shortlink (optional)
-     * @param sortBy Field to sort links by (defaults to updated_at if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updated_at)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
+     * @param sortBy Field to sort links by (defaults to updatedAt if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updatedAt)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
      * @param sortDirection Sort direction (defaults to descending if not specified)  Sort direction (ascending or descending)   - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)  - SORT_DIRECTION_ASC: Sort in ascending order  - SORT_DIRECTION_DESC: Sort in descending order (optional)
-     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directory_id is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directory_id is set, returns links in that directory. When directory_id is empty, returns root-level links (no directory). (optional)
+     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directoryId is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directoryId is set, returns links in that directory. When directoryId is empty, returns root-level links (no directory). (optional)
      * @param directoryId Directory ID to scope to when view is LINK_VIEW_DIRECTORY. When empty with LINK_VIEW_DIRECTORY, returns root-level links. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @return ApiResponse&lt;ListLinksResponse&gt;
@@ -1565,9 +1829,9 @@ public class LinksApi {
      * @param include List of related resources to include in the response. Supported values: \&quot;customDomain\&quot;, \&quot;qrcodeDesign\&quot;, \&quot;qrcodeSignedUrl\&quot;, \&quot;tags\&quot;, \&quot;pageTheme\&quot;. Use \&quot;qrcodeSignedUrl\&quot; to fetch signed QR image URLs—they are omitted by default to keep requests fast. (optional)
      * @param tags Tags to filter links by (matches links containing any of the provided tags) (optional)
      * @param search Search query to filter links by name or shortlink  Search query to filter links by name or shortlink (optional)
-     * @param sortBy Field to sort links by (defaults to updated_at if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updated_at)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
+     * @param sortBy Field to sort links by (defaults to updatedAt if not specified)  Field to sort links by   - LINK_SORT_FIELD_UNSPECIFIED: Sort field not specified (defaults to updatedAt)  - LINK_SORT_FIELD_CREATED_AT: Sort by creation date  - LINK_SORT_FIELD_UPDATED_AT: Sort by last update date  - LINK_SORT_FIELD_SHORTLINK: Sort by shortlink name  - LINK_SORT_FIELD_NAME: Sort by link name  - LINK_SORT_FIELD_EVENT_COUNT: Sort by event count (optional)
      * @param sortDirection Sort direction (defaults to descending if not specified)  Sort direction (ascending or descending)   - SORT_DIRECTION_UNSPECIFIED: Sort direction not specified (defaults to descending)  - SORT_DIRECTION_ASC: Sort in ascending order  - SORT_DIRECTION_DESC: Sort in descending order (optional)
-     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directory_id is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directory_id is set, returns links in that directory. When directory_id is empty, returns root-level links (no directory). (optional)
+     * @param view View mode. Default returns all links. LINK_VIEW_DIRECTORY scopes to a directory (or root when directoryId is empty).   - LINK_VIEW_UNSPECIFIED: Return all links regardless of directory (default)  - LINK_VIEW_DIRECTORY: Return links scoped to a directory. When directoryId is set, returns links in that directory. When directoryId is empty, returns root-level links (no directory). (optional)
      * @param directoryId Directory ID to scope to when view is LINK_VIEW_DIRECTORY. When empty with LINK_VIEW_DIRECTORY, returns root-level links. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
      * @param _callback The callback to be executed when the API call finishes
@@ -1593,7 +1857,7 @@ public class LinksApi {
      * Build call for linksServiceRenderQrcodeImages
      * @param id The link&#39;s ID (UUID). (required)
      * @param linksServiceRenderQrcodeImagesBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1678,7 +1942,7 @@ public class LinksApi {
      * Draw the link&#39;s QR code in its saved design for each requested address and return signed image URLs. A dynamic link takes one item per code, each with a value for every {name} variable of its shortlink (up to 100 per call), so a single link can print as hundreds of serialised or GS1 Digital Link codes. A regular link takes one item without values. The address encoded in each code carries lbsrc&#x3D;qrcode so its scans count as QR code scans. Images are cached per design, values, format and size; the URLs expire, so fetch them when you need them.  Requires the &#x60;qrcodes:read&#x60; scope.
      * @param id The link&#39;s ID (UUID). (required)
      * @param linksServiceRenderQrcodeImagesBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return RenderQrcodeImagesResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1700,7 +1964,7 @@ public class LinksApi {
      * Draw the link&#39;s QR code in its saved design for each requested address and return signed image URLs. A dynamic link takes one item per code, each with a value for every {name} variable of its shortlink (up to 100 per call), so a single link can print as hundreds of serialised or GS1 Digital Link codes. A regular link takes one item without values. The address encoded in each code carries lbsrc&#x3D;qrcode so its scans count as QR code scans. Images are cached per design, values, format and size; the URLs expire, so fetch them when you need them.  Requires the &#x60;qrcodes:read&#x60; scope.
      * @param id The link&#39;s ID (UUID). (required)
      * @param linksServiceRenderQrcodeImagesBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;RenderQrcodeImagesResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1723,7 +1987,7 @@ public class LinksApi {
      * Draw the link&#39;s QR code in its saved design for each requested address and return signed image URLs. A dynamic link takes one item per code, each with a value for every {name} variable of its shortlink (up to 100 per call), so a single link can print as hundreds of serialised or GS1 Digital Link codes. A regular link takes one item without values. The address encoded in each code carries lbsrc&#x3D;qrcode so its scans count as QR code scans. Images are cached per design, values, format and size; the URLs expire, so fetch them when you need them.  Requires the &#x60;qrcodes:read&#x60; scope.
      * @param id The link&#39;s ID (UUID). (required)
      * @param linksServiceRenderQrcodeImagesBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1744,420 +2008,10 @@ public class LinksApi {
         return localVarCall;
     }
     /**
-     * Build call for linksServiceResolveQrcodeImages
-     * @param resolveQrcodeImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call linksServiceResolveQrcodeImagesCall(@javax.annotation.Nonnull ResolveQrcodeImagesRequest resolveQrcodeImagesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = resolveQrcodeImagesRequest;
-
-        // create path and map variables
-        String localVarPath = "/v1/links/qrcode-images:resolve";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call linksServiceResolveQrcodeImagesValidateBeforeCall(@javax.annotation.Nonnull ResolveQrcodeImagesRequest resolveQrcodeImagesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'resolveQrcodeImagesRequest' is set
-        if (resolveQrcodeImagesRequest == null) {
-            throw new ApiException("Missing the required parameter 'resolveQrcodeImagesRequest' when calling linksServiceResolveQrcodeImages(Async)");
-        }
-
-        return linksServiceResolveQrcodeImagesCall(resolveQrcodeImagesRequest, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Resolve QR code image URLs
-     * Return freshly signed QR code image URLs for the given links. The URLs expire, so callers fetch them when they need to render rather than storing them.  Requires the &#x60;links:read&#x60; scope.
-     * @param resolveQrcodeImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ResolveQrcodeImagesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ResolveQrcodeImagesResponse linksServiceResolveQrcodeImages(@javax.annotation.Nonnull ResolveQrcodeImagesRequest resolveQrcodeImagesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ResolveQrcodeImagesResponse> localVarResp = linksServiceResolveQrcodeImagesWithHttpInfo(resolveQrcodeImagesRequest, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Resolve QR code image URLs
-     * Return freshly signed QR code image URLs for the given links. The URLs expire, so callers fetch them when they need to render rather than storing them.  Requires the &#x60;links:read&#x60; scope.
-     * @param resolveQrcodeImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;ResolveQrcodeImagesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<ResolveQrcodeImagesResponse> linksServiceResolveQrcodeImagesWithHttpInfo(@javax.annotation.Nonnull ResolveQrcodeImagesRequest resolveQrcodeImagesRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = linksServiceResolveQrcodeImagesValidateBeforeCall(resolveQrcodeImagesRequest, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<ResolveQrcodeImagesResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Resolve QR code image URLs (asynchronously)
-     * Return freshly signed QR code image URLs for the given links. The URLs expire, so callers fetch them when they need to render rather than storing them.  Requires the &#x60;links:read&#x60; scope.
-     * @param resolveQrcodeImagesRequest  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call linksServiceResolveQrcodeImagesAsync(@javax.annotation.Nonnull ResolveQrcodeImagesRequest resolveQrcodeImagesRequest, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ResolveQrcodeImagesResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = linksServiceResolveQrcodeImagesValidateBeforeCall(resolveQrcodeImagesRequest, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<ResolveQrcodeImagesResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for linksServiceShortlinkAvailability
-     * @param shortlink The shortlink to check availability for. (optional)
-     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call linksServiceShortlinkAvailabilityCall(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/v1/links/shortlink-availability";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (shortlink != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("shortlink", shortlink));
-        }
-
-        if (customDomainId != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("customDomainId", customDomainId));
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call linksServiceShortlinkAvailabilityValidateBeforeCall(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId, final ApiCallback _callback) throws ApiException {
-        return linksServiceShortlinkAvailabilityCall(shortlink, customDomainId, _callback);
-
-    }
-
-    /**
-     * Check shortlink availability
-     * Checks if a shortlink is available for use to create a new link. A custom domain can be provided to check against. It typically checks the shortlink slugs and shortlink IDs already present within the system.  Requires the &#x60;links:read&#x60; scope.
-     * @param shortlink The shortlink to check availability for. (optional)
-     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
-     * @return ShortlinkAvailabilityResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ShortlinkAvailabilityResponse linksServiceShortlinkAvailability(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId) throws ApiException {
-        ApiResponse<ShortlinkAvailabilityResponse> localVarResp = linksServiceShortlinkAvailabilityWithHttpInfo(shortlink, customDomainId);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Check shortlink availability
-     * Checks if a shortlink is available for use to create a new link. A custom domain can be provided to check against. It typically checks the shortlink slugs and shortlink IDs already present within the system.  Requires the &#x60;links:read&#x60; scope.
-     * @param shortlink The shortlink to check availability for. (optional)
-     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
-     * @return ApiResponse&lt;ShortlinkAvailabilityResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<ShortlinkAvailabilityResponse> linksServiceShortlinkAvailabilityWithHttpInfo(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId) throws ApiException {
-        okhttp3.Call localVarCall = linksServiceShortlinkAvailabilityValidateBeforeCall(shortlink, customDomainId, null);
-        Type localVarReturnType = new TypeToken<ShortlinkAvailabilityResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Check shortlink availability (asynchronously)
-     * Checks if a shortlink is available for use to create a new link. A custom domain can be provided to check against. It typically checks the shortlink slugs and shortlink IDs already present within the system.  Requires the &#x60;links:read&#x60; scope.
-     * @param shortlink The shortlink to check availability for. (optional)
-     * @param customDomainId The ID of the custom domain to check against (UUID) If not provided, checks against the default domain (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call linksServiceShortlinkAvailabilityAsync(@javax.annotation.Nullable String shortlink, @javax.annotation.Nullable String customDomainId, final ApiCallback<ShortlinkAvailabilityResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = linksServiceShortlinkAvailabilityValidateBeforeCall(shortlink, customDomainId, _callback);
-        Type localVarReturnType = new TypeToken<ShortlinkAvailabilityResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for linksServiceShortlinkRandom
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call linksServiceShortlinkRandomCall(final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/v1/links/shortlink-random";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call linksServiceShortlinkRandomValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        return linksServiceShortlinkRandomCall(_callback);
-
-    }
-
-    /**
-     * Get a random shortlink
-     * Generates a random availableshortlink for a new link.  Requires the &#x60;links:read&#x60; scope.
-     * @return ShortlinkRandomResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ShortlinkRandomResponse linksServiceShortlinkRandom() throws ApiException {
-        ApiResponse<ShortlinkRandomResponse> localVarResp = linksServiceShortlinkRandomWithHttpInfo();
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get a random shortlink
-     * Generates a random availableshortlink for a new link.  Requires the &#x60;links:read&#x60; scope.
-     * @return ApiResponse&lt;ShortlinkRandomResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<ShortlinkRandomResponse> linksServiceShortlinkRandomWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = linksServiceShortlinkRandomValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<ShortlinkRandomResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get a random shortlink (asynchronously)
-     * Generates a random availableshortlink for a new link.  Requires the &#x60;links:read&#x60; scope.
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call linksServiceShortlinkRandomAsync(final ApiCallback<ShortlinkRandomResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = linksServiceShortlinkRandomValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<ShortlinkRandomResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
      * Build call for linksServiceUpdate
      * @param id The ID of the link to update (UUID) (required)
      * @param linksServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -2242,7 +2096,7 @@ public class LinksApi {
      * Updates an existing shortened link in your Linkbreakers workspace.  Requires the &#x60;links:write&#x60; scope.
      * @param id The ID of the link to update (UUID) (required)
      * @param linksServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return UpdateLinkResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -2264,7 +2118,7 @@ public class LinksApi {
      * Updates an existing shortened link in your Linkbreakers workspace.  Requires the &#x60;links:write&#x60; scope.
      * @param id The ID of the link to update (UUID) (required)
      * @param linksServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @return ApiResponse&lt;UpdateLinkResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -2287,7 +2141,7 @@ public class LinksApi {
      * Updates an existing shortened link in your Linkbreakers workspace.  Requires the &#x60;links:write&#x60; scope.
      * @param id The ID of the link to update (UUID) (required)
      * @param linksServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object

@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * This is a documentation of all the APIs of Linkbreakers  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.198.0
+ * The version of the OpenAPI document: 1.198.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -27,17 +27,18 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import com.linkbreakers.model.CompleteFormToolOAuthResponse;
-import com.linkbreakers.model.ConnectFormToolResponse;
+import com.linkbreakers.model.ConnectContactToolResponse;
+import com.linkbreakers.model.ContactIntegrationsServiceConnectToolBody;
+import com.linkbreakers.model.ContactIntegrationsServiceUpdateBody;
 import com.linkbreakers.model.ErrorResponse;
-import com.linkbreakers.model.FormIntegrationsServiceCompleteOAuthBody;
-import com.linkbreakers.model.FormIntegrationsServiceConnectBody;
-import com.linkbreakers.model.FormIntegrationsServiceUpdateBody;
-import com.linkbreakers.model.GetFormConnectionResponse;
-import com.linkbreakers.model.GetFormToolOAuthURLResponse;
-import com.linkbreakers.model.ListFormConnectionsResponse;
-import com.linkbreakers.model.ListFormToolFormsResponse;
-import com.linkbreakers.model.UpdateFormConnectionResponse;
+import com.linkbreakers.model.GetContactConnectionResponse;
+import com.linkbreakers.model.GetContactToolResponse;
+import com.linkbreakers.model.ListContactConnectionsResponse;
+import com.linkbreakers.model.ListContactToolFieldsResponse;
+import com.linkbreakers.model.ListContactToolListsResponse;
+import com.linkbreakers.model.ListContactToolPipelinesResponse;
+import com.linkbreakers.model.TestContactConnectionResponse;
+import com.linkbreakers.model.UpdateContactConnectionResponse;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -45,16 +46,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FormIntegrationsApi {
+public class IntegrationsContactToolsApi {
     private ApiClient localVarApiClient;
     private int localHostIndex;
     private String localCustomBaseUrl;
 
-    public FormIntegrationsApi() {
+    public IntegrationsContactToolsApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public FormIntegrationsApi(ApiClient apiClient) {
+    public IntegrationsContactToolsApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
@@ -83,10 +84,10 @@ public class FormIntegrationsApi {
     }
 
     /**
-     * Build call for formIntegrationsServiceCompleteOAuth
-     * @param tool  (required)
-     * @param formIntegrationsServiceCompleteOAuthBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Build call for contactIntegrationsServiceConnectTool
+     * @param tool The tool to connect. (required)
+     * @param contactIntegrationsServiceConnectToolBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -99,7 +100,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceCompleteOAuthCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceCompleteOAuthBody formIntegrationsServiceCompleteOAuthBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceConnectToolCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceConnectToolBody contactIntegrationsServiceConnectToolBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -113,10 +114,10 @@ public class FormIntegrationsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = formIntegrationsServiceCompleteOAuthBody;
+        Object localVarPostBody = contactIntegrationsServiceConnectToolBody;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}/oauth-callback"
+        String localVarPath = "/v1/integrations/contacts/{tool}/connect"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -151,28 +152,28 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceCompleteOAuthValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceCompleteOAuthBody formIntegrationsServiceCompleteOAuthBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceConnectToolValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceConnectToolBody contactIntegrationsServiceConnectToolBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceCompleteOAuth(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceConnectTool(Async)");
         }
 
-        // verify the required parameter 'formIntegrationsServiceCompleteOAuthBody' is set
-        if (formIntegrationsServiceCompleteOAuthBody == null) {
-            throw new ApiException("Missing the required parameter 'formIntegrationsServiceCompleteOAuthBody' when calling formIntegrationsServiceCompleteOAuth(Async)");
+        // verify the required parameter 'contactIntegrationsServiceConnectToolBody' is set
+        if (contactIntegrationsServiceConnectToolBody == null) {
+            throw new ApiException("Missing the required parameter 'contactIntegrationsServiceConnectToolBody' when calling contactIntegrationsServiceConnectTool(Async)");
         }
 
-        return formIntegrationsServiceCompleteOAuthCall(tool, formIntegrationsServiceCompleteOAuthBody, idempotencyKey, _callback);
+        return contactIntegrationsServiceConnectToolCall(tool, contactIntegrationsServiceConnectToolBody, idempotencyKey, _callback);
 
     }
 
     /**
-     * Finish signing in to a form tool
-     * Exchange the code Typeform returned after sign-in and connect the account.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceCompleteOAuthBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return CompleteFormToolOAuthResponse
+     * Connect a contact tool
+     * Connect a contact tool with its credential, or replace the stored one. The credential is checked against the tool first. Identified visitors are then created or updated as contacts there, at every step of every link until the delivery setting narrows it.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The tool to connect. (required)
+     * @param contactIntegrationsServiceConnectToolBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ConnectContactToolResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -183,18 +184,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public CompleteFormToolOAuthResponse formIntegrationsServiceCompleteOAuth(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceCompleteOAuthBody formIntegrationsServiceCompleteOAuthBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<CompleteFormToolOAuthResponse> localVarResp = formIntegrationsServiceCompleteOAuthWithHttpInfo(tool, formIntegrationsServiceCompleteOAuthBody, idempotencyKey);
+    public ConnectContactToolResponse contactIntegrationsServiceConnectTool(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceConnectToolBody contactIntegrationsServiceConnectToolBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<ConnectContactToolResponse> localVarResp = contactIntegrationsServiceConnectToolWithHttpInfo(tool, contactIntegrationsServiceConnectToolBody, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Finish signing in to a form tool
-     * Exchange the code Typeform returned after sign-in and connect the account.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceCompleteOAuthBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;CompleteFormToolOAuthResponse&gt;
+     * Connect a contact tool
+     * Connect a contact tool with its credential, or replace the stored one. The credential is checked against the tool first. Identified visitors are then created or updated as contacts there, at every step of every link until the delivery setting narrows it.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The tool to connect. (required)
+     * @param contactIntegrationsServiceConnectToolBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;ConnectContactToolResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -205,18 +206,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<CompleteFormToolOAuthResponse> formIntegrationsServiceCompleteOAuthWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceCompleteOAuthBody formIntegrationsServiceCompleteOAuthBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceCompleteOAuthValidateBeforeCall(tool, formIntegrationsServiceCompleteOAuthBody, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<CompleteFormToolOAuthResponse>(){}.getType();
+    public ApiResponse<ConnectContactToolResponse> contactIntegrationsServiceConnectToolWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceConnectToolBody contactIntegrationsServiceConnectToolBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceConnectToolValidateBeforeCall(tool, contactIntegrationsServiceConnectToolBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<ConnectContactToolResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Finish signing in to a form tool (asynchronously)
-     * Exchange the code Typeform returned after sign-in and connect the account.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceCompleteOAuthBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Connect a contact tool (asynchronously)
+     * Connect a contact tool with its credential, or replace the stored one. The credential is checked against the tool first. Identified visitors are then created or updated as contacts there, at every step of every link until the delivery setting narrows it.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The tool to connect. (required)
+     * @param contactIntegrationsServiceConnectToolBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -229,170 +230,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceCompleteOAuthAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceCompleteOAuthBody formIntegrationsServiceCompleteOAuthBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CompleteFormToolOAuthResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceConnectToolAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceConnectToolBody contactIntegrationsServiceConnectToolBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ConnectContactToolResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceCompleteOAuthValidateBeforeCall(tool, formIntegrationsServiceCompleteOAuthBody, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<CompleteFormToolOAuthResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceConnectToolValidateBeforeCall(tool, contactIntegrationsServiceConnectToolBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<ConnectContactToolResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServiceConnect
-     * @param tool  (required)
-     * @param formIntegrationsServiceConnectBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call formIntegrationsServiceConnectCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = formIntegrationsServiceConnectBody;
-
-        // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}/connect"
-            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (idempotencyKey != null) {
-            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceConnectValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'tool' is set
-        if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceConnect(Async)");
-        }
-
-        // verify the required parameter 'formIntegrationsServiceConnectBody' is set
-        if (formIntegrationsServiceConnectBody == null) {
-            throw new ApiException("Missing the required parameter 'formIntegrationsServiceConnectBody' when calling formIntegrationsServiceConnect(Async)");
-        }
-
-        return formIntegrationsServiceConnectCall(tool, formIntegrationsServiceConnectBody, idempotencyKey, _callback);
-
-    }
-
-    /**
-     * Connect a form tool with an API key
-     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceConnectBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ConnectFormToolResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ConnectFormToolResponse formIntegrationsServiceConnect(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ConnectFormToolResponse> localVarResp = formIntegrationsServiceConnectWithHttpInfo(tool, formIntegrationsServiceConnectBody, idempotencyKey);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Connect a form tool with an API key
-     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceConnectBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;ConnectFormToolResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public ApiResponse<ConnectFormToolResponse> formIntegrationsServiceConnectWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceConnectValidateBeforeCall(tool, formIntegrationsServiceConnectBody, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<ConnectFormToolResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Connect a form tool with an API key (asynchronously)
-     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceConnectBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
-        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
-     </table>
-     */
-    public okhttp3.Call formIntegrationsServiceConnectAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceConnectBody formIntegrationsServiceConnectBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ConnectFormToolResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = formIntegrationsServiceConnectValidateBeforeCall(tool, formIntegrationsServiceConnectBody, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<ConnectFormToolResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for formIntegrationsServiceDisconnect
-     * @param tool  (required)
+     * Build call for contactIntegrationsServiceDisconnect
+     * @param tool The tool to disconnect. (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -405,7 +252,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceDisconnectCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceDisconnectCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -422,7 +269,7 @@ public class FormIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}"
+        String localVarPath = "/v1/integrations/contacts/{tool}"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -451,20 +298,20 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceDisconnectValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceDisconnectValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceDisconnect(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceDisconnect(Async)");
         }
 
-        return formIntegrationsServiceDisconnectCall(tool, _callback);
+        return contactIntegrationsServiceDisconnectCall(tool, _callback);
 
     }
 
     /**
-     * Disconnect a form tool
-     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Disconnect a contact tool
+     * Stop syncing visitors to the tool and delete the stored credential. Contacts already synced are left as they are.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The tool to disconnect. (required)
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -476,15 +323,15 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public Object formIntegrationsServiceDisconnect(@javax.annotation.Nonnull String tool) throws ApiException {
-        ApiResponse<Object> localVarResp = formIntegrationsServiceDisconnectWithHttpInfo(tool);
+    public Object contactIntegrationsServiceDisconnect(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<Object> localVarResp = contactIntegrationsServiceDisconnectWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * Disconnect a form tool
-     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Disconnect a contact tool
+     * Stop syncing visitors to the tool and delete the stored credential. Contacts already synced are left as they are.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The tool to disconnect. (required)
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -496,16 +343,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<Object> formIntegrationsServiceDisconnectWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceDisconnectValidateBeforeCall(tool, null);
+    public ApiResponse<Object> contactIntegrationsServiceDisconnectWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceDisconnectValidateBeforeCall(tool, null);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Disconnect a form tool (asynchronously)
-     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Disconnect a contact tool (asynchronously)
+     * Stop syncing visitors to the tool and delete the stored credential. Contacts already synced are left as they are.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The tool to disconnect. (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -518,16 +365,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceDisconnectAsync(@javax.annotation.Nonnull String tool, final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceDisconnectAsync(@javax.annotation.Nonnull String tool, final ApiCallback<Object> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceDisconnectValidateBeforeCall(tool, _callback);
+        okhttp3.Call localVarCall = contactIntegrationsServiceDisconnectValidateBeforeCall(tool, _callback);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServiceGet
-     * @param tool  (required)
+     * Build call for contactIntegrationsServiceGet
+     * @param tool The tool. (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -540,7 +387,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceGetCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceGetCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -557,7 +404,7 @@ public class FormIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}"
+        String localVarPath = "/v1/integrations/contacts/{tool}"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -586,21 +433,21 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceGetValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceGetValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceGet(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceGet(Async)");
         }
 
-        return formIntegrationsServiceGetCall(tool, _callback);
+        return contactIntegrationsServiceGetCall(tool, _callback);
 
     }
 
     /**
-     * Get a form tool connection
-     * Return one form tool&#39;s connection, empty when it is not connected.  Requires the &#x60;integrations:read&#x60; scope.
-     * @param tool  (required)
-     * @return GetFormConnectionResponse
+     * Get a contact integration
+     * Return the workspace&#39;s connection to one contact tool, without its credential.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The tool. (required)
+     * @return GetContactConnectionResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -611,16 +458,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public GetFormConnectionResponse formIntegrationsServiceGet(@javax.annotation.Nonnull String tool) throws ApiException {
-        ApiResponse<GetFormConnectionResponse> localVarResp = formIntegrationsServiceGetWithHttpInfo(tool);
+    public GetContactConnectionResponse contactIntegrationsServiceGet(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<GetContactConnectionResponse> localVarResp = contactIntegrationsServiceGetWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * Get a form tool connection
-     * Return one form tool&#39;s connection, empty when it is not connected.  Requires the &#x60;integrations:read&#x60; scope.
-     * @param tool  (required)
-     * @return ApiResponse&lt;GetFormConnectionResponse&gt;
+     * Get a contact integration
+     * Return the workspace&#39;s connection to one contact tool, without its credential.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The tool. (required)
+     * @return ApiResponse&lt;GetContactConnectionResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -631,16 +478,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<GetFormConnectionResponse> formIntegrationsServiceGetWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceGetValidateBeforeCall(tool, null);
-        Type localVarReturnType = new TypeToken<GetFormConnectionResponse>(){}.getType();
+    public ApiResponse<GetContactConnectionResponse> contactIntegrationsServiceGetWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceGetValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<GetContactConnectionResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get a form tool connection (asynchronously)
-     * Return one form tool&#39;s connection, empty when it is not connected.  Requires the &#x60;integrations:read&#x60; scope.
-     * @param tool  (required)
+     * Get a contact integration (asynchronously)
+     * Return the workspace&#39;s connection to one contact tool, without its credential.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The tool. (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -653,16 +500,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceGetAsync(@javax.annotation.Nonnull String tool, final ApiCallback<GetFormConnectionResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceGetAsync(@javax.annotation.Nonnull String tool, final ApiCallback<GetContactConnectionResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceGetValidateBeforeCall(tool, _callback);
-        Type localVarReturnType = new TypeToken<GetFormConnectionResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceGetValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<GetContactConnectionResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServiceGetOAuthURL
-     * @param tool  (required)
+     * Build call for contactIntegrationsServiceGetTool
+     * @param tool The tool, connected or not. (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -675,7 +522,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceGetOAuthURLCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceGetToolCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -692,7 +539,7 @@ public class FormIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}/oauth-url"
+        String localVarPath = "/v1/integrations/contacts/{tool}/info"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -721,21 +568,21 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceGetOAuthURLValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceGetToolValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceGetOAuthURL(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceGetTool(Async)");
         }
 
-        return formIntegrationsServiceGetOAuthURLCall(tool, _callback);
+        return contactIntegrationsServiceGetToolCall(tool, _callback);
 
     }
 
     /**
-     * Start signing in to a form tool
-     * Return the URL where the user signs in to Typeform to connect it.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @return GetFormToolOAuthURLResponse
+     * Get a contact tool
+     * Return how a contact tool connects, with no connection needed: its capabilities, whether it connects with OAuth, and the URLs where an admin installs Linkbreakers&#39; app first (Salesforce&#39;s package), for production and sandbox. Empty URLs when no install is needed.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The tool, connected or not. (required)
+     * @return GetContactToolResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -746,16 +593,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public GetFormToolOAuthURLResponse formIntegrationsServiceGetOAuthURL(@javax.annotation.Nonnull String tool) throws ApiException {
-        ApiResponse<GetFormToolOAuthURLResponse> localVarResp = formIntegrationsServiceGetOAuthURLWithHttpInfo(tool);
+    public GetContactToolResponse contactIntegrationsServiceGetTool(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<GetContactToolResponse> localVarResp = contactIntegrationsServiceGetToolWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * Start signing in to a form tool
-     * Return the URL where the user signs in to Typeform to connect it.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @return ApiResponse&lt;GetFormToolOAuthURLResponse&gt;
+     * Get a contact tool
+     * Return how a contact tool connects, with no connection needed: its capabilities, whether it connects with OAuth, and the URLs where an admin installs Linkbreakers&#39; app first (Salesforce&#39;s package), for production and sandbox. Empty URLs when no install is needed.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The tool, connected or not. (required)
+     * @return ApiResponse&lt;GetContactToolResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -766,16 +613,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<GetFormToolOAuthURLResponse> formIntegrationsServiceGetOAuthURLWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceGetOAuthURLValidateBeforeCall(tool, null);
-        Type localVarReturnType = new TypeToken<GetFormToolOAuthURLResponse>(){}.getType();
+    public ApiResponse<GetContactToolResponse> contactIntegrationsServiceGetToolWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceGetToolValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<GetContactToolResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Start signing in to a form tool (asynchronously)
-     * Return the URL where the user signs in to Typeform to connect it.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Get a contact tool (asynchronously)
+     * Return how a contact tool connects, with no connection needed: its capabilities, whether it connects with OAuth, and the URLs where an admin installs Linkbreakers&#39; app first (Salesforce&#39;s package), for production and sandbox. Empty URLs when no install is needed.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The tool, connected or not. (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -788,15 +635,15 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceGetOAuthURLAsync(@javax.annotation.Nonnull String tool, final ApiCallback<GetFormToolOAuthURLResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceGetToolAsync(@javax.annotation.Nonnull String tool, final ApiCallback<GetContactToolResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceGetOAuthURLValidateBeforeCall(tool, _callback);
-        Type localVarReturnType = new TypeToken<GetFormToolOAuthURLResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceGetToolValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<GetContactToolResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServiceList
+     * Build call for contactIntegrationsServiceList
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -809,7 +656,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceListCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceListCall(final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -826,7 +673,7 @@ public class FormIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations";
+        String localVarPath = "/v1/integrations/contacts";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -854,15 +701,15 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceListValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        return formIntegrationsServiceListCall(_callback);
+    private okhttp3.Call contactIntegrationsServiceListValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        return contactIntegrationsServiceListCall(_callback);
 
     }
 
     /**
-     * List form tool connections
-     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
-     * @return ListFormConnectionsResponse
+     * List contact integrations
+     * Return every contact tool the workspace syncs identified visitors to, without credentials.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ListContactConnectionsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -873,15 +720,15 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListFormConnectionsResponse formIntegrationsServiceList() throws ApiException {
-        ApiResponse<ListFormConnectionsResponse> localVarResp = formIntegrationsServiceListWithHttpInfo();
+    public ListContactConnectionsResponse contactIntegrationsServiceList() throws ApiException {
+        ApiResponse<ListContactConnectionsResponse> localVarResp = contactIntegrationsServiceListWithHttpInfo();
         return localVarResp.getData();
     }
 
     /**
-     * List form tool connections
-     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
-     * @return ApiResponse&lt;ListFormConnectionsResponse&gt;
+     * List contact integrations
+     * Return every contact tool the workspace syncs identified visitors to, without credentials.  Requires the &#x60;integrations:read&#x60; scope.
+     * @return ApiResponse&lt;ListContactConnectionsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -892,15 +739,15 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListFormConnectionsResponse> formIntegrationsServiceListWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceListValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<ListFormConnectionsResponse>(){}.getType();
+    public ApiResponse<ListContactConnectionsResponse> contactIntegrationsServiceListWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceListValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<ListContactConnectionsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * List form tool connections (asynchronously)
-     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
+     * List contact integrations (asynchronously)
+     * Return every contact tool the workspace syncs identified visitors to, without credentials.  Requires the &#x60;integrations:read&#x60; scope.
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -913,16 +760,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceListAsync(final ApiCallback<ListFormConnectionsResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceListAsync(final ApiCallback<ListContactConnectionsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceListValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<ListFormConnectionsResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceListValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<ListContactConnectionsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServiceListForms
-     * @param tool  (required)
+     * Build call for contactIntegrationsServiceListFields
+     * @param tool The connected tool. (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -935,7 +782,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceListFormsCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceListFieldsCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -952,7 +799,7 @@ public class FormIntegrationsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}/forms"
+        String localVarPath = "/v1/integrations/contacts/{tool}/fields"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -981,21 +828,21 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceListFormsValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceListFieldsValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceListForms(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceListFields(Async)");
         }
 
-        return formIntegrationsServiceListFormsCall(tool, _callback);
+        return contactIntegrationsServiceListFieldsCall(tool, _callback);
 
     }
 
     /**
-     * List the forms found behind links
-     * Return the forms of a connected tool behind the workspace&#39;s links, each with whether it is ready.  Requires the &#x60;integrations:read&#x60; scope.
-     * @param tool  (required)
-     * @return ListFormToolFormsResponse
+     * List a contact tool&#39;s fields
+     * Return the custom fields of the connected tool, with their types.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @return ListContactToolFieldsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1006,16 +853,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListFormToolFormsResponse formIntegrationsServiceListForms(@javax.annotation.Nonnull String tool) throws ApiException {
-        ApiResponse<ListFormToolFormsResponse> localVarResp = formIntegrationsServiceListFormsWithHttpInfo(tool);
+    public ListContactToolFieldsResponse contactIntegrationsServiceListFields(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<ListContactToolFieldsResponse> localVarResp = contactIntegrationsServiceListFieldsWithHttpInfo(tool);
         return localVarResp.getData();
     }
 
     /**
-     * List the forms found behind links
-     * Return the forms of a connected tool behind the workspace&#39;s links, each with whether it is ready.  Requires the &#x60;integrations:read&#x60; scope.
-     * @param tool  (required)
-     * @return ApiResponse&lt;ListFormToolFormsResponse&gt;
+     * List a contact tool&#39;s fields
+     * Return the custom fields of the connected tool, with their types.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @return ApiResponse&lt;ListContactToolFieldsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1026,16 +873,16 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListFormToolFormsResponse> formIntegrationsServiceListFormsWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceListFormsValidateBeforeCall(tool, null);
-        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
+    public ApiResponse<ListContactToolFieldsResponse> contactIntegrationsServiceListFieldsWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceListFieldsValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<ListContactToolFieldsResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * List the forms found behind links (asynchronously)
-     * Return the forms of a connected tool behind the workspace&#39;s links, each with whether it is ready.  Requires the &#x60;integrations:read&#x60; scope.
-     * @param tool  (required)
+     * List a contact tool&#39;s fields (asynchronously)
+     * Return the custom fields of the connected tool, with their types.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected tool. (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1048,18 +895,288 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceListFormsAsync(@javax.annotation.Nonnull String tool, final ApiCallback<ListFormToolFormsResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceListFieldsAsync(@javax.annotation.Nonnull String tool, final ApiCallback<ListContactToolFieldsResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceListFormsValidateBeforeCall(tool, _callback);
-        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceListFieldsValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<ListContactToolFieldsResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServicePrepareForms
-     * @param tool  (required)
+     * Build call for contactIntegrationsServiceListLists
+     * @param tool The connected tool. (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call contactIntegrationsServiceListListsCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/v1/integrations/contacts/{tool}/lists"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call contactIntegrationsServiceListListsValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceListLists(Async)");
+        }
+
+        return contactIntegrationsServiceListListsCall(tool, _callback);
+
+    }
+
+    /**
+     * List a contact tool&#39;s lists
+     * Return the lists, audiences or groups of the connected tool.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @return ListContactToolListsResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ListContactToolListsResponse contactIntegrationsServiceListLists(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<ListContactToolListsResponse> localVarResp = contactIntegrationsServiceListListsWithHttpInfo(tool);
+        return localVarResp.getData();
+    }
+
+    /**
+     * List a contact tool&#39;s lists
+     * Return the lists, audiences or groups of the connected tool.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @return ApiResponse&lt;ListContactToolListsResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<ListContactToolListsResponse> contactIntegrationsServiceListListsWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceListListsValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<ListContactToolListsResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * List a contact tool&#39;s lists (asynchronously)
+     * Return the lists, audiences or groups of the connected tool.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call contactIntegrationsServiceListListsAsync(@javax.annotation.Nonnull String tool, final ApiCallback<ListContactToolListsResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = contactIntegrationsServiceListListsValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<ListContactToolListsResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for contactIntegrationsServiceListPipelines
+     * @param tool The connected CRM. (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call contactIntegrationsServiceListPipelinesCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/v1/integrations/contacts/{tool}/pipelines"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call contactIntegrationsServiceListPipelinesValidateBeforeCall(@javax.annotation.Nonnull String tool, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceListPipelines(Async)");
+        }
+
+        return contactIntegrationsServiceListPipelinesCall(tool, _callback);
+
+    }
+
+    /**
+     * List a CRM&#39;s pipelines
+     * Return the pipelines of the connected CRM and their stages.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected CRM. (required)
+     * @return ListContactToolPipelinesResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ListContactToolPipelinesResponse contactIntegrationsServiceListPipelines(@javax.annotation.Nonnull String tool) throws ApiException {
+        ApiResponse<ListContactToolPipelinesResponse> localVarResp = contactIntegrationsServiceListPipelinesWithHttpInfo(tool);
+        return localVarResp.getData();
+    }
+
+    /**
+     * List a CRM&#39;s pipelines
+     * Return the pipelines of the connected CRM and their stages.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected CRM. (required)
+     * @return ApiResponse&lt;ListContactToolPipelinesResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<ListContactToolPipelinesResponse> contactIntegrationsServiceListPipelinesWithHttpInfo(@javax.annotation.Nonnull String tool) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceListPipelinesValidateBeforeCall(tool, null);
+        Type localVarReturnType = new TypeToken<ListContactToolPipelinesResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * List a CRM&#39;s pipelines (asynchronously)
+     * Return the pipelines of the connected CRM and their stages.  Requires the &#x60;integrations:read&#x60; scope.
+     * @param tool The connected CRM. (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call contactIntegrationsServiceListPipelinesAsync(@javax.annotation.Nonnull String tool, final ApiCallback<ListContactToolPipelinesResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = contactIntegrationsServiceListPipelinesValidateBeforeCall(tool, _callback);
+        Type localVarReturnType = new TypeToken<ListContactToolPipelinesResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for contactIntegrationsServiceTest
+     * @param tool The connected tool. (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1072,7 +1189,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServicePrepareFormsCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceTestCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1089,7 +1206,7 @@ public class FormIntegrationsApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}/forms/prepare"
+        String localVarPath = "/v1/integrations/contacts/{tool}/test"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -1124,28 +1241,28 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServicePrepareFormsValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceTestValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServicePrepareForms(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceTest(Async)");
         }
 
         // verify the required parameter 'body' is set
         if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling formIntegrationsServicePrepareForms(Async)");
+            throw new ApiException("Missing the required parameter 'body' when calling contactIntegrationsServiceTest(Async)");
         }
 
-        return formIntegrationsServicePrepareFormsCall(tool, body, idempotencyKey, _callback);
+        return contactIntegrationsServiceTestCall(tool, body, idempotencyKey, _callback);
 
     }
 
     /**
-     * Check the forms again
-     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Test a contact integration
+     * Check the stored credential against the tool and list its custom field keys. Nothing is written to the tool.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The connected tool. (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ListFormToolFormsResponse
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return TestContactConnectionResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1156,18 +1273,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ListFormToolFormsResponse formIntegrationsServicePrepareForms(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<ListFormToolFormsResponse> localVarResp = formIntegrationsServicePrepareFormsWithHttpInfo(tool, body, idempotencyKey);
+    public TestContactConnectionResponse contactIntegrationsServiceTest(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<TestContactConnectionResponse> localVarResp = contactIntegrationsServiceTestWithHttpInfo(tool, body, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Check the forms again
-     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Test a contact integration
+     * Check the stored credential against the tool and list its custom field keys. Nothing is written to the tool.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The connected tool. (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;ListFormToolFormsResponse&gt;
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;TestContactConnectionResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1178,18 +1295,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<ListFormToolFormsResponse> formIntegrationsServicePrepareFormsWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServicePrepareFormsValidateBeforeCall(tool, body, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
+    public ApiResponse<TestContactConnectionResponse> contactIntegrationsServiceTestWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceTestValidateBeforeCall(tool, body, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<TestContactConnectionResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Check the forms again (asynchronously)
-     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
+     * Test a contact integration (asynchronously)
+     * Check the stored credential against the tool and list its custom field keys. Nothing is written to the tool.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The connected tool. (required)
      * @param body  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1202,18 +1319,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServicePrepareFormsAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<ListFormToolFormsResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceTestAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<TestContactConnectionResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServicePrepareFormsValidateBeforeCall(tool, body, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<ListFormToolFormsResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceTestValidateBeforeCall(tool, body, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<TestContactConnectionResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for formIntegrationsServiceUpdate
-     * @param tool  (required)
-     * @param formIntegrationsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Build call for contactIntegrationsServiceUpdate
+     * @param tool The connected tool. (required)
+     * @param contactIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1226,7 +1343,7 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceUpdateCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceUpdateCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceUpdateBody contactIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1240,10 +1357,10 @@ public class FormIntegrationsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = formIntegrationsServiceUpdateBody;
+        Object localVarPostBody = contactIntegrationsServiceUpdateBody;
 
         // create path and map variables
-        String localVarPath = "/v1/form-integrations/{tool}"
+        String localVarPath = "/v1/integrations/contacts/{tool}"
             .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -1278,28 +1395,28 @@ public class FormIntegrationsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call formIntegrationsServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call contactIntegrationsServiceUpdateValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceUpdateBody contactIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'tool' is set
         if (tool == null) {
-            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceUpdate(Async)");
+            throw new ApiException("Missing the required parameter 'tool' when calling contactIntegrationsServiceUpdate(Async)");
         }
 
-        // verify the required parameter 'formIntegrationsServiceUpdateBody' is set
-        if (formIntegrationsServiceUpdateBody == null) {
-            throw new ApiException("Missing the required parameter 'formIntegrationsServiceUpdateBody' when calling formIntegrationsServiceUpdate(Async)");
+        // verify the required parameter 'contactIntegrationsServiceUpdateBody' is set
+        if (contactIntegrationsServiceUpdateBody == null) {
+            throw new ApiException("Missing the required parameter 'contactIntegrationsServiceUpdateBody' when calling contactIntegrationsServiceUpdate(Async)");
         }
 
-        return formIntegrationsServiceUpdateCall(tool, formIntegrationsServiceUpdateBody, idempotencyKey, _callback);
+        return contactIntegrationsServiceUpdateCall(tool, contactIntegrationsServiceUpdateBody, idempotencyKey, _callback);
 
     }
 
     /**
-     * Update a form tool connection
-     * Pause or resume it, or change which links&#39; forms bring answers in and which answers are kept.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return UpdateFormConnectionResponse
+     * Update a contact integration
+     * Change the list or audience contacts are added to, and where, when and what is synced.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @param contactIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return UpdateContactConnectionResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1310,18 +1427,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public UpdateFormConnectionResponse formIntegrationsServiceUpdate(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<UpdateFormConnectionResponse> localVarResp = formIntegrationsServiceUpdateWithHttpInfo(tool, formIntegrationsServiceUpdateBody, idempotencyKey);
+    public UpdateContactConnectionResponse contactIntegrationsServiceUpdate(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceUpdateBody contactIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<UpdateContactConnectionResponse> localVarResp = contactIntegrationsServiceUpdateWithHttpInfo(tool, contactIntegrationsServiceUpdateBody, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Update a form tool connection
-     * Pause or resume it, or change which links&#39; forms bring answers in and which answers are kept.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
-     * @return ApiResponse&lt;UpdateFormConnectionResponse&gt;
+     * Update a contact integration
+     * Change the list or audience contacts are added to, and where, when and what is synced.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @param contactIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;UpdateContactConnectionResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1332,18 +1449,18 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<UpdateFormConnectionResponse> formIntegrationsServiceUpdateWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = formIntegrationsServiceUpdateValidateBeforeCall(tool, formIntegrationsServiceUpdateBody, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<UpdateFormConnectionResponse>(){}.getType();
+    public ApiResponse<UpdateContactConnectionResponse> contactIntegrationsServiceUpdateWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceUpdateBody contactIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = contactIntegrationsServiceUpdateValidateBeforeCall(tool, contactIntegrationsServiceUpdateBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<UpdateContactConnectionResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Update a form tool connection (asynchronously)
-     * Pause or resume it, or change which links&#39; forms bring answers in and which answers are kept.  Requires the &#x60;integrations:write&#x60; scope.
-     * @param tool  (required)
-     * @param formIntegrationsServiceUpdateBody  (required)
-     * @param idempotencyKey Makes retrying this request safe. See components.parameters.IdempotencyKey. (optional)
+     * Update a contact integration (asynchronously)
+     * Change the list or audience contacts are added to, and where, when and what is synced.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool The connected tool. (required)
+     * @param contactIntegrationsServiceUpdateBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1356,10 +1473,10 @@ public class FormIntegrationsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call formIntegrationsServiceUpdateAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull FormIntegrationsServiceUpdateBody formIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateFormConnectionResponse> _callback) throws ApiException {
+    public okhttp3.Call contactIntegrationsServiceUpdateAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull ContactIntegrationsServiceUpdateBody contactIntegrationsServiceUpdateBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateContactConnectionResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = formIntegrationsServiceUpdateValidateBeforeCall(tool, formIntegrationsServiceUpdateBody, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<UpdateFormConnectionResponse>(){}.getType();
+        okhttp3.Call localVarCall = contactIntegrationsServiceUpdateValidateBeforeCall(tool, contactIntegrationsServiceUpdateBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<UpdateContactConnectionResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
