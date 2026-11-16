@@ -29,11 +29,9 @@ src/main/java/com/linkbreakers/StringUtil.java
 src/main/java/com/linkbreakers/api/AgentsApi.java
 src/main/java/com/linkbreakers/api/AnalyticsApi.java
 src/main/java/com/linkbreakers/api/AnalyticsDashboardsApi.java
-src/main/java/com/linkbreakers/api/ApiScopesApi.java
 src/main/java/com/linkbreakers/api/CustomDomainsApi.java
 src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
-src/main/java/com/linkbreakers/api/IntegrationsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsContactToolsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsFormsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsGoogleAnalyticsApi.java
@@ -146,8 +144,6 @@ src/main/java/com/linkbreakers/model/ClaimAgentWorkspaceRequest.java
 src/main/java/com/linkbreakers/model/ClientRedirectPayload.java
 src/main/java/com/linkbreakers/model/CompleteContactToolOAuthResponse.java
 src/main/java/com/linkbreakers/model/CompleteFormToolOAuthResponse.java
-src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthRequest.java
-src/main/java/com/linkbreakers/model/CompleteGoogleFormsOAuthResponse.java
 src/main/java/com/linkbreakers/model/CompleteMediaReplaceResponse.java
 src/main/java/com/linkbreakers/model/CompleteMediaUploadResponse.java
 src/main/java/com/linkbreakers/model/CompleteSlackOAuthRequest.java
@@ -242,7 +238,6 @@ src/main/java/com/linkbreakers/model/DayOfWeekConditionTraceOption.java
 src/main/java/com/linkbreakers/model/DayOfWeekOption.java
 src/main/java/com/linkbreakers/model/DeleteAttributeResponse.java
 src/main/java/com/linkbreakers/model/DeleteVisitorResponse.java
-src/main/java/com/linkbreakers/model/DetectedGoogleForm.java
 src/main/java/com/linkbreakers/model/DetectedToolForm.java
 src/main/java/com/linkbreakers/model/Device.java
 src/main/java/com/linkbreakers/model/DeviceActor.java
@@ -342,8 +337,6 @@ src/main/java/com/linkbreakers/model/GetFormToolOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetGeoBreakdownRequest.java
 src/main/java/com/linkbreakers/model/GetGeoBreakdownResponse.java
 src/main/java/com/linkbreakers/model/GetGoogleAnalyticsIntegrationResponse.java
-src/main/java/com/linkbreakers/model/GetGoogleFormsIntegrationResponse.java
-src/main/java/com/linkbreakers/model/GetGoogleFormsOAuthURLResponse.java
 src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesRequest.java
 src/main/java/com/linkbreakers/model/GetGroupedTimeSeriesResponse.java
 src/main/java/com/linkbreakers/model/GetHourOfDayDistributionRequest.java
@@ -373,9 +366,6 @@ src/main/java/com/linkbreakers/model/GetWorkflowStepResponse.java
 src/main/java/com/linkbreakers/model/GetWorkspaceTokenResponse.java
 src/main/java/com/linkbreakers/model/GoogleAnalyticsAttributeKeys.java
 src/main/java/com/linkbreakers/model/GoogleAnalyticsIntegration.java
-src/main/java/com/linkbreakers/model/GoogleFormsIntegration.java
-src/main/java/com/linkbreakers/model/GoogleFormsIntegrationStatus.java
-src/main/java/com/linkbreakers/model/GoogleFormsIntegrationsServiceChooseFormLinkBody.java
 src/main/java/com/linkbreakers/model/GooglerpcStatus.java
 src/main/java/com/linkbreakers/model/GroupByDimension.java
 src/main/java/com/linkbreakers/model/HTTPMethod.java
@@ -423,7 +413,6 @@ src/main/java/com/linkbreakers/model/ListContactToolListsResponse.java
 src/main/java/com/linkbreakers/model/ListContactToolPipelinesResponse.java
 src/main/java/com/linkbreakers/model/ListCustomDomainsResponse.java
 src/main/java/com/linkbreakers/model/ListDashboardsResponse.java
-src/main/java/com/linkbreakers/model/ListDetectedGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/ListDirectoriesResponse.java
 src/main/java/com/linkbreakers/model/ListEventTracesResponse.java
 src/main/java/com/linkbreakers/model/ListEventsCsvResponse.java
@@ -587,7 +576,6 @@ src/main/java/com/linkbreakers/model/SubmitReviewRewardRequest.java
 src/main/java/com/linkbreakers/model/SubmitReviewRewardResponse.java
 src/main/java/com/linkbreakers/model/SubscriptionType.java
 src/main/java/com/linkbreakers/model/SwitchWorkspaceResponse.java
-src/main/java/com/linkbreakers/model/SyncGoogleFormsResponse.java
 src/main/java/com/linkbreakers/model/TestContactConnectionResponse.java
 src/main/java/com/linkbreakers/model/TestGoogleAnalyticsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/TestSlackIntegrationResponse.java
@@ -619,8 +607,6 @@ src/main/java/com/linkbreakers/model/UpdateDirectoryResponse.java
 src/main/java/com/linkbreakers/model/UpdateFormConnectionResponse.java
 src/main/java/com/linkbreakers/model/UpdateGoogleAnalyticsIntegrationRequest.java
 src/main/java/com/linkbreakers/model/UpdateGoogleAnalyticsIntegrationResponse.java
-src/main/java/com/linkbreakers/model/UpdateGoogleFormsIntegrationRequest.java
-src/main/java/com/linkbreakers/model/UpdateGoogleFormsIntegrationResponse.java
 src/main/java/com/linkbreakers/model/UpdateLinkResponse.java
 src/main/java/com/linkbreakers/model/UpdateLinkSettingResponse.java
 src/main/java/com/linkbreakers/model/UpdateMeRequest.java
