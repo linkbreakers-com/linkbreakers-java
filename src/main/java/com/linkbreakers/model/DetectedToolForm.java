@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.199.0
+ * The version of the OpenAPI document: 1.200.0
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -57,6 +57,11 @@ public class DetectedToolForm {
   @javax.annotation.Nullable
   private OffsetDateTime checkedAt;
 
+  public static final String SERIALIZED_NAME_CHOSEN = "chosen";
+  @SerializedName(SERIALIZED_NAME_CHOSEN)
+  @javax.annotation.Nullable
+  private Boolean chosen;
+
   public static final String SERIALIZED_NAME_CUSTOMER_STEP = "customerStep";
   @SerializedName(SERIALIZED_NAME_CUSTOMER_STEP)
   @javax.annotation.Nullable
@@ -90,7 +95,12 @@ public class DetectedToolForm {
   public static final String SERIALIZED_NAME_READINESS = "readiness";
   @SerializedName(SERIALIZED_NAME_READINESS)
   @javax.annotation.Nullable
-  private FormReadiness readiness = FormReadiness.FORM_READINESS_UNSPECIFIED;
+  private FormReadiness readiness;
+
+  public static final String SERIALIZED_NAME_SHARED = "shared";
+  @SerializedName(SERIALIZED_NAME_SHARED)
+  @javax.annotation.Nullable
+  private Boolean shared;
 
   public DetectedToolForm() {
   }
@@ -101,7 +111,7 @@ public class DetectedToolForm {
   }
 
   /**
-   * Get checkedAt
+   * When the form was last checked.
    * @return checkedAt
    */
   @javax.annotation.Nullable
@@ -114,13 +124,32 @@ public class DetectedToolForm {
   }
 
 
+  public DetectedToolForm chosen(@javax.annotation.Nullable Boolean chosen) {
+    this.chosen = chosen;
+    return this;
+  }
+
+  /**
+   * Google Forms only: this link gets the responses of a shared form.
+   * @return chosen
+   */
+  @javax.annotation.Nullable
+  public Boolean getChosen() {
+    return chosen;
+  }
+
+  public void setChosen(@javax.annotation.Nullable Boolean chosen) {
+    this.chosen = chosen;
+  }
+
+
   public DetectedToolForm customerStep(@javax.annotation.Nullable String customerStep) {
     this.customerStep = customerStep;
     return this;
   }
 
   /**
-   * Get customerStep
+   * What the customer must still do in the tool, when something is missing.
    * @return customerStep
    */
   @javax.annotation.Nullable
@@ -139,7 +168,7 @@ public class DetectedToolForm {
   }
 
   /**
-   * Get formId
+   * The form&#39;s ID at the tool.
    * @return formId
    */
   @javax.annotation.Nullable
@@ -158,7 +187,7 @@ public class DetectedToolForm {
   }
 
   /**
-   * Get formUrl
+   * The address the link opens.
    * @return formUrl
    */
   @javax.annotation.Nullable
@@ -177,7 +206,7 @@ public class DetectedToolForm {
   }
 
   /**
-   * Get lastError
+   * The tool&#39;s answer when it refused a call.
    * @return lastError
    */
   @javax.annotation.Nullable
@@ -196,7 +225,7 @@ public class DetectedToolForm {
   }
 
   /**
-   * Get linkId
+   * The link that opens the form.
    * @return linkId
    */
   @javax.annotation.Nullable
@@ -234,7 +263,7 @@ public class DetectedToolForm {
   }
 
   /**
-   * Get readiness
+   * Whether the form will match its responses to visits.
    * @return readiness
    */
   @javax.annotation.Nullable
@@ -244,6 +273,25 @@ public class DetectedToolForm {
 
   public void setReadiness(@javax.annotation.Nullable FormReadiness readiness) {
     this.readiness = readiness;
+  }
+
+
+  public DetectedToolForm shared(@javax.annotation.Nullable Boolean shared) {
+    this.shared = shared;
+    return this;
+  }
+
+  /**
+   * Google Forms only: the same form is behind several links. Google cannot always tell which link a response came from, so its responses go to the chosen one.
+   * @return shared
+   */
+  @javax.annotation.Nullable
+  public Boolean getShared() {
+    return shared;
+  }
+
+  public void setShared(@javax.annotation.Nullable Boolean shared) {
+    this.shared = shared;
   }
 
 
@@ -258,18 +306,20 @@ public class DetectedToolForm {
     }
     DetectedToolForm detectedToolForm = (DetectedToolForm) o;
     return Objects.equals(this.checkedAt, detectedToolForm.checkedAt) &&
+        Objects.equals(this.chosen, detectedToolForm.chosen) &&
         Objects.equals(this.customerStep, detectedToolForm.customerStep) &&
         Objects.equals(this.formId, detectedToolForm.formId) &&
         Objects.equals(this.formUrl, detectedToolForm.formUrl) &&
         Objects.equals(this.lastError, detectedToolForm.lastError) &&
         Objects.equals(this.linkId, detectedToolForm.linkId) &&
         Objects.equals(this.linkName, detectedToolForm.linkName) &&
-        Objects.equals(this.readiness, detectedToolForm.readiness);
+        Objects.equals(this.readiness, detectedToolForm.readiness) &&
+        Objects.equals(this.shared, detectedToolForm.shared);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(checkedAt, customerStep, formId, formUrl, lastError, linkId, linkName, readiness);
+    return Objects.hash(checkedAt, chosen, customerStep, formId, formUrl, lastError, linkId, linkName, readiness, shared);
   }
 
   @Override
@@ -277,6 +327,7 @@ public class DetectedToolForm {
     StringBuilder sb = new StringBuilder();
     sb.append("class DetectedToolForm {\n");
     sb.append("    checkedAt: ").append(toIndentedString(checkedAt)).append("\n");
+    sb.append("    chosen: ").append(toIndentedString(chosen)).append("\n");
     sb.append("    customerStep: ").append(toIndentedString(customerStep)).append("\n");
     sb.append("    formId: ").append(toIndentedString(formId)).append("\n");
     sb.append("    formUrl: ").append(toIndentedString(formUrl)).append("\n");
@@ -284,6 +335,7 @@ public class DetectedToolForm {
     sb.append("    linkId: ").append(toIndentedString(linkId)).append("\n");
     sb.append("    linkName: ").append(toIndentedString(linkName)).append("\n");
     sb.append("    readiness: ").append(toIndentedString(readiness)).append("\n");
+    sb.append("    shared: ").append(toIndentedString(shared)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -302,7 +354,7 @@ public class DetectedToolForm {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("checkedAt", "customerStep", "formId", "formUrl", "lastError", "linkId", "linkName", "readiness"));
+    openapiFields = new HashSet<String>(Arrays.asList("checkedAt", "chosen", "customerStep", "formId", "formUrl", "lastError", "linkId", "linkName", "readiness", "shared"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);

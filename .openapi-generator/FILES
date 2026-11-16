@@ -37,7 +37,6 @@ src/main/java/com/linkbreakers/api/IntegrationsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsContactToolsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsFormsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsGoogleAnalyticsApi.java
-src/main/java/com/linkbreakers/api/IntegrationsGoogleFormsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsRetargetingPixelsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsSlackApi.java
 src/main/java/com/linkbreakers/api/JobsApi.java
@@ -304,6 +303,7 @@ src/main/java/com/linkbreakers/model/FormConnectionStatus.java
 src/main/java/com/linkbreakers/model/FormField.java
 src/main/java/com/linkbreakers/model/FormFieldOption.java
 src/main/java/com/linkbreakers/model/FormFieldType.java
+src/main/java/com/linkbreakers/model/FormIntegrationsServiceChooseFormLinkBody.java
 src/main/java/com/linkbreakers/model/FormIntegrationsServiceCompleteOAuthBody.java
 src/main/java/com/linkbreakers/model/FormIntegrationsServiceConnectBody.java
 src/main/java/com/linkbreakers/model/FormIntegrationsServiceUpdateBody.java

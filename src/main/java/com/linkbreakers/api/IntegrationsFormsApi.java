@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path until that path's sunset. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former ones.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.199.0
+ * The version of the OpenAPI document: 1.200.0
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import com.linkbreakers.model.ConnectFormToolResponse;
 import com.linkbreakers.model.ErrorResponse;
+import com.linkbreakers.model.FormIntegrationsServiceChooseFormLinkBody;
 import com.linkbreakers.model.FormIntegrationsServiceConnectBody;
 import com.linkbreakers.model.FormIntegrationsServiceUpdateBody;
 import com.linkbreakers.model.GetFormConnectionResponse;
@@ -79,6 +80,170 @@ public class IntegrationsFormsApi {
         this.localCustomBaseUrl = customBaseUrl;
     }
 
+    /**
+     * Build call for formIntegrationsServiceChooseFormLink
+     * @param tool  (required)
+     * @param formId The form&#39;s ID at the tool, as listed in the forms found behind links. (required)
+     * @param formIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call formIntegrationsServiceChooseFormLinkCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull String formId, @javax.annotation.Nonnull FormIntegrationsServiceChooseFormLinkBody formIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = formIntegrationsServiceChooseFormLinkBody;
+
+        // create path and map variables
+        String localVarPath = "/v1/form-integrations/{tool}/forms/{formId}/link"
+            .replace("{" + "tool" + "}", localVarApiClient.escapeString(tool.toString()))
+            .replace("{" + "formId" + "}", localVarApiClient.escapeString(formId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        if (idempotencyKey != null) {
+            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
+        }
+
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call formIntegrationsServiceChooseFormLinkValidateBeforeCall(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull String formId, @javax.annotation.Nonnull FormIntegrationsServiceChooseFormLinkBody formIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'tool' is set
+        if (tool == null) {
+            throw new ApiException("Missing the required parameter 'tool' when calling formIntegrationsServiceChooseFormLink(Async)");
+        }
+
+        // verify the required parameter 'formId' is set
+        if (formId == null) {
+            throw new ApiException("Missing the required parameter 'formId' when calling formIntegrationsServiceChooseFormLink(Async)");
+        }
+
+        // verify the required parameter 'formIntegrationsServiceChooseFormLinkBody' is set
+        if (formIntegrationsServiceChooseFormLinkBody == null) {
+            throw new ApiException("Missing the required parameter 'formIntegrationsServiceChooseFormLinkBody' when calling formIntegrationsServiceChooseFormLink(Async)");
+        }
+
+        return formIntegrationsServiceChooseFormLinkCall(tool, formId, formIntegrationsServiceChooseFormLinkBody, idempotencyKey, _callback);
+
+    }
+
+    /**
+     * Choose the link of a shared form
+     * When the same form is behind several links and the tool cannot always tell which link a response came from, record the link its responses belong to. Only Google Forms needs it; the other tools&#39; responses carry the visit, and they fail with &#x60;FORM_LINK_CHOICE_NOT_NEEDED&#x60;. Fails with &#x60;GOOGLE_FORMS_LINK_NOT_BEHIND_FORM&#x60; when the link does not open the form.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formId The form&#39;s ID at the tool, as listed in the forms found behind links. (required)
+     * @param formIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return Object
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public Object formIntegrationsServiceChooseFormLink(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull String formId, @javax.annotation.Nonnull FormIntegrationsServiceChooseFormLinkBody formIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<Object> localVarResp = formIntegrationsServiceChooseFormLinkWithHttpInfo(tool, formId, formIntegrationsServiceChooseFormLinkBody, idempotencyKey);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Choose the link of a shared form
+     * When the same form is behind several links and the tool cannot always tell which link a response came from, record the link its responses belong to. Only Google Forms needs it; the other tools&#39; responses carry the visit, and they fail with &#x60;FORM_LINK_CHOICE_NOT_NEEDED&#x60;. Fails with &#x60;GOOGLE_FORMS_LINK_NOT_BEHIND_FORM&#x60; when the link does not open the form.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formId The form&#39;s ID at the tool, as listed in the forms found behind links. (required)
+     * @param formIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;Object&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<Object> formIntegrationsServiceChooseFormLinkWithHttpInfo(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull String formId, @javax.annotation.Nonnull FormIntegrationsServiceChooseFormLinkBody formIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = formIntegrationsServiceChooseFormLinkValidateBeforeCall(tool, formId, formIntegrationsServiceChooseFormLinkBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Choose the link of a shared form (asynchronously)
+     * When the same form is behind several links and the tool cannot always tell which link a response came from, record the link its responses belong to. Only Google Forms needs it; the other tools&#39; responses carry the visit, and they fail with &#x60;FORM_LINK_CHOICE_NOT_NEEDED&#x60;. Fails with &#x60;GOOGLE_FORMS_LINK_NOT_BEHIND_FORM&#x60; when the link does not open the form.  Requires the &#x60;integrations:write&#x60; scope.
+     * @param tool  (required)
+     * @param formId The form&#39;s ID at the tool, as listed in the forms found behind links. (required)
+     * @param formIntegrationsServiceChooseFormLinkBody  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call formIntegrationsServiceChooseFormLinkAsync(@javax.annotation.Nonnull String tool, @javax.annotation.Nonnull String formId, @javax.annotation.Nonnull FormIntegrationsServiceChooseFormLinkBody formIntegrationsServiceChooseFormLinkBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<Object> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = formIntegrationsServiceChooseFormLinkValidateBeforeCall(tool, formId, formIntegrationsServiceChooseFormLinkBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
     /**
      * Build call for formIntegrationsServiceConnect
      * @param tool  (required)
@@ -165,7 +330,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Connect a form tool with an API key
-     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
+     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook. Typeform and Google Forms connect by signing in, in the dashboard; Google Forms fails here with &#x60;FORM_TOOL_SIGN_IN_REQUIRED&#x60;.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param formIntegrationsServiceConnectBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
@@ -187,7 +352,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Connect a form tool with an API key
-     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
+     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook. Typeform and Google Forms connect by signing in, in the dashboard; Google Forms fails here with &#x60;FORM_TOOL_SIGN_IN_REQUIRED&#x60;.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param formIntegrationsServiceConnectBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
@@ -210,7 +375,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Connect a form tool with an API key (asynchronously)
-     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook.  Requires the &#x60;integrations:write&#x60; scope.
+     * Connect Tally, Jotform or Paperform with the account&#39;s API key. The forms behind the workspace&#39;s links are prepared at once: a hidden lbid field and a webhook. Typeform and Google Forms connect by signing in, in the dashboard; Google Forms fails here with &#x60;FORM_TOOL_SIGN_IN_REQUIRED&#x60;.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param formIntegrationsServiceConnectBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
@@ -306,7 +471,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Disconnect a form tool
-     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
+     * Remove our webhooks from its forms, or for Google Forms revoke our access to the Google account, and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -326,7 +491,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Disconnect a form tool
-     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
+     * Remove our webhooks from its forms, or for Google Forms revoke our access to the Google account, and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -347,7 +512,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Disconnect a form tool (asynchronously)
-     * Remove our webhooks from its forms and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
+     * Remove our webhooks from its forms, or for Google Forms revoke our access to the Google account, and forget the credential.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -569,7 +734,7 @@ public class IntegrationsFormsApi {
 
     /**
      * List form tool connections
-     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
+     * Return the workspace&#39;s connected form tools: Google Forms, Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
      * @return ListFormConnectionsResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -588,7 +753,7 @@ public class IntegrationsFormsApi {
 
     /**
      * List form tool connections
-     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
+     * Return the workspace&#39;s connected form tools: Google Forms, Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
      * @return ApiResponse&lt;ListFormConnectionsResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -608,7 +773,7 @@ public class IntegrationsFormsApi {
 
     /**
      * List form tool connections (asynchronously)
-     * Return the workspace&#39;s connected form tools: Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
+     * Return the workspace&#39;s connected form tools: Google Forms, Tally, Typeform, Jotform and Paperform.  Requires the &#x60;integrations:read&#x60; scope.
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -849,7 +1014,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Check the forms again
-     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
+     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check. For Google Forms, which does not send responses as they come, this also reads the responses that arrived since the last read, rather than at the next one a few minutes later.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param body  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
@@ -871,7 +1036,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Check the forms again
-     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
+     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check. For Google Forms, which does not send responses as they come, this also reads the responses that arrived since the last read, rather than at the next one a few minutes later.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param body  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
@@ -894,7 +1059,7 @@ public class IntegrationsFormsApi {
 
     /**
      * Check the forms again (asynchronously)
-     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check.  Requires the &#x60;integrations:write&#x60; scope.
+     * Add the hidden field and webhook to every form behind a link now, rather than at the next daily check. For Google Forms, which does not send responses as they come, this also reads the responses that arrived since the last read, rather than at the next one a few minutes later.  Requires the &#x60;integrations:write&#x60; scope.
      * @param tool  (required)
      * @param body  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
