@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.200.1
+ * The version of the OpenAPI document: 1.200.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -58,11 +58,6 @@ public class QrcodeDesignsServiceUpdateBody {
   @SerializedName(SERIALIZED_NAME_BACKGROUND_OPTIONS)
   @javax.annotation.Nullable
   private BackgroundOptions backgroundOptions;
-
-  public static final String SERIALIZED_NAME_CENTRAL_IMAGE_DATA = "centralImageData";
-  @SerializedName(SERIALIZED_NAME_CENTRAL_IMAGE_DATA)
-  @javax.annotation.Nullable
-  private String centralImageData;
 
   public static final String SERIALIZED_NAME_CENTRAL_IMAGE_DELETE = "centralImageDelete";
   @SerializedName(SERIALIZED_NAME_CENTRAL_IMAGE_DELETE)
@@ -263,32 +258,13 @@ public class QrcodeDesignsServiceUpdateBody {
   }
 
 
-  public QrcodeDesignsServiceUpdateBody centralImageData(@javax.annotation.Nullable String centralImageData) {
-    this.centralImageData = centralImageData;
-    return this;
-  }
-
-  /**
-   * The image to use as the central image of the QR Code. The file size limit is 3MB. It must be transmitted in a base64 string format when sending it through HTTP.
-   * @return centralImageData
-   */
-  @javax.annotation.Nullable
-  public String getCentralImageData() {
-    return centralImageData;
-  }
-
-  public void setCentralImageData(@javax.annotation.Nullable String centralImageData) {
-    this.centralImageData = centralImageData;
-  }
-
-
   public QrcodeDesignsServiceUpdateBody centralImageDelete(@javax.annotation.Nullable Boolean centralImageDelete) {
     this.centralImageDelete = centralImageDelete;
     return this;
   }
 
   /**
-   * Set this to true to delete the central image. It can&#39;t be used at the same time as transmitting a central image. Leave it out to keep the current central image, for example when only colors or shapes change.
+   * Set this to true to delete the central image. It can&#39;t be used at the same time as centralImageMediaId.
    * @return centralImageDelete
    */
   @javax.annotation.Nullable
@@ -326,7 +302,7 @@ public class QrcodeDesignsServiceUpdateBody {
   }
 
   /**
-   * An image from the workspace&#39;s media library to use as the central image (UUID). Any READY image of at most 3 MB can be a QR code logo; anything else is refused with MEDIA_NOT_ALLOWED_HERE. The design keeps its own copy of the image: without centralImageData the server reads it from the media itself, with it the bytes sent are used and the media is recorded as where they came from. The media then lists this QR code among its references. Cannot be combined with centralImageDelete. Sending centralImageData without it, or centralImageDelete, clears the recorded media.
+   * An image from the workspace&#39;s media library to use as the central image (UUID). Upload the file first (POST /v1/media/uploads, a PUT of its bytes, then its complete call) or import it from a URL, and pass the media id: the image itself is never sent here. Any READY image of at most 3 MB can be a QR code logo; anything else is refused with MEDIA_NOT_ALLOWED_HERE, and media of another workspace or an upload not completed with QRCODE_DESIGN_INVALID_LOGO_MEDIA. The design keeps its own copy of the image, and the media lists this QR code among its references.
    * @return centralImageMediaId
    */
   @javax.annotation.Nullable
@@ -540,7 +516,6 @@ public class QrcodeDesignsServiceUpdateBody {
     }
     QrcodeDesignsServiceUpdateBody qrcodeDesignsServiceUpdateBody = (QrcodeDesignsServiceUpdateBody) o;
     return Objects.equals(this.backgroundOptions, qrcodeDesignsServiceUpdateBody.backgroundOptions) &&
-        Objects.equals(this.centralImageData, qrcodeDesignsServiceUpdateBody.centralImageData) &&
         Objects.equals(this.centralImageDelete, qrcodeDesignsServiceUpdateBody.centralImageDelete) &&
         Objects.equals(this.centralImageMargin, qrcodeDesignsServiceUpdateBody.centralImageMargin) &&
         Objects.equals(this.centralImageMediaId, qrcodeDesignsServiceUpdateBody.centralImageMediaId) &&
@@ -558,7 +533,7 @@ public class QrcodeDesignsServiceUpdateBody {
 
   @Override
   public int hashCode() {
-    return Objects.hash(backgroundOptions, centralImageData, centralImageDelete, centralImageMargin, centralImageMediaId, centralImageSize, cornersDotOptions, cornersSquareOptions, dotsOptions, errorCorrectionLevel, height, hideBackgroundDots, outputFileFormat, shape, width);
+    return Objects.hash(backgroundOptions, centralImageDelete, centralImageMargin, centralImageMediaId, centralImageSize, cornersDotOptions, cornersSquareOptions, dotsOptions, errorCorrectionLevel, height, hideBackgroundDots, outputFileFormat, shape, width);
   }
 
   @Override
@@ -566,7 +541,6 @@ public class QrcodeDesignsServiceUpdateBody {
     StringBuilder sb = new StringBuilder();
     sb.append("class QrcodeDesignsServiceUpdateBody {\n");
     sb.append("    backgroundOptions: ").append(toIndentedString(backgroundOptions)).append("\n");
-    sb.append("    centralImageData: ").append(toIndentedString(centralImageData)).append("\n");
     sb.append("    centralImageDelete: ").append(toIndentedString(centralImageDelete)).append("\n");
     sb.append("    centralImageMargin: ").append(toIndentedString(centralImageMargin)).append("\n");
     sb.append("    centralImageMediaId: ").append(toIndentedString(centralImageMediaId)).append("\n");
@@ -598,7 +572,7 @@ public class QrcodeDesignsServiceUpdateBody {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("backgroundOptions", "centralImageData", "centralImageDelete", "centralImageMargin", "centralImageMediaId", "centralImageSize", "cornersDotOptions", "cornersSquareOptions", "dotsOptions", "errorCorrectionLevel", "height", "hideBackgroundDots", "outputFileFormat", "shape", "width"));
+    openapiFields = new HashSet<String>(Arrays.asList("backgroundOptions", "centralImageDelete", "centralImageMargin", "centralImageMediaId", "centralImageSize", "cornersDotOptions", "cornersSquareOptions", "dotsOptions", "errorCorrectionLevel", "height", "hideBackgroundDots", "outputFileFormat", "shape", "width"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -628,9 +602,6 @@ public class QrcodeDesignsServiceUpdateBody {
       // validate the optional field `backgroundOptions`
       if (jsonObj.get("backgroundOptions") != null && !jsonObj.get("backgroundOptions").isJsonNull()) {
         BackgroundOptions.validateJsonElement(jsonObj.get("backgroundOptions"));
-      }
-      if ((jsonObj.get("centralImageData") != null && !jsonObj.get("centralImageData").isJsonNull()) && !jsonObj.get("centralImageData").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `centralImageData` to be a primitive type in the JSON string but got `%s`", jsonObj.get("centralImageData").toString()));
       }
       if ((jsonObj.get("centralImageMediaId") != null && !jsonObj.get("centralImageMediaId").isJsonNull()) && !jsonObj.get("centralImageMediaId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `centralImageMediaId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("centralImageMediaId").toString()));
