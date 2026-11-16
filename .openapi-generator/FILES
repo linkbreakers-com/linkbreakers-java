@@ -30,7 +30,6 @@ src/main/java/com/linkbreakers/api/AgentsApi.java
 src/main/java/com/linkbreakers/api/AnalyticsApi.java
 src/main/java/com/linkbreakers/api/AnalyticsDashboardsApi.java
 src/main/java/com/linkbreakers/api/ApiScopesApi.java
-src/main/java/com/linkbreakers/api/AuthApi.java
 src/main/java/com/linkbreakers/api/CustomDomainsApi.java
 src/main/java/com/linkbreakers/api/DirectoriesApi.java
 src/main/java/com/linkbreakers/api/EventsApi.java
