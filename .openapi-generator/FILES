@@ -474,8 +474,14 @@ src/main/java/com/linkbreakers/model/PageTheme.java
 src/main/java/com/linkbreakers/model/PageThemeBadgeShape.java
 src/main/java/com/linkbreakers/model/PageThemeBorderStyle.java
 src/main/java/com/linkbreakers/model/PageThemeCanvasCoverMode.java
+src/main/java/com/linkbreakers/model/PageThemeCanvasTexture.java
+src/main/java/com/linkbreakers/model/PageThemeChoiceLayout.java
 src/main/java/com/linkbreakers/model/PageThemeContainerVariant.java
 src/main/java/com/linkbreakers/model/PageThemeFontFamily.java
+src/main/java/com/linkbreakers/model/PageThemeQuestionStyle.java
+src/main/java/com/linkbreakers/model/PageThemeRole.java
+src/main/java/com/linkbreakers/model/PageThemeRoleOverride.java
+src/main/java/com/linkbreakers/model/PageThemeRoleStyle.java
 src/main/java/com/linkbreakers/model/PageThemeStyling.java
 src/main/java/com/linkbreakers/model/PageThemeTemplate.java
 src/main/java/com/linkbreakers/model/PageThemeTemplateImages.java

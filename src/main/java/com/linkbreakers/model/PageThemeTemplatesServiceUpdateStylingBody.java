@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.202.0
+ * The version of the OpenAPI document: 1.202.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -22,9 +22,12 @@ import com.google.gson.stream.JsonWriter;
 import com.linkbreakers.model.ContainerConfig;
 import com.linkbreakers.model.FontConfig;
 import com.linkbreakers.model.MediaSelection;
+import com.linkbreakers.model.PageThemeRoleOverride;
 import com.linkbreakers.model.ThemeColor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -206,6 +209,126 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
   @javax.annotation.Nullable
   private CanvasCoverModeEnum canvasCoverMode;
 
+  /**
+   * A texture over the page background: NONE, BRUSHED (paint streaks) or GRAIN (film grain).
+   */
+  @JsonAdapter(CanvasTextureEnum.Adapter.class)
+  public enum CanvasTextureEnum {
+    PAGE_THEME_CANVAS_TEXTURE_UNSPECIFIED("PAGE_THEME_CANVAS_TEXTURE_UNSPECIFIED"),
+    
+    PAGE_THEME_CANVAS_TEXTURE_NONE("PAGE_THEME_CANVAS_TEXTURE_NONE"),
+    
+    PAGE_THEME_CANVAS_TEXTURE_BRUSHED("PAGE_THEME_CANVAS_TEXTURE_BRUSHED"),
+    
+    PAGE_THEME_CANVAS_TEXTURE_GRAIN("PAGE_THEME_CANVAS_TEXTURE_GRAIN");
+
+    private String value;
+
+    CanvasTextureEnum(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    public static CanvasTextureEnum fromValue(String value) {
+      for (CanvasTextureEnum b : CanvasTextureEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+
+    public static class Adapter extends TypeAdapter<CanvasTextureEnum> {
+      @Override
+      public void write(final JsonWriter jsonWriter, final CanvasTextureEnum enumeration) throws IOException {
+        jsonWriter.value(enumeration.getValue());
+      }
+
+      @Override
+      public CanvasTextureEnum read(final JsonReader jsonReader) throws IOException {
+        String value =  jsonReader.nextString();
+        return CanvasTextureEnum.fromValue(value);
+      }
+    }
+
+    public static void validateJsonElement(JsonElement jsonElement) throws IOException {
+      String value = jsonElement.getAsString();
+      CanvasTextureEnum.fromValue(value);
+    }
+  }
+
+  public static final String SERIALIZED_NAME_CANVAS_TEXTURE = "canvasTexture";
+  @SerializedName(SERIALIZED_NAME_CANVAS_TEXTURE)
+  @javax.annotation.Nullable
+  private CanvasTextureEnum canvasTexture;
+
+  /**
+   * How a choice question lays out its answers: AUTO (pills or tiles) or ROWS (full-width rows).
+   */
+  @JsonAdapter(ChoiceLayoutEnum.Adapter.class)
+  public enum ChoiceLayoutEnum {
+    PAGE_THEME_CHOICE_LAYOUT_UNSPECIFIED("PAGE_THEME_CHOICE_LAYOUT_UNSPECIFIED"),
+    
+    PAGE_THEME_CHOICE_LAYOUT_AUTO("PAGE_THEME_CHOICE_LAYOUT_AUTO"),
+    
+    PAGE_THEME_CHOICE_LAYOUT_ROWS("PAGE_THEME_CHOICE_LAYOUT_ROWS");
+
+    private String value;
+
+    ChoiceLayoutEnum(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    public static ChoiceLayoutEnum fromValue(String value) {
+      for (ChoiceLayoutEnum b : ChoiceLayoutEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+
+    public static class Adapter extends TypeAdapter<ChoiceLayoutEnum> {
+      @Override
+      public void write(final JsonWriter jsonWriter, final ChoiceLayoutEnum enumeration) throws IOException {
+        jsonWriter.value(enumeration.getValue());
+      }
+
+      @Override
+      public ChoiceLayoutEnum read(final JsonReader jsonReader) throws IOException {
+        String value =  jsonReader.nextString();
+        return ChoiceLayoutEnum.fromValue(value);
+      }
+    }
+
+    public static void validateJsonElement(JsonElement jsonElement) throws IOException {
+      String value = jsonElement.getAsString();
+      ChoiceLayoutEnum.fromValue(value);
+    }
+  }
+
+  public static final String SERIALIZED_NAME_CHOICE_LAYOUT = "choiceLayout";
+  @SerializedName(SERIALIZED_NAME_CHOICE_LAYOUT)
+  @javax.annotation.Nullable
+  private ChoiceLayoutEnum choiceLayout;
+
   public static final String SERIALIZED_NAME_CONTAINER_CONFIG = "containerConfig";
   @SerializedName(SERIALIZED_NAME_CONTAINER_CONFIG)
   @javax.annotation.Nullable
@@ -235,6 +358,70 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
   @SerializedName(SERIALIZED_NAME_FOOTER_LOGO_ENABLED)
   @javax.annotation.Nullable
   private Boolean footerLogoEnabled;
+
+  /**
+   * How a form&#39;s questions are written: LABEL (small, in the text style) or HEADLINE (centered, in the title style).
+   */
+  @JsonAdapter(QuestionStyleEnum.Adapter.class)
+  public enum QuestionStyleEnum {
+    PAGE_THEME_QUESTION_STYLE_UNSPECIFIED("PAGE_THEME_QUESTION_STYLE_UNSPECIFIED"),
+    
+    PAGE_THEME_QUESTION_STYLE_LABEL("PAGE_THEME_QUESTION_STYLE_LABEL"),
+    
+    PAGE_THEME_QUESTION_STYLE_HEADLINE("PAGE_THEME_QUESTION_STYLE_HEADLINE");
+
+    private String value;
+
+    QuestionStyleEnum(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    public static QuestionStyleEnum fromValue(String value) {
+      for (QuestionStyleEnum b : QuestionStyleEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+
+    public static class Adapter extends TypeAdapter<QuestionStyleEnum> {
+      @Override
+      public void write(final JsonWriter jsonWriter, final QuestionStyleEnum enumeration) throws IOException {
+        jsonWriter.value(enumeration.getValue());
+      }
+
+      @Override
+      public QuestionStyleEnum read(final JsonReader jsonReader) throws IOException {
+        String value =  jsonReader.nextString();
+        return QuestionStyleEnum.fromValue(value);
+      }
+    }
+
+    public static void validateJsonElement(JsonElement jsonElement) throws IOException {
+      String value = jsonElement.getAsString();
+      QuestionStyleEnum.fromValue(value);
+    }
+  }
+
+  public static final String SERIALIZED_NAME_QUESTION_STYLE = "questionStyle";
+  @SerializedName(SERIALIZED_NAME_QUESTION_STYLE)
+  @javax.annotation.Nullable
+  private QuestionStyleEnum questionStyle;
+
+  public static final String SERIALIZED_NAME_ROLES = "roles";
+  @SerializedName(SERIALIZED_NAME_ROLES)
+  @javax.annotation.Nullable
+  private List<PageThemeRoleOverride> roles = new ArrayList<>();
 
   public static final String SERIALIZED_NAME_TITLE_FONT = "titleFont";
   @SerializedName(SERIALIZED_NAME_TITLE_FONT)
@@ -455,6 +642,44 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
   }
 
 
+  public PageThemeTemplatesServiceUpdateStylingBody canvasTexture(@javax.annotation.Nullable CanvasTextureEnum canvasTexture) {
+    this.canvasTexture = canvasTexture;
+    return this;
+  }
+
+  /**
+   * A texture over the page background: NONE, BRUSHED (paint streaks) or GRAIN (film grain).
+   * @return canvasTexture
+   */
+  @javax.annotation.Nullable
+  public CanvasTextureEnum getCanvasTexture() {
+    return canvasTexture;
+  }
+
+  public void setCanvasTexture(@javax.annotation.Nullable CanvasTextureEnum canvasTexture) {
+    this.canvasTexture = canvasTexture;
+  }
+
+
+  public PageThemeTemplatesServiceUpdateStylingBody choiceLayout(@javax.annotation.Nullable ChoiceLayoutEnum choiceLayout) {
+    this.choiceLayout = choiceLayout;
+    return this;
+  }
+
+  /**
+   * How a choice question lays out its answers: AUTO (pills or tiles) or ROWS (full-width rows).
+   * @return choiceLayout
+   */
+  @javax.annotation.Nullable
+  public ChoiceLayoutEnum getChoiceLayout() {
+    return choiceLayout;
+  }
+
+  public void setChoiceLayout(@javax.annotation.Nullable ChoiceLayoutEnum choiceLayout) {
+    this.choiceLayout = choiceLayout;
+  }
+
+
   public PageThemeTemplatesServiceUpdateStylingBody containerConfig(@javax.annotation.Nullable ContainerConfig containerConfig) {
     this.containerConfig = containerConfig;
     return this;
@@ -569,6 +794,52 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
   }
 
 
+  public PageThemeTemplatesServiceUpdateStylingBody questionStyle(@javax.annotation.Nullable QuestionStyleEnum questionStyle) {
+    this.questionStyle = questionStyle;
+    return this;
+  }
+
+  /**
+   * How a form&#39;s questions are written: LABEL (small, in the text style) or HEADLINE (centered, in the title style).
+   * @return questionStyle
+   */
+  @javax.annotation.Nullable
+  public QuestionStyleEnum getQuestionStyle() {
+    return questionStyle;
+  }
+
+  public void setQuestionStyle(@javax.annotation.Nullable QuestionStyleEnum questionStyle) {
+    this.questionStyle = questionStyle;
+  }
+
+
+  public PageThemeTemplatesServiceUpdateStylingBody roles(@javax.annotation.Nullable List<PageThemeRoleOverride> roles) {
+    this.roles = roles;
+    return this;
+  }
+
+  public PageThemeTemplatesServiceUpdateStylingBody addRolesItem(PageThemeRoleOverride rolesItem) {
+    if (this.roles == null) {
+      this.roles = new ArrayList<>();
+    }
+    this.roles.add(rolesItem);
+    return this;
+  }
+
+  /**
+   * Role styles: each role sent replaces that role, an empty one returns it to what it inherits.
+   * @return roles
+   */
+  @javax.annotation.Nullable
+  public List<PageThemeRoleOverride> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(@javax.annotation.Nullable List<PageThemeRoleOverride> roles) {
+    this.roles = roles;
+  }
+
+
   public PageThemeTemplatesServiceUpdateStylingBody titleFont(@javax.annotation.Nullable FontConfig titleFont) {
     this.titleFont = titleFont;
     return this;
@@ -625,19 +896,23 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
         Objects.equals(this.canvasColor, pageThemeTemplatesServiceUpdateStylingBody.canvasColor) &&
         Objects.equals(this.canvasCover, pageThemeTemplatesServiceUpdateStylingBody.canvasCover) &&
         Objects.equals(this.canvasCoverMode, pageThemeTemplatesServiceUpdateStylingBody.canvasCoverMode) &&
+        Objects.equals(this.canvasTexture, pageThemeTemplatesServiceUpdateStylingBody.canvasTexture) &&
+        Objects.equals(this.choiceLayout, pageThemeTemplatesServiceUpdateStylingBody.choiceLayout) &&
         Objects.equals(this.containerConfig, pageThemeTemplatesServiceUpdateStylingBody.containerConfig) &&
         Objects.equals(this.containerEnabled, pageThemeTemplatesServiceUpdateStylingBody.containerEnabled) &&
         Objects.equals(this.elementColor, pageThemeTemplatesServiceUpdateStylingBody.elementColor) &&
         Objects.equals(this.elementFont, pageThemeTemplatesServiceUpdateStylingBody.elementFont) &&
         Objects.equals(this.footerLogo, pageThemeTemplatesServiceUpdateStylingBody.footerLogo) &&
         Objects.equals(this.footerLogoEnabled, pageThemeTemplatesServiceUpdateStylingBody.footerLogoEnabled) &&
+        Objects.equals(this.questionStyle, pageThemeTemplatesServiceUpdateStylingBody.questionStyle) &&
+        Objects.equals(this.roles, pageThemeTemplatesServiceUpdateStylingBody.roles) &&
         Objects.equals(this.titleFont, pageThemeTemplatesServiceUpdateStylingBody.titleFont) &&
         Objects.equals(this.visitorExperience, pageThemeTemplatesServiceUpdateStylingBody.visitorExperience);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(badge, badgeEnabled, badgeIconColor, badgeShape, bodyFont, canvasColor, canvasCover, canvasCoverMode, containerConfig, containerEnabled, elementColor, elementFont, footerLogo, footerLogoEnabled, titleFont, visitorExperience);
+    return Objects.hash(badge, badgeEnabled, badgeIconColor, badgeShape, bodyFont, canvasColor, canvasCover, canvasCoverMode, canvasTexture, choiceLayout, containerConfig, containerEnabled, elementColor, elementFont, footerLogo, footerLogoEnabled, questionStyle, roles, titleFont, visitorExperience);
   }
 
   @Override
@@ -652,12 +927,16 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
     sb.append("    canvasColor: ").append(toIndentedString(canvasColor)).append("\n");
     sb.append("    canvasCover: ").append(toIndentedString(canvasCover)).append("\n");
     sb.append("    canvasCoverMode: ").append(toIndentedString(canvasCoverMode)).append("\n");
+    sb.append("    canvasTexture: ").append(toIndentedString(canvasTexture)).append("\n");
+    sb.append("    choiceLayout: ").append(toIndentedString(choiceLayout)).append("\n");
     sb.append("    containerConfig: ").append(toIndentedString(containerConfig)).append("\n");
     sb.append("    containerEnabled: ").append(toIndentedString(containerEnabled)).append("\n");
     sb.append("    elementColor: ").append(toIndentedString(elementColor)).append("\n");
     sb.append("    elementFont: ").append(toIndentedString(elementFont)).append("\n");
     sb.append("    footerLogo: ").append(toIndentedString(footerLogo)).append("\n");
     sb.append("    footerLogoEnabled: ").append(toIndentedString(footerLogoEnabled)).append("\n");
+    sb.append("    questionStyle: ").append(toIndentedString(questionStyle)).append("\n");
+    sb.append("    roles: ").append(toIndentedString(roles)).append("\n");
     sb.append("    titleFont: ").append(toIndentedString(titleFont)).append("\n");
     sb.append("    visitorExperience: ").append(toIndentedString(visitorExperience)).append("\n");
     sb.append("}");
@@ -678,7 +957,7 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("badge", "badgeEnabled", "badgeIconColor", "badgeShape", "bodyFont", "canvasColor", "canvasCover", "canvasCoverMode", "containerConfig", "containerEnabled", "elementColor", "elementFont", "footerLogo", "footerLogoEnabled", "titleFont", "visitorExperience"));
+    openapiFields = new HashSet<String>(Arrays.asList("badge", "badgeEnabled", "badgeIconColor", "badgeShape", "bodyFont", "canvasColor", "canvasCover", "canvasCoverMode", "canvasTexture", "choiceLayout", "containerConfig", "containerEnabled", "elementColor", "elementFont", "footerLogo", "footerLogoEnabled", "questionStyle", "roles", "titleFont", "visitorExperience"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -739,6 +1018,20 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
       if (jsonObj.get("canvasCoverMode") != null && !jsonObj.get("canvasCoverMode").isJsonNull()) {
         CanvasCoverModeEnum.validateJsonElement(jsonObj.get("canvasCoverMode"));
       }
+      if ((jsonObj.get("canvasTexture") != null && !jsonObj.get("canvasTexture").isJsonNull()) && !jsonObj.get("canvasTexture").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `canvasTexture` to be a primitive type in the JSON string but got `%s`", jsonObj.get("canvasTexture").toString()));
+      }
+      // validate the optional field `canvasTexture`
+      if (jsonObj.get("canvasTexture") != null && !jsonObj.get("canvasTexture").isJsonNull()) {
+        CanvasTextureEnum.validateJsonElement(jsonObj.get("canvasTexture"));
+      }
+      if ((jsonObj.get("choiceLayout") != null && !jsonObj.get("choiceLayout").isJsonNull()) && !jsonObj.get("choiceLayout").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `choiceLayout` to be a primitive type in the JSON string but got `%s`", jsonObj.get("choiceLayout").toString()));
+      }
+      // validate the optional field `choiceLayout`
+      if (jsonObj.get("choiceLayout") != null && !jsonObj.get("choiceLayout").isJsonNull()) {
+        ChoiceLayoutEnum.validateJsonElement(jsonObj.get("choiceLayout"));
+      }
       // validate the optional field `containerConfig`
       if (jsonObj.get("containerConfig") != null && !jsonObj.get("containerConfig").isJsonNull()) {
         ContainerConfig.validateJsonElement(jsonObj.get("containerConfig"));
@@ -754,6 +1047,27 @@ public class PageThemeTemplatesServiceUpdateStylingBody {
       // validate the optional field `footerLogo`
       if (jsonObj.get("footerLogo") != null && !jsonObj.get("footerLogo").isJsonNull()) {
         MediaSelection.validateJsonElement(jsonObj.get("footerLogo"));
+      }
+      if ((jsonObj.get("questionStyle") != null && !jsonObj.get("questionStyle").isJsonNull()) && !jsonObj.get("questionStyle").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `questionStyle` to be a primitive type in the JSON string but got `%s`", jsonObj.get("questionStyle").toString()));
+      }
+      // validate the optional field `questionStyle`
+      if (jsonObj.get("questionStyle") != null && !jsonObj.get("questionStyle").isJsonNull()) {
+        QuestionStyleEnum.validateJsonElement(jsonObj.get("questionStyle"));
+      }
+      if (jsonObj.get("roles") != null && !jsonObj.get("roles").isJsonNull()) {
+        JsonArray jsonArrayroles = jsonObj.getAsJsonArray("roles");
+        if (jsonArrayroles != null) {
+          // ensure the json data is an array
+          if (!jsonObj.get("roles").isJsonArray()) {
+            throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `roles` to be an array in the JSON string but got `%s`", jsonObj.get("roles").toString()));
+          }
+
+          // validate the optional field `roles` (array)
+          for (int i = 0; i < jsonArrayroles.size(); i++) {
+            PageThemeRoleOverride.validateJsonElement(jsonArrayroles.get(i));
+          };
+        }
       }
       // validate the optional field `titleFont`
       if (jsonObj.get("titleFont") != null && !jsonObj.get("titleFont").isJsonNull()) {
