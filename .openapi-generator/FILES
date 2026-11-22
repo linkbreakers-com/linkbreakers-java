@@ -37,7 +37,7 @@ src/main/java/com/linkbreakers/api/IntegrationsFormsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsGoogleAnalyticsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsRetargetingPixelsApi.java
 src/main/java/com/linkbreakers/api/IntegrationsSlackApi.java
-src/main/java/com/linkbreakers/api/JobsApi.java
+src/main/java/com/linkbreakers/api/LinkJobsApi.java
 src/main/java/com/linkbreakers/api/LinkSettingsApi.java
 src/main/java/com/linkbreakers/api/LinksApi.java
 src/main/java/com/linkbreakers/api/MediaApi.java
@@ -382,10 +382,6 @@ src/main/java/com/linkbreakers/model/InAppBrowserDetails.java
 src/main/java/com/linkbreakers/model/IntegrationDelivery.java
 src/main/java/com/linkbreakers/model/IntegrationVisitorData.java
 src/main/java/com/linkbreakers/model/InviteMemberRequest.java
-src/main/java/com/linkbreakers/model/Job.java
-src/main/java/com/linkbreakers/model/JobError.java
-src/main/java/com/linkbreakers/model/JobStatus.java
-src/main/java/com/linkbreakers/model/JobType.java
 src/main/java/com/linkbreakers/model/JourneyProgress.java
 src/main/java/com/linkbreakers/model/LanguageConditionOutcome.java
 src/main/java/com/linkbreakers/model/LanguageConditionPayload.java
@@ -394,6 +390,10 @@ src/main/java/com/linkbreakers/model/LanguageConditionTraceOption.java
 src/main/java/com/linkbreakers/model/Link.java
 src/main/java/com/linkbreakers/model/LinkIntegration.java
 src/main/java/com/linkbreakers/model/LinkIntegrationKind.java
+src/main/java/com/linkbreakers/model/LinkJob.java
+src/main/java/com/linkbreakers/model/LinkJobError.java
+src/main/java/com/linkbreakers/model/LinkJobStatus.java
+src/main/java/com/linkbreakers/model/LinkJobType.java
 src/main/java/com/linkbreakers/model/LinkSetting.java
 src/main/java/com/linkbreakers/model/LinkSettingsServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/LinkSortField.java

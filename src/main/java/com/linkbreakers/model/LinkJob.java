@@ -1,8 +1,8 @@
 /*
  * Linkbreakers API
- * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a job and a `Location` header; poll `GET /v1/jobs/{id}` until `status` is `JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `JOB_STATUS_FAILED` (`error` says why, and nothing was created). Jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
+ * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a link job and a `Location` header; poll `GET /v1/links/jobs/{id}` until `status` is `LINK_JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `LINK_JOB_STATUS_FAILED` (`error` says why, and nothing was created). Link jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.204.0
+ * The version of the OpenAPI document: 1.204.1
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -19,7 +19,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.JobError;
+import com.linkbreakers.model.LinkJobError;
 import com.linkbreakers.model.LinksBulkCreateResult;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -49,10 +49,10 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * A bulk link creation running in the background.  You get one back from &#x60;POST /v1/links/bulk/jobs&#x60;, and read it again with &#x60;GET /v1/jobs/{id}&#x60; until it is finished. Its status says where it stands:  - pending: accepted, waiting to run. - running: creating the links now. - succeeded: done; &#x60;linksBulkCreate.linkIds&#x60; holds the created link IDs. - failed: &#x60;error&#x60; says why. No link was created: a batch is all or nothing.  A job can be read for 24 hours after it finishes.
+ * Links being created in the background.  You get one back from &#x60;POST /v1/links/bulk/jobs&#x60;, and read it again with &#x60;GET /v1/links/jobs/{id}&#x60; until it is finished. Its status says where it stands:  - pending: accepted, waiting to run. - running: creating the links now. - succeeded: done; &#x60;linksBulkCreate.linkIds&#x60; holds the created link IDs. - failed: &#x60;error&#x60; says why. No link was created: a batch is all or nothing.  A link job can be read for 24 hours after it finishes.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class Job {
+public class LinkJob {
   public static final String SERIALIZED_NAME_COMPLETED_AT = "completedAt";
   @SerializedName(SERIALIZED_NAME_COMPLETED_AT)
   @javax.annotation.Nullable
@@ -66,7 +66,7 @@ public class Job {
   public static final String SERIALIZED_NAME_ERROR = "error";
   @SerializedName(SERIALIZED_NAME_ERROR)
   @javax.annotation.Nullable
-  private JobError error;
+  private LinkJobError error;
 
   public static final String SERIALIZED_NAME_ID = "id";
   @SerializedName(SERIALIZED_NAME_ID)
@@ -84,19 +84,19 @@ public class Job {
   private LinksBulkCreateResult linksBulkCreate;
 
   /**
-   * Where the job stands. Poll until JOB_STATUS_SUCCEEDED or JOB_STATUS_FAILED.   - JOB_STATUS_UNSPECIFIED: Not set.  - JOB_STATUS_PENDING: Accepted and waiting to run.  - JOB_STATUS_RUNNING: Running now.  - JOB_STATUS_SUCCEEDED: Finished; the result is set.  - JOB_STATUS_FAILED: Finished without doing its work; error says why. Nothing was created.
+   * Where the job stands. Poll until LINK_JOB_STATUS_SUCCEEDED or LINK_JOB_STATUS_FAILED.   - LINK_JOB_STATUS_UNSPECIFIED: Not set.  - LINK_JOB_STATUS_PENDING: Accepted and waiting to run.  - LINK_JOB_STATUS_RUNNING: Running now.  - LINK_JOB_STATUS_SUCCEEDED: Finished; the result is set.  - LINK_JOB_STATUS_FAILED: Finished without doing its work; error says why. Nothing was created.
    */
   @JsonAdapter(StatusEnum.Adapter.class)
   public enum StatusEnum {
-    JOB_STATUS_UNSPECIFIED("JOB_STATUS_UNSPECIFIED"),
+    LINK_JOB_STATUS_UNSPECIFIED("LINK_JOB_STATUS_UNSPECIFIED"),
     
-    JOB_STATUS_PENDING("JOB_STATUS_PENDING"),
+    LINK_JOB_STATUS_PENDING("LINK_JOB_STATUS_PENDING"),
     
-    JOB_STATUS_RUNNING("JOB_STATUS_RUNNING"),
+    LINK_JOB_STATUS_RUNNING("LINK_JOB_STATUS_RUNNING"),
     
-    JOB_STATUS_SUCCEEDED("JOB_STATUS_SUCCEEDED"),
+    LINK_JOB_STATUS_SUCCEEDED("LINK_JOB_STATUS_SUCCEEDED"),
     
-    JOB_STATUS_FAILED("JOB_STATUS_FAILED");
+    LINK_JOB_STATUS_FAILED("LINK_JOB_STATUS_FAILED");
 
     private String value;
 
@@ -152,13 +152,13 @@ public class Job {
   private String statusUrl;
 
   /**
-   * What the job does.   - JOB_TYPE_UNSPECIFIED: Not set.  - JOB_TYPE_LINKS_BULK_CREATE: Creates a batch of links (POST /v1/links/bulk/jobs).
+   * What the job does.   - LINK_JOB_TYPE_UNSPECIFIED: Not set.  - LINK_JOB_TYPE_BULK_CREATE: Creates a batch of links (POST /v1/links/bulk/jobs).
    */
   @JsonAdapter(TypeEnum.Adapter.class)
   public enum TypeEnum {
-    JOB_TYPE_UNSPECIFIED("JOB_TYPE_UNSPECIFIED"),
+    LINK_JOB_TYPE_UNSPECIFIED("LINK_JOB_TYPE_UNSPECIFIED"),
     
-    JOB_TYPE_LINKS_BULK_CREATE("JOB_TYPE_LINKS_BULK_CREATE");
+    LINK_JOB_TYPE_BULK_CREATE("LINK_JOB_TYPE_BULK_CREATE");
 
     private String value;
 
@@ -208,10 +208,10 @@ public class Job {
   @javax.annotation.Nullable
   private TypeEnum type;
 
-  public Job() {
+  public LinkJob() {
   }
 
-  public Job completedAt(@javax.annotation.Nullable OffsetDateTime completedAt) {
+  public LinkJob completedAt(@javax.annotation.Nullable OffsetDateTime completedAt) {
     this.completedAt = completedAt;
     return this;
   }
@@ -230,7 +230,7 @@ public class Job {
   }
 
 
-  public Job createdAt(@javax.annotation.Nullable OffsetDateTime createdAt) {
+  public LinkJob createdAt(@javax.annotation.Nullable OffsetDateTime createdAt) {
     this.createdAt = createdAt;
     return this;
   }
@@ -249,32 +249,32 @@ public class Job {
   }
 
 
-  public Job error(@javax.annotation.Nullable JobError error) {
+  public LinkJob error(@javax.annotation.Nullable LinkJobError error) {
     this.error = error;
     return this;
   }
 
   /**
-   * Set when status is JOB_STATUS_FAILED.
+   * Set when status is LINK_JOB_STATUS_FAILED.
    * @return error
    */
   @javax.annotation.Nullable
-  public JobError getError() {
+  public LinkJobError getError() {
     return error;
   }
 
-  public void setError(@javax.annotation.Nullable JobError error) {
+  public void setError(@javax.annotation.Nullable LinkJobError error) {
     this.error = error;
   }
 
 
-  public Job id(@javax.annotation.Nullable String id) {
+  public LinkJob id(@javax.annotation.Nullable String id) {
     this.id = id;
     return this;
   }
 
   /**
-   * Job ID (UUID).
+   * Link job ID (UUID).
    * @return id
    */
   @javax.annotation.Nullable
@@ -287,13 +287,13 @@ public class Job {
   }
 
 
-  public Job itemCount(@javax.annotation.Nullable Integer itemCount) {
+  public LinkJob itemCount(@javax.annotation.Nullable Integer itemCount) {
     this.itemCount = itemCount;
     return this;
   }
 
   /**
-   * How many items the job was submitted with.
+   * How many links the job was submitted with.
    * @return itemCount
    */
   @javax.annotation.Nullable
@@ -306,13 +306,13 @@ public class Job {
   }
 
 
-  public Job linksBulkCreate(@javax.annotation.Nullable LinksBulkCreateResult linksBulkCreate) {
+  public LinkJob linksBulkCreate(@javax.annotation.Nullable LinksBulkCreateResult linksBulkCreate) {
     this.linksBulkCreate = linksBulkCreate;
     return this;
   }
 
   /**
-   * Set when a JOB_TYPE_LINKS_BULK_CREATE job succeeded.
+   * Set when a LINK_JOB_TYPE_BULK_CREATE job succeeded.
    * @return linksBulkCreate
    */
   @javax.annotation.Nullable
@@ -325,13 +325,13 @@ public class Job {
   }
 
 
-  public Job status(@javax.annotation.Nullable StatusEnum status) {
+  public LinkJob status(@javax.annotation.Nullable StatusEnum status) {
     this.status = status;
     return this;
   }
 
   /**
-   * Where the job stands. Poll until JOB_STATUS_SUCCEEDED or JOB_STATUS_FAILED.   - JOB_STATUS_UNSPECIFIED: Not set.  - JOB_STATUS_PENDING: Accepted and waiting to run.  - JOB_STATUS_RUNNING: Running now.  - JOB_STATUS_SUCCEEDED: Finished; the result is set.  - JOB_STATUS_FAILED: Finished without doing its work; error says why. Nothing was created.
+   * Where the job stands. Poll until LINK_JOB_STATUS_SUCCEEDED or LINK_JOB_STATUS_FAILED.   - LINK_JOB_STATUS_UNSPECIFIED: Not set.  - LINK_JOB_STATUS_PENDING: Accepted and waiting to run.  - LINK_JOB_STATUS_RUNNING: Running now.  - LINK_JOB_STATUS_SUCCEEDED: Finished; the result is set.  - LINK_JOB_STATUS_FAILED: Finished without doing its work; error says why. Nothing was created.
    * @return status
    */
   @javax.annotation.Nullable
@@ -344,7 +344,7 @@ public class Job {
   }
 
 
-  public Job statusUrl(@javax.annotation.Nullable String statusUrl) {
+  public LinkJob statusUrl(@javax.annotation.Nullable String statusUrl) {
     this.statusUrl = statusUrl;
     return this;
   }
@@ -363,13 +363,13 @@ public class Job {
   }
 
 
-  public Job type(@javax.annotation.Nullable TypeEnum type) {
+  public LinkJob type(@javax.annotation.Nullable TypeEnum type) {
     this.type = type;
     return this;
   }
 
   /**
-   * What the job does.   - JOB_TYPE_UNSPECIFIED: Not set.  - JOB_TYPE_LINKS_BULK_CREATE: Creates a batch of links (POST /v1/links/bulk/jobs).
+   * What the job does.   - LINK_JOB_TYPE_UNSPECIFIED: Not set.  - LINK_JOB_TYPE_BULK_CREATE: Creates a batch of links (POST /v1/links/bulk/jobs).
    * @return type
    */
   @javax.annotation.Nullable
@@ -391,16 +391,16 @@ public class Job {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Job job = (Job) o;
-    return Objects.equals(this.completedAt, job.completedAt) &&
-        Objects.equals(this.createdAt, job.createdAt) &&
-        Objects.equals(this.error, job.error) &&
-        Objects.equals(this.id, job.id) &&
-        Objects.equals(this.itemCount, job.itemCount) &&
-        Objects.equals(this.linksBulkCreate, job.linksBulkCreate) &&
-        Objects.equals(this.status, job.status) &&
-        Objects.equals(this.statusUrl, job.statusUrl) &&
-        Objects.equals(this.type, job.type);
+    LinkJob linkJob = (LinkJob) o;
+    return Objects.equals(this.completedAt, linkJob.completedAt) &&
+        Objects.equals(this.createdAt, linkJob.createdAt) &&
+        Objects.equals(this.error, linkJob.error) &&
+        Objects.equals(this.id, linkJob.id) &&
+        Objects.equals(this.itemCount, linkJob.itemCount) &&
+        Objects.equals(this.linksBulkCreate, linkJob.linksBulkCreate) &&
+        Objects.equals(this.status, linkJob.status) &&
+        Objects.equals(this.statusUrl, linkJob.statusUrl) &&
+        Objects.equals(this.type, linkJob.type);
   }
 
   @Override
@@ -411,7 +411,7 @@ public class Job {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Job {\n");
+    sb.append("class LinkJob {\n");
     sb.append("    completedAt: ").append(toIndentedString(completedAt)).append("\n");
     sb.append("    createdAt: ").append(toIndentedString(createdAt)).append("\n");
     sb.append("    error: ").append(toIndentedString(error)).append("\n");
@@ -449,26 +449,26 @@ public class Job {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to Job
+   * @throws IOException if the JSON Element is invalid with respect to LinkJob
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!Job.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in Job is not found in the empty JSON string", Job.openapiRequiredFields.toString()));
+        if (!LinkJob.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in LinkJob is not found in the empty JSON string", LinkJob.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!Job.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `Job` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!LinkJob.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `LinkJob` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
       // validate the optional field `error`
       if (jsonObj.get("error") != null && !jsonObj.get("error").isJsonNull()) {
-        JobError.validateJsonElement(jsonObj.get("error"));
+        LinkJobError.validateJsonElement(jsonObj.get("error"));
       }
       if ((jsonObj.get("id") != null && !jsonObj.get("id").isJsonNull()) && !jsonObj.get("id").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `id` to be a primitive type in the JSON string but got `%s`", jsonObj.get("id").toString()));
@@ -500,22 +500,22 @@ public class Job {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!Job.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'Job' and its subtypes
+       if (!LinkJob.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'LinkJob' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<Job> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(Job.class));
+       final TypeAdapter<LinkJob> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(LinkJob.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<Job>() {
+       return (TypeAdapter<T>) new TypeAdapter<LinkJob>() {
            @Override
-           public void write(JsonWriter out, Job value) throws IOException {
+           public void write(JsonWriter out, LinkJob value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public Job read(JsonReader in) throws IOException {
+           public LinkJob read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -526,18 +526,18 @@ public class Job {
   }
 
   /**
-   * Create an instance of Job given an JSON string
+   * Create an instance of LinkJob given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of Job
-   * @throws IOException if the JSON string is invalid with respect to Job
+   * @return An instance of LinkJob
+   * @throws IOException if the JSON string is invalid with respect to LinkJob
    */
-  public static Job fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, Job.class);
+  public static LinkJob fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, LinkJob.class);
   }
 
   /**
-   * Convert an instance of Job to an JSON string
+   * Convert an instance of LinkJob to an JSON string
    *
    * @return JSON string
    */
