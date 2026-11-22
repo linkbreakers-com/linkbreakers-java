@@ -81,6 +81,8 @@ Each API is a class in `com.linkbreakers.api` (`LinksApi`, `VisitorsApi`, ...), 
 
 Get your workspace API token from the [Linkbreakers dashboard](https://app.linkbreakers.com/settings/api).
 
+**Whole projects** live in [linkbreakers-com/examples](https://github.com/linkbreakers-com/examples), each a small directory you can run as is. In Java: [QR code scans to Slack in real time](https://github.com/linkbreakers-com/examples/tree/main/qr-code-scans-to-slack-webhook-java), which creates a QR code and a webhook with this SDK, then runs a small server that verifies each signed delivery and posts the scan to a Slack channel.
+
 ## API Documentation
 
 For the full API reference, visit https://docs.linkbreakers.com
