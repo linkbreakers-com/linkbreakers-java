@@ -288,6 +288,7 @@ src/main/java/com/linkbreakers/model/EventsServiceCreateTraceBody.java
 src/main/java/com/linkbreakers/model/EventsServiceUpdateDeviceBody.java
 src/main/java/com/linkbreakers/model/EventsTimeSeries.java
 src/main/java/com/linkbreakers/model/EventsTimeSeriesData.java
+src/main/java/com/linkbreakers/model/ExportWorkflowStepsResponse.java
 src/main/java/com/linkbreakers/model/FindMatchingPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/FiringRetargetingPixel.java
 src/main/java/com/linkbreakers/model/FontConfig.java
@@ -377,6 +378,8 @@ src/main/java/com/linkbreakers/model/ImportPageThemeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportPageThemeTemplateResponse.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateRequest.java
 src/main/java/com/linkbreakers/model/ImportQrcodeTemplateResponse.java
+src/main/java/com/linkbreakers/model/ImportWorkflowStepsResponse.java
+src/main/java/com/linkbreakers/model/ImportedWorkflowStep.java
 src/main/java/com/linkbreakers/model/InAppBrowser.java
 src/main/java/com/linkbreakers/model/InAppBrowserDetails.java
 src/main/java/com/linkbreakers/model/IntegrationDelivery.java
@@ -679,11 +682,20 @@ src/main/java/com/linkbreakers/model/WidgetVisualization.java
 src/main/java/com/linkbreakers/model/WorkflowIssue.java
 src/main/java/com/linkbreakers/model/WorkflowStep.java
 src/main/java/com/linkbreakers/model/WorkflowStepBranch.java
+src/main/java/com/linkbreakers/model/WorkflowStepCopyNotice.java
+src/main/java/com/linkbreakers/model/WorkflowStepCopyNoticeType.java
 src/main/java/com/linkbreakers/model/WorkflowStepKind.java
 src/main/java/com/linkbreakers/model/WorkflowStepNodeType.java
 src/main/java/com/linkbreakers/model/WorkflowStepPayload.java
+src/main/java/com/linkbreakers/model/WorkflowStepsDocument.java
+src/main/java/com/linkbreakers/model/WorkflowStepsDocumentEdge.java
+src/main/java/com/linkbreakers/model/WorkflowStepsDocumentEntry.java
+src/main/java/com/linkbreakers/model/WorkflowStepsDocumentMedia.java
+src/main/java/com/linkbreakers/model/WorkflowStepsDocumentStep.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceConnectBody.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceCreateBody.java
+src/main/java/com/linkbreakers/model/WorkflowStepsServiceExportBody.java
+src/main/java/com/linkbreakers/model/WorkflowStepsServiceImportBody.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/Workspace.java
 src/main/java/com/linkbreakers/model/WorkspaceAllowance.java
