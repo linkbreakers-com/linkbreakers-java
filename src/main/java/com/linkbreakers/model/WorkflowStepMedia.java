@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a link job and a `Location` header; poll `GET /v1/links/jobs/{id}` until `status` is `LINK_JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `LINK_JOB_STATUS_FAILED` (`error` says why, and nothing was created). Link jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.205.1
+ * The version of the OpenAPI document: 1.205.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -20,7 +20,6 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
@@ -47,136 +46,59 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * One Markdown document the agent knows.
+ * A page step&#39;s own images: a badge and a cover that replace the page theme&#39;s on this step only, so one link can show a different picture on each page (a person&#39;s photo on a contact card, a logo on the thank-you page, another cover on the form). They change what is shown, never how: the badge keeps the theme&#39;s badge shape and border, the cover the theme&#39;s cover mode and placement, and a step without one shows the theme&#39;s.  Each slot is an image of the workspace&#39;s media library (UUID): upload or import the image first and pass its media id. Any READY PNG, JPEG, WebP or SVG image of at most 3 MB. Available on page steps only: MESSAGE_PAGE, MULTI_LINK, CONTACT_CARD, SOCIAL_LINKS_PAGE, FORM_SUBMIT, PASSWORD_VERIFY, THANK_YOU_PAGE, LOCATION_REQUEST and CHAT_BOT. A contact card&#39;s badge is the person&#39;s photo, also saved in the downloaded contact.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class AgentKnowledgeDocument {
-  public static final String SERIALIZED_NAME_AGENT_ID = "agentId";
-  @SerializedName(SERIALIZED_NAME_AGENT_ID)
+public class WorkflowStepMedia {
+  public static final String SERIALIZED_NAME_BADGE_MEDIA_ID = "badgeMediaId";
+  @SerializedName(SERIALIZED_NAME_BADGE_MEDIA_ID)
   @javax.annotation.Nullable
-  private String agentId;
+  private String badgeMediaId;
 
-  public static final String SERIALIZED_NAME_CONTENT = "content";
-  @SerializedName(SERIALIZED_NAME_CONTENT)
+  public static final String SERIALIZED_NAME_COVER_MEDIA_ID = "coverMediaId";
+  @SerializedName(SERIALIZED_NAME_COVER_MEDIA_ID)
   @javax.annotation.Nullable
-  private String content;
+  private String coverMediaId;
 
-  public static final String SERIALIZED_NAME_CREATED_AT = "createdAt";
-  @SerializedName(SERIALIZED_NAME_CREATED_AT)
-  @javax.annotation.Nullable
-  private OffsetDateTime createdAt;
-
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  @javax.annotation.Nullable
-  private String id;
-
-  public static final String SERIALIZED_NAME_TITLE = "title";
-  @SerializedName(SERIALIZED_NAME_TITLE)
-  @javax.annotation.Nullable
-  private String title;
-
-  public static final String SERIALIZED_NAME_UPDATED_AT = "updatedAt";
-  @SerializedName(SERIALIZED_NAME_UPDATED_AT)
-  @javax.annotation.Nullable
-  private OffsetDateTime updatedAt;
-
-  public AgentKnowledgeDocument() {
+  public WorkflowStepMedia() {
   }
 
-  public AgentKnowledgeDocument(
-     String agentId, 
-     OffsetDateTime createdAt, 
-     String id, 
-     OffsetDateTime updatedAt
-  ) {
-    this();
-    this.agentId = agentId;
-    this.createdAt = createdAt;
-    this.id = id;
-    this.updatedAt = updatedAt;
-  }
-
-  /**
-   * The agent the document belongs to (UUID).
-   * @return agentId
-   */
-  @javax.annotation.Nullable
-  public String getAgentId() {
-    return agentId;
-  }
-
-
-
-  public AgentKnowledgeDocument content(@javax.annotation.Nullable String content) {
-    this.content = content;
+  public WorkflowStepMedia badgeMediaId(@javax.annotation.Nullable String badgeMediaId) {
+    this.badgeMediaId = badgeMediaId;
     return this;
   }
 
   /**
-   * The document&#39;s Markdown content.
-   * @return content
+   * The image shown in the page theme&#39;s badge slot on this step, in the theme&#39;s badge shape and border, even when the theme has no badge (UUID of a media library image). Empty: the theme&#39;s badge.
+   * @return badgeMediaId
    */
   @javax.annotation.Nullable
-  public String getContent() {
-    return content;
+  public String getBadgeMediaId() {
+    return badgeMediaId;
   }
 
-  public void setContent(@javax.annotation.Nullable String content) {
-    this.content = content;
-  }
-
-
-  /**
-   * When the document was created.
-   * @return createdAt
-   */
-  @javax.annotation.Nullable
-  public OffsetDateTime getCreatedAt() {
-    return createdAt;
+  public void setBadgeMediaId(@javax.annotation.Nullable String badgeMediaId) {
+    this.badgeMediaId = badgeMediaId;
   }
 
 
-
-  /**
-   * The unique identifier of the document (UUID).
-   * @return id
-   */
-  @javax.annotation.Nullable
-  public String getId() {
-    return id;
-  }
-
-
-
-  public AgentKnowledgeDocument title(@javax.annotation.Nullable String title) {
-    this.title = title;
+  public WorkflowStepMedia coverMediaId(@javax.annotation.Nullable String coverMediaId) {
+    this.coverMediaId = coverMediaId;
     return this;
   }
 
   /**
-   * The document&#39;s title.
-   * @return title
+   * The image shown as this step&#39;s cover, in the theme&#39;s cover mode and placement (UUID of a media library image). Empty: the theme&#39;s cover.
+   * @return coverMediaId
    */
   @javax.annotation.Nullable
-  public String getTitle() {
-    return title;
+  public String getCoverMediaId() {
+    return coverMediaId;
   }
 
-  public void setTitle(@javax.annotation.Nullable String title) {
-    this.title = title;
+  public void setCoverMediaId(@javax.annotation.Nullable String coverMediaId) {
+    this.coverMediaId = coverMediaId;
   }
-
-
-  /**
-   * When the document was last updated.
-   * @return updatedAt
-   */
-  @javax.annotation.Nullable
-  public OffsetDateTime getUpdatedAt() {
-    return updatedAt;
-  }
-
 
 
 
@@ -188,30 +110,22 @@ public class AgentKnowledgeDocument {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AgentKnowledgeDocument agentKnowledgeDocument = (AgentKnowledgeDocument) o;
-    return Objects.equals(this.agentId, agentKnowledgeDocument.agentId) &&
-        Objects.equals(this.content, agentKnowledgeDocument.content) &&
-        Objects.equals(this.createdAt, agentKnowledgeDocument.createdAt) &&
-        Objects.equals(this.id, agentKnowledgeDocument.id) &&
-        Objects.equals(this.title, agentKnowledgeDocument.title) &&
-        Objects.equals(this.updatedAt, agentKnowledgeDocument.updatedAt);
+    WorkflowStepMedia workflowStepMedia = (WorkflowStepMedia) o;
+    return Objects.equals(this.badgeMediaId, workflowStepMedia.badgeMediaId) &&
+        Objects.equals(this.coverMediaId, workflowStepMedia.coverMediaId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(agentId, content, createdAt, id, title, updatedAt);
+    return Objects.hash(badgeMediaId, coverMediaId);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class AgentKnowledgeDocument {\n");
-    sb.append("    agentId: ").append(toIndentedString(agentId)).append("\n");
-    sb.append("    content: ").append(toIndentedString(content)).append("\n");
-    sb.append("    createdAt: ").append(toIndentedString(createdAt)).append("\n");
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    title: ").append(toIndentedString(title)).append("\n");
-    sb.append("    updatedAt: ").append(toIndentedString(updatedAt)).append("\n");
+    sb.append("class WorkflowStepMedia {\n");
+    sb.append("    badgeMediaId: ").append(toIndentedString(badgeMediaId)).append("\n");
+    sb.append("    coverMediaId: ").append(toIndentedString(coverMediaId)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -230,7 +144,7 @@ public class AgentKnowledgeDocument {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("agentId", "content", "createdAt", "id", "title", "updatedAt"));
+    openapiFields = new HashSet<String>(Arrays.asList("badgeMediaId", "coverMediaId"));
 
     // a set of required properties/fields (JSON key names)
     openapiRequiredFields = new HashSet<String>(0);
@@ -240,34 +154,28 @@ public class AgentKnowledgeDocument {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to AgentKnowledgeDocument
+   * @throws IOException if the JSON Element is invalid with respect to WorkflowStepMedia
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!AgentKnowledgeDocument.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in AgentKnowledgeDocument is not found in the empty JSON string", AgentKnowledgeDocument.openapiRequiredFields.toString()));
+        if (!WorkflowStepMedia.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in WorkflowStepMedia is not found in the empty JSON string", WorkflowStepMedia.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!AgentKnowledgeDocument.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `AgentKnowledgeDocument` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!WorkflowStepMedia.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `WorkflowStepMedia` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      if ((jsonObj.get("agentId") != null && !jsonObj.get("agentId").isJsonNull()) && !jsonObj.get("agentId").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `agentId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("agentId").toString()));
+      if ((jsonObj.get("badgeMediaId") != null && !jsonObj.get("badgeMediaId").isJsonNull()) && !jsonObj.get("badgeMediaId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `badgeMediaId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("badgeMediaId").toString()));
       }
-      if ((jsonObj.get("content") != null && !jsonObj.get("content").isJsonNull()) && !jsonObj.get("content").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `content` to be a primitive type in the JSON string but got `%s`", jsonObj.get("content").toString()));
-      }
-      if ((jsonObj.get("id") != null && !jsonObj.get("id").isJsonNull()) && !jsonObj.get("id").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `id` to be a primitive type in the JSON string but got `%s`", jsonObj.get("id").toString()));
-      }
-      if ((jsonObj.get("title") != null && !jsonObj.get("title").isJsonNull()) && !jsonObj.get("title").isJsonPrimitive()) {
-        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `title` to be a primitive type in the JSON string but got `%s`", jsonObj.get("title").toString()));
+      if ((jsonObj.get("coverMediaId") != null && !jsonObj.get("coverMediaId").isJsonNull()) && !jsonObj.get("coverMediaId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `coverMediaId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("coverMediaId").toString()));
       }
   }
 
@@ -275,22 +183,22 @@ public class AgentKnowledgeDocument {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!AgentKnowledgeDocument.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'AgentKnowledgeDocument' and its subtypes
+       if (!WorkflowStepMedia.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'WorkflowStepMedia' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<AgentKnowledgeDocument> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(AgentKnowledgeDocument.class));
+       final TypeAdapter<WorkflowStepMedia> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(WorkflowStepMedia.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<AgentKnowledgeDocument>() {
+       return (TypeAdapter<T>) new TypeAdapter<WorkflowStepMedia>() {
            @Override
-           public void write(JsonWriter out, AgentKnowledgeDocument value) throws IOException {
+           public void write(JsonWriter out, WorkflowStepMedia value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public AgentKnowledgeDocument read(JsonReader in) throws IOException {
+           public WorkflowStepMedia read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -301,18 +209,18 @@ public class AgentKnowledgeDocument {
   }
 
   /**
-   * Create an instance of AgentKnowledgeDocument given an JSON string
+   * Create an instance of WorkflowStepMedia given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of AgentKnowledgeDocument
-   * @throws IOException if the JSON string is invalid with respect to AgentKnowledgeDocument
+   * @return An instance of WorkflowStepMedia
+   * @throws IOException if the JSON string is invalid with respect to WorkflowStepMedia
    */
-  public static AgentKnowledgeDocument fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, AgentKnowledgeDocument.class);
+  public static WorkflowStepMedia fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, WorkflowStepMedia.class);
   }
 
   /**
-   * Convert an instance of AgentKnowledgeDocument to an JSON string
+   * Convert an instance of WorkflowStepMedia to an JSON string
    *
    * @return JSON string
    */

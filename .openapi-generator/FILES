@@ -69,7 +69,9 @@ src/main/java/com/linkbreakers/model/AgentClaimStatus.java
 src/main/java/com/linkbreakers/model/AgentGuardrail.java
 src/main/java/com/linkbreakers/model/AgentGuardrailList.java
 src/main/java/com/linkbreakers/model/AgentGuardrailPreset.java
-src/main/java/com/linkbreakers/model/AgentKnowledgeDocument.java
+src/main/java/com/linkbreakers/model/AgentKnowledgeItem.java
+src/main/java/com/linkbreakers/model/AgentKnowledgeItemKind.java
+src/main/java/com/linkbreakers/model/AgentKnowledgeItemStatus.java
 src/main/java/com/linkbreakers/model/AgentLimits.java
 src/main/java/com/linkbreakers/model/AgentQuestionHandling.java
 src/main/java/com/linkbreakers/model/AgentQuestionHandlingPreset.java
@@ -80,9 +82,9 @@ src/main/java/com/linkbreakers/model/AgentRolePreset.java
 src/main/java/com/linkbreakers/model/AgentTone.java
 src/main/java/com/linkbreakers/model/AgentTonePreset.java
 src/main/java/com/linkbreakers/model/AgentUsage.java
-src/main/java/com/linkbreakers/model/AgentsServiceCreateKnowledgeDocumentBody.java
+src/main/java/com/linkbreakers/model/AgentsServiceCreateKnowledgeItemBody.java
 src/main/java/com/linkbreakers/model/AgentsServiceUpdateBody.java
-src/main/java/com/linkbreakers/model/AgentsServiceUpdateKnowledgeDocumentBody.java
+src/main/java/com/linkbreakers/model/AgentsServiceUpdateKnowledgeItemBody.java
 src/main/java/com/linkbreakers/model/AnalyticsDashboard.java
 src/main/java/com/linkbreakers/model/AnalyticsDashboardsServiceGenerateWidgetSummaryBody.java
 src/main/java/com/linkbreakers/model/AnalyticsDashboardsServiceUpdateBody.java
@@ -176,7 +178,7 @@ src/main/java/com/linkbreakers/model/CountryConditionOutcome.java
 src/main/java/com/linkbreakers/model/CountryConditionPayload.java
 src/main/java/com/linkbreakers/model/CountryConditionTraceData.java
 src/main/java/com/linkbreakers/model/CountryConditionTraceOption.java
-src/main/java/com/linkbreakers/model/CreateAgentKnowledgeDocumentResponse.java
+src/main/java/com/linkbreakers/model/CreateAgentKnowledgeItemResponse.java
 src/main/java/com/linkbreakers/model/CreateAgentRequest.java
 src/main/java/com/linkbreakers/model/CreateAgentResponse.java
 src/main/java/com/linkbreakers/model/CreateBulkLinksRequest.java
@@ -525,6 +527,7 @@ src/main/java/com/linkbreakers/model/QrcodeTemplateScope.java
 src/main/java/com/linkbreakers/model/QrcodeTemplatesServiceUpdateBody.java
 src/main/java/com/linkbreakers/model/RedirectTraceData.java
 src/main/java/com/linkbreakers/model/RedirectTraceDataFallbackReason.java
+src/main/java/com/linkbreakers/model/RefreshAgentKnowledgeItemResponse.java
 src/main/java/com/linkbreakers/model/RenderQrcodeImagesResponse.java
 src/main/java/com/linkbreakers/model/RenderedQrcode.java
 src/main/java/com/linkbreakers/model/ReplaceMediaImportResponse.java
@@ -605,7 +608,7 @@ src/main/java/com/linkbreakers/model/TrafficSplitVariant.java
 src/main/java/com/linkbreakers/model/TrafficSplitVariantResult.java
 src/main/java/com/linkbreakers/model/TriggeredBy.java
 src/main/java/com/linkbreakers/model/TypeDate.java
-src/main/java/com/linkbreakers/model/UpdateAgentKnowledgeDocumentResponse.java
+src/main/java/com/linkbreakers/model/UpdateAgentKnowledgeItemResponse.java
 src/main/java/com/linkbreakers/model/UpdateAgentResponse.java
 src/main/java/com/linkbreakers/model/UpdateContactConnectionResponse.java
 src/main/java/com/linkbreakers/model/UpdateCustomDomainResponse.java
@@ -685,6 +688,7 @@ src/main/java/com/linkbreakers/model/WorkflowStepBranch.java
 src/main/java/com/linkbreakers/model/WorkflowStepCopyNotice.java
 src/main/java/com/linkbreakers/model/WorkflowStepCopyNoticeType.java
 src/main/java/com/linkbreakers/model/WorkflowStepKind.java
+src/main/java/com/linkbreakers/model/WorkflowStepMedia.java
 src/main/java/com/linkbreakers/model/WorkflowStepNodeType.java
 src/main/java/com/linkbreakers/model/WorkflowStepPayload.java
 src/main/java/com/linkbreakers/model/WorkflowStepsDocument.java
@@ -692,6 +696,7 @@ src/main/java/com/linkbreakers/model/WorkflowStepsDocumentEdge.java
 src/main/java/com/linkbreakers/model/WorkflowStepsDocumentEntry.java
 src/main/java/com/linkbreakers/model/WorkflowStepsDocumentMedia.java
 src/main/java/com/linkbreakers/model/WorkflowStepsDocumentStep.java
+src/main/java/com/linkbreakers/model/WorkflowStepsDocumentStepMedia.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceConnectBody.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceCreateBody.java
 src/main/java/com/linkbreakers/model/WorkflowStepsServiceExportBody.java

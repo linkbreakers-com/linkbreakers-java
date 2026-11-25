@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a link job and a `Location` header; poll `GET /v1/links/jobs/{id}` until `status` is `LINK_JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `LINK_JOB_STATUS_FAILED` (`error` says why, and nothing was created). Link jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.205.1
+ * The version of the OpenAPI document: 1.205.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -19,7 +19,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.linkbreakers.model.AgentKnowledgeDocument;
+import com.linkbreakers.model.AgentKnowledgeItemKind;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -47,34 +47,130 @@ import java.util.Set;
 import com.linkbreakers.JSON;
 
 /**
- * Returns the created document.
+ * Adds a knowledge item to an agent: Markdown written in it, a web page read from its URL, or a PDF or image of the media library.
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.21.0")
-public class CreateAgentKnowledgeDocumentResponse {
-  public static final String SERIALIZED_NAME_DOCUMENT = "document";
-  @SerializedName(SERIALIZED_NAME_DOCUMENT)
+public class AgentsServiceCreateKnowledgeItemBody {
+  public static final String SERIALIZED_NAME_CONTENT = "content";
+  @SerializedName(SERIALIZED_NAME_CONTENT)
   @javax.annotation.Nullable
-  private AgentKnowledgeDocument document;
+  private String content;
 
-  public CreateAgentKnowledgeDocumentResponse() {
+  public static final String SERIALIZED_NAME_KIND = "kind";
+  @SerializedName(SERIALIZED_NAME_KIND)
+  @javax.annotation.Nonnull
+  private AgentKnowledgeItemKind kind;
+
+  public static final String SERIALIZED_NAME_MEDIA_ID = "mediaId";
+  @SerializedName(SERIALIZED_NAME_MEDIA_ID)
+  @javax.annotation.Nullable
+  private String mediaId;
+
+  public static final String SERIALIZED_NAME_TITLE = "title";
+  @SerializedName(SERIALIZED_NAME_TITLE)
+  @javax.annotation.Nullable
+  private String title;
+
+  public static final String SERIALIZED_NAME_URL = "url";
+  @SerializedName(SERIALIZED_NAME_URL)
+  @javax.annotation.Nullable
+  private String url;
+
+  public AgentsServiceCreateKnowledgeItemBody() {
   }
 
-  public CreateAgentKnowledgeDocumentResponse document(@javax.annotation.Nullable AgentKnowledgeDocument document) {
-    this.document = document;
+  public AgentsServiceCreateKnowledgeItemBody content(@javax.annotation.Nullable String content) {
+    this.content = content;
     return this;
   }
 
   /**
-   * The created document.
-   * @return document
+   * The Markdown text, for a Markdown item only.
+   * @return content
    */
   @javax.annotation.Nullable
-  public AgentKnowledgeDocument getDocument() {
-    return document;
+  public String getContent() {
+    return content;
   }
 
-  public void setDocument(@javax.annotation.Nullable AgentKnowledgeDocument document) {
-    this.document = document;
+  public void setContent(@javax.annotation.Nullable String content) {
+    this.content = content;
+  }
+
+
+  public AgentsServiceCreateKnowledgeItemBody kind(@javax.annotation.Nonnull AgentKnowledgeItemKind kind) {
+    this.kind = kind;
+    return this;
+  }
+
+  /**
+   * What the item is made of: MARKDOWN takes content, WEB_PAGE takes url, MEDIA takes mediaId.
+   * @return kind
+   */
+  @javax.annotation.Nonnull
+  public AgentKnowledgeItemKind getKind() {
+    return kind;
+  }
+
+  public void setKind(@javax.annotation.Nonnull AgentKnowledgeItemKind kind) {
+    this.kind = kind;
+  }
+
+
+  public AgentsServiceCreateKnowledgeItemBody mediaId(@javax.annotation.Nullable String mediaId) {
+    this.mediaId = mediaId;
+    return this;
+  }
+
+  /**
+   * The media item to read (UUID), for a media item only: a PDF or an image of the workspace&#39;s media library.
+   * @return mediaId
+   */
+  @javax.annotation.Nullable
+  public String getMediaId() {
+    return mediaId;
+  }
+
+  public void setMediaId(@javax.annotation.Nullable String mediaId) {
+    this.mediaId = mediaId;
+  }
+
+
+  public AgentsServiceCreateKnowledgeItemBody title(@javax.annotation.Nullable String title) {
+    this.title = title;
+    return this;
+  }
+
+  /**
+   * The item&#39;s title. Required for a Markdown item; a web page or file left without one takes the page&#39;s title or the file&#39;s name.
+   * @return title
+   */
+  @javax.annotation.Nullable
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(@javax.annotation.Nullable String title) {
+    this.title = title;
+  }
+
+
+  public AgentsServiceCreateKnowledgeItemBody url(@javax.annotation.Nullable String url) {
+    this.url = url;
+    return this;
+  }
+
+  /**
+   * The web page&#39;s http or https URL, for a web page item only. One item reads one page.
+   * @return url
+   */
+  @javax.annotation.Nullable
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(@javax.annotation.Nullable String url) {
+    this.url = url;
   }
 
 
@@ -87,20 +183,28 @@ public class CreateAgentKnowledgeDocumentResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CreateAgentKnowledgeDocumentResponse createAgentKnowledgeDocumentResponse = (CreateAgentKnowledgeDocumentResponse) o;
-    return Objects.equals(this.document, createAgentKnowledgeDocumentResponse.document);
+    AgentsServiceCreateKnowledgeItemBody agentsServiceCreateKnowledgeItemBody = (AgentsServiceCreateKnowledgeItemBody) o;
+    return Objects.equals(this.content, agentsServiceCreateKnowledgeItemBody.content) &&
+        Objects.equals(this.kind, agentsServiceCreateKnowledgeItemBody.kind) &&
+        Objects.equals(this.mediaId, agentsServiceCreateKnowledgeItemBody.mediaId) &&
+        Objects.equals(this.title, agentsServiceCreateKnowledgeItemBody.title) &&
+        Objects.equals(this.url, agentsServiceCreateKnowledgeItemBody.url);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(document);
+    return Objects.hash(content, kind, mediaId, title, url);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CreateAgentKnowledgeDocumentResponse {\n");
-    sb.append("    document: ").append(toIndentedString(document)).append("\n");
+    sb.append("class AgentsServiceCreateKnowledgeItemBody {\n");
+    sb.append("    content: ").append(toIndentedString(content)).append("\n");
+    sb.append("    kind: ").append(toIndentedString(kind)).append("\n");
+    sb.append("    mediaId: ").append(toIndentedString(mediaId)).append("\n");
+    sb.append("    title: ").append(toIndentedString(title)).append("\n");
+    sb.append("    url: ").append(toIndentedString(url)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -119,36 +223,53 @@ public class CreateAgentKnowledgeDocumentResponse {
 
   static {
     // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>(Arrays.asList("document"));
+    openapiFields = new HashSet<String>(Arrays.asList("content", "kind", "mediaId", "title", "url"));
 
     // a set of required properties/fields (JSON key names)
-    openapiRequiredFields = new HashSet<String>(0);
+    openapiRequiredFields = new HashSet<String>(Arrays.asList("kind"));
   }
 
   /**
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to CreateAgentKnowledgeDocumentResponse
+   * @throws IOException if the JSON Element is invalid with respect to AgentsServiceCreateKnowledgeItemBody
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!CreateAgentKnowledgeDocumentResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in CreateAgentKnowledgeDocumentResponse is not found in the empty JSON string", CreateAgentKnowledgeDocumentResponse.openapiRequiredFields.toString()));
+        if (!AgentsServiceCreateKnowledgeItemBody.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field(s) %s in AgentsServiceCreateKnowledgeItemBody is not found in the empty JSON string", AgentsServiceCreateKnowledgeItemBody.openapiRequiredFields.toString()));
         }
       }
 
       Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
       // check to see if the JSON string contains additional fields
       for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!CreateAgentKnowledgeDocumentResponse.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `CreateAgentKnowledgeDocumentResponse` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        if (!AgentsServiceCreateKnowledgeItemBody.openapiFields.contains(entry.getKey())) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The field `%s` in the JSON string is not defined in the `AgentsServiceCreateKnowledgeItemBody` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
+        }
+      }
+
+      // check to make sure all required properties/fields are present in the JSON string
+      for (String requiredField : AgentsServiceCreateKnowledgeItemBody.openapiRequiredFields) {
+        if (jsonElement.getAsJsonObject().get(requiredField) == null) {
+          throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
         }
       }
         JsonObject jsonObj = jsonElement.getAsJsonObject();
-      // validate the optional field `document`
-      if (jsonObj.get("document") != null && !jsonObj.get("document").isJsonNull()) {
-        AgentKnowledgeDocument.validateJsonElement(jsonObj.get("document"));
+      if ((jsonObj.get("content") != null && !jsonObj.get("content").isJsonNull()) && !jsonObj.get("content").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `content` to be a primitive type in the JSON string but got `%s`", jsonObj.get("content").toString()));
+      }
+      // validate the required field `kind`
+      AgentKnowledgeItemKind.validateJsonElement(jsonObj.get("kind"));
+      if ((jsonObj.get("mediaId") != null && !jsonObj.get("mediaId").isJsonNull()) && !jsonObj.get("mediaId").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `mediaId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("mediaId").toString()));
+      }
+      if ((jsonObj.get("title") != null && !jsonObj.get("title").isJsonNull()) && !jsonObj.get("title").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `title` to be a primitive type in the JSON string but got `%s`", jsonObj.get("title").toString()));
+      }
+      if ((jsonObj.get("url") != null && !jsonObj.get("url").isJsonNull()) && !jsonObj.get("url").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format(java.util.Locale.ROOT, "Expected the field `url` to be a primitive type in the JSON string but got `%s`", jsonObj.get("url").toString()));
       }
   }
 
@@ -156,22 +277,22 @@ public class CreateAgentKnowledgeDocumentResponse {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!CreateAgentKnowledgeDocumentResponse.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'CreateAgentKnowledgeDocumentResponse' and its subtypes
+       if (!AgentsServiceCreateKnowledgeItemBody.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'AgentsServiceCreateKnowledgeItemBody' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<CreateAgentKnowledgeDocumentResponse> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(CreateAgentKnowledgeDocumentResponse.class));
+       final TypeAdapter<AgentsServiceCreateKnowledgeItemBody> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(AgentsServiceCreateKnowledgeItemBody.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<CreateAgentKnowledgeDocumentResponse>() {
+       return (TypeAdapter<T>) new TypeAdapter<AgentsServiceCreateKnowledgeItemBody>() {
            @Override
-           public void write(JsonWriter out, CreateAgentKnowledgeDocumentResponse value) throws IOException {
+           public void write(JsonWriter out, AgentsServiceCreateKnowledgeItemBody value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              elementAdapter.write(out, obj);
            }
 
            @Override
-           public CreateAgentKnowledgeDocumentResponse read(JsonReader in) throws IOException {
+           public AgentsServiceCreateKnowledgeItemBody read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              return thisAdapter.fromJsonTree(jsonElement);
@@ -182,18 +303,18 @@ public class CreateAgentKnowledgeDocumentResponse {
   }
 
   /**
-   * Create an instance of CreateAgentKnowledgeDocumentResponse given an JSON string
+   * Create an instance of AgentsServiceCreateKnowledgeItemBody given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of CreateAgentKnowledgeDocumentResponse
-   * @throws IOException if the JSON string is invalid with respect to CreateAgentKnowledgeDocumentResponse
+   * @return An instance of AgentsServiceCreateKnowledgeItemBody
+   * @throws IOException if the JSON string is invalid with respect to AgentsServiceCreateKnowledgeItemBody
    */
-  public static CreateAgentKnowledgeDocumentResponse fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, CreateAgentKnowledgeDocumentResponse.class);
+  public static AgentsServiceCreateKnowledgeItemBody fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, AgentsServiceCreateKnowledgeItemBody.class);
   }
 
   /**
-   * Convert an instance of CreateAgentKnowledgeDocumentResponse to an JSON string
+   * Convert an instance of AgentsServiceCreateKnowledgeItemBody to an JSON string
    *
    * @return JSON string
    */

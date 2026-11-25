@@ -2,7 +2,7 @@
  * Linkbreakers API
  * The Linkbreakers REST API: links, QR codes, workflows, visitors and analytics, as JSON over HTTPS. Send a workspace API token as `Authorization: Bearer <token>`.  ## Entry points  `GET https://api.linkbreakers.com/` and `GET https://api.linkbreakers.com/v1` answer without credentials with the API's name, version and links. This document is served at `https://api.linkbreakers.com/openapi.json`.  ## Rate limits  Every response describes where the caller stands in the IETF `RateLimit-Policy` and `RateLimit` header fields (draft-ietf-httpapi-ratelimit-headers), and in `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (a Unix timestamp) for clients that read those. A request past the limit gets `429 Too Many Requests` with `Retry-After` in seconds.  - Workspace API token: 720 requests per 60 seconds, per token. - Dashboard session or OAuth token: 600 requests per 60 seconds, per token. - No credentials: 300 requests per 60 seconds, per client IP.  Each plan also includes a number of API calls per billing cycle. Past it, calls answer `429` with the code `MAX_PUBLIC_API_QUERIED_REACHED` until the cycle renews or the plan changes.  ## Pagination  Every list pages with opaque cursors (AIP-158). Pass `pageSize`, then send the `nextPageToken` of each response back as `pageToken` (or its alias `cursor`) to get the next page. An empty or absent `nextPageToken` means the list is complete. Each list operation describes this in `x-pagination`.  ## Batches and background jobs  `POST /v1/links/bulk` creates up to 250 links in one transactional request; `POST /v1/links/batch` takes the same links as a bare JSON array. `POST /v1/links/bulk/jobs` accepts the same batch and answers `202 Accepted` at once with a link job and a `Location` header; poll `GET /v1/links/jobs/{id}` until `status` is `LINK_JOB_STATUS_SUCCEEDED` (the created link ids are in `linksBulkCreate.linkIds`) or `LINK_JOB_STATUS_FAILED` (`error` says why, and nothing was created). Link jobs can be read for 24 hours after they finish.  ## Paused workspaces  A free workspace whose members have not verified any email address is paused 7 days after sign-up. Its calls then answer `403` with the code `WORKSPACE_UNVERIFIED` and change nothing; QR codes and links keep working for visitors. To lift the pause, ask the workspace owner to verify their email: `POST /v1/members/email-verification` sends the verification email again, and works while the workspace is paused. `unverifiedPauseAt` on the workspace says when the pause starts.  ## Versioning and deprecation  The version is in the path: every operation lives under `/v1`. Within a version, changes are additive only: new operations, new optional request fields, new response fields and new enum values. Clients should ignore fields and enum values they do not know. Anything that would break an existing client ships under a new path version instead.  An operation is retired in two steps. First it is deprecated: it keeps working, is flagged `deprecated: true` in this document, and every response carries a `Deprecation` header field (RFC 9745) with the time it was deprecated and a `Link` with `rel=\"deprecation\"` to the policy. Then, at least 180 days later, it may be removed; that date is announced in advance in a `Sunset` header field (RFC 8594) and as `x-sunset` on the operation. The full policy: https://linkbreakers.com/help/article/api-versioning-and-deprecation-policy  A renamed operation keeps answering its former path while clients still call it, until that path's sunset at the latest: a former path no client calls for 14 days is removed. Responses on a former path carry the same `Deprecation`, `Sunset` and `Link` header fields; this document lists only the current path, and the policy lists the former paths that still answer.  ## Idempotent retries  Every POST, PUT and PATCH accepts an optional `Idempotency-Key` header (draft-ietf-httpapi-idempotency-key-header). Send a new unique value, such as a UUID, with each logical request and reuse it only to retry that request. A retry with the same key and the same request returns the first response, marked `Idempotent-Replayed: true`, instead of running again. Keys are scoped to the token and kept for 24 hours. The same key with a different request is refused with `422`, and a retry while the first request is still running gets `409` with `Retry-After`. Server errors (5xx) and refusals such as 401, 403 and 429 are not stored, so retrying them runs the request again.  ## Identifying your client  Send a `Linkbreakers-Client` request header saying which client made the call: `<client>/<version> (<details>)`, for example `my-integration/1.2.0 (python 3.12; linux)`. The official SDKs, the CLI and the MCP bridge set it for you, as `sdk-python/2.3.1 (python 3.12.4; linux)` or `cli/1.4.0 (darwin arm64)`. It is optional and changes nothing about how a request is handled; it tells us which clients and versions are in use, so we know what can be retired and what to fix first. Keep the details short and free of personal data. Browsers may send it too: it is allowed by CORS.
  *
- * The version of the OpenAPI document: 1.205.1
+ * The version of the OpenAPI document: 1.205.2
  * 
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -27,17 +27,18 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import com.linkbreakers.model.AgentsServiceCreateKnowledgeDocumentBody;
+import com.linkbreakers.model.AgentsServiceCreateKnowledgeItemBody;
 import com.linkbreakers.model.AgentsServiceUpdateBody;
-import com.linkbreakers.model.AgentsServiceUpdateKnowledgeDocumentBody;
-import com.linkbreakers.model.CreateAgentKnowledgeDocumentResponse;
+import com.linkbreakers.model.AgentsServiceUpdateKnowledgeItemBody;
+import com.linkbreakers.model.CreateAgentKnowledgeItemResponse;
 import com.linkbreakers.model.CreateAgentRequest;
 import com.linkbreakers.model.CreateAgentResponse;
 import com.linkbreakers.model.ErrorResponse;
 import com.linkbreakers.model.GetAgentResponse;
 import com.linkbreakers.model.ListAgentPresetsResponse;
 import com.linkbreakers.model.ListAgentsResponse;
-import com.linkbreakers.model.UpdateAgentKnowledgeDocumentResponse;
+import com.linkbreakers.model.RefreshAgentKnowledgeItemResponse;
+import com.linkbreakers.model.UpdateAgentKnowledgeItemResponse;
 import com.linkbreakers.model.UpdateAgentResponse;
 
 import java.lang.reflect.Type;
@@ -228,9 +229,9 @@ public class AgentsApi {
         return localVarCall;
     }
     /**
-     * Build call for agentsServiceCreateKnowledgeDocument
+     * Build call for agentsServiceCreateKnowledgeItem
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param agentsServiceCreateKnowledgeDocumentBody  (required)
+     * @param agentsServiceCreateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -244,7 +245,7 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call agentsServiceCreateKnowledgeDocumentCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeDocumentBody agentsServiceCreateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call agentsServiceCreateKnowledgeItemCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeItemBody agentsServiceCreateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -258,10 +259,10 @@ public class AgentsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = agentsServiceCreateKnowledgeDocumentBody;
+        Object localVarPostBody = agentsServiceCreateKnowledgeItemBody;
 
         // create path and map variables
-        String localVarPath = "/v1/agents/{agentId}/knowledge-documents"
+        String localVarPath = "/v1/agents/{agentId}/knowledge-items"
             .replace("{" + "agentId" + "}", localVarApiClient.escapeString(agentId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -296,28 +297,28 @@ public class AgentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call agentsServiceCreateKnowledgeDocumentValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeDocumentBody agentsServiceCreateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call agentsServiceCreateKnowledgeItemValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeItemBody agentsServiceCreateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'agentId' is set
         if (agentId == null) {
-            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceCreateKnowledgeDocument(Async)");
+            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceCreateKnowledgeItem(Async)");
         }
 
-        // verify the required parameter 'agentsServiceCreateKnowledgeDocumentBody' is set
-        if (agentsServiceCreateKnowledgeDocumentBody == null) {
-            throw new ApiException("Missing the required parameter 'agentsServiceCreateKnowledgeDocumentBody' when calling agentsServiceCreateKnowledgeDocument(Async)");
+        // verify the required parameter 'agentsServiceCreateKnowledgeItemBody' is set
+        if (agentsServiceCreateKnowledgeItemBody == null) {
+            throw new ApiException("Missing the required parameter 'agentsServiceCreateKnowledgeItemBody' when calling agentsServiceCreateKnowledgeItem(Async)");
         }
 
-        return agentsServiceCreateKnowledgeDocumentCall(agentId, agentsServiceCreateKnowledgeDocumentBody, idempotencyKey, _callback);
+        return agentsServiceCreateKnowledgeItemCall(agentId, agentsServiceCreateKnowledgeItemBody, idempotencyKey, _callback);
 
     }
 
     /**
-     * Add a knowledge document
-     * Add a Markdown document to an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
+     * Add a knowledge item
+     * Add an item to an agent&#39;s knowledge: Markdown text, a web page read from its URL, or a PDF or image of the media library. A web page or media item is read in the background: it is returned with the status reading, then becomes ready, or failed with a reason. Only ready items are part of what the agent knows.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param agentsServiceCreateKnowledgeDocumentBody  (required)
+     * @param agentsServiceCreateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
-     * @return CreateAgentKnowledgeDocumentResponse
+     * @return CreateAgentKnowledgeItemResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -328,18 +329,18 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public CreateAgentKnowledgeDocumentResponse agentsServiceCreateKnowledgeDocument(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeDocumentBody agentsServiceCreateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<CreateAgentKnowledgeDocumentResponse> localVarResp = agentsServiceCreateKnowledgeDocumentWithHttpInfo(agentId, agentsServiceCreateKnowledgeDocumentBody, idempotencyKey);
+    public CreateAgentKnowledgeItemResponse agentsServiceCreateKnowledgeItem(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeItemBody agentsServiceCreateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<CreateAgentKnowledgeItemResponse> localVarResp = agentsServiceCreateKnowledgeItemWithHttpInfo(agentId, agentsServiceCreateKnowledgeItemBody, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Add a knowledge document
-     * Add a Markdown document to an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
+     * Add a knowledge item
+     * Add an item to an agent&#39;s knowledge: Markdown text, a web page read from its URL, or a PDF or image of the media library. A web page or media item is read in the background: it is returned with the status reading, then becomes ready, or failed with a reason. Only ready items are part of what the agent knows.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param agentsServiceCreateKnowledgeDocumentBody  (required)
+     * @param agentsServiceCreateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
-     * @return ApiResponse&lt;CreateAgentKnowledgeDocumentResponse&gt;
+     * @return ApiResponse&lt;CreateAgentKnowledgeItemResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -350,17 +351,17 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<CreateAgentKnowledgeDocumentResponse> agentsServiceCreateKnowledgeDocumentWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeDocumentBody agentsServiceCreateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = agentsServiceCreateKnowledgeDocumentValidateBeforeCall(agentId, agentsServiceCreateKnowledgeDocumentBody, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<CreateAgentKnowledgeDocumentResponse>(){}.getType();
+    public ApiResponse<CreateAgentKnowledgeItemResponse> agentsServiceCreateKnowledgeItemWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeItemBody agentsServiceCreateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = agentsServiceCreateKnowledgeItemValidateBeforeCall(agentId, agentsServiceCreateKnowledgeItemBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<CreateAgentKnowledgeItemResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Add a knowledge document (asynchronously)
-     * Add a Markdown document to an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
+     * Add a knowledge item (asynchronously)
+     * Add an item to an agent&#39;s knowledge: Markdown text, a web page read from its URL, or a PDF or image of the media library. A web page or media item is read in the background: it is returned with the status reading, then becomes ready, or failed with a reason. Only ready items are part of what the agent knows.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param agentsServiceCreateKnowledgeDocumentBody  (required)
+     * @param agentsServiceCreateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -374,10 +375,10 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call agentsServiceCreateKnowledgeDocumentAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeDocumentBody agentsServiceCreateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CreateAgentKnowledgeDocumentResponse> _callback) throws ApiException {
+    public okhttp3.Call agentsServiceCreateKnowledgeItemAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull AgentsServiceCreateKnowledgeItemBody agentsServiceCreateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<CreateAgentKnowledgeItemResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = agentsServiceCreateKnowledgeDocumentValidateBeforeCall(agentId, agentsServiceCreateKnowledgeDocumentBody, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<CreateAgentKnowledgeDocumentResponse>(){}.getType();
+        okhttp3.Call localVarCall = agentsServiceCreateKnowledgeItemValidateBeforeCall(agentId, agentsServiceCreateKnowledgeItemBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<CreateAgentKnowledgeItemResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
@@ -454,7 +455,7 @@ public class AgentsApi {
 
     /**
      * Delete an agent
-     * Delete an agent and its knowledge documents.  Requires the &#x60;agents:write&#x60; scope.
+     * Delete an agent and its knowledge items.  Requires the &#x60;agents:write&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -474,7 +475,7 @@ public class AgentsApi {
 
     /**
      * Delete an agent
-     * Delete an agent and its knowledge documents.  Requires the &#x60;agents:write&#x60; scope.
+     * Delete an agent and its knowledge items.  Requires the &#x60;agents:write&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -495,7 +496,7 @@ public class AgentsApi {
 
     /**
      * Delete an agent (asynchronously)
-     * Delete an agent and its knowledge documents.  Requires the &#x60;agents:write&#x60; scope.
+     * Delete an agent and its knowledge items.  Requires the &#x60;agents:write&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -517,9 +518,9 @@ public class AgentsApi {
         return localVarCall;
     }
     /**
-     * Build call for agentsServiceDeleteKnowledgeDocument
+     * Build call for agentsServiceDeleteKnowledgeItem
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -532,7 +533,7 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call agentsServiceDeleteKnowledgeDocumentCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call agentsServiceDeleteKnowledgeItemCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -549,7 +550,7 @@ public class AgentsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/v1/agents/{agentId}/knowledge-documents/{id}"
+        String localVarPath = "/v1/agents/{agentId}/knowledge-items/{id}"
             .replace("{" + "agentId" + "}", localVarApiClient.escapeString(agentId.toString()))
             .replace("{" + "id" + "}", localVarApiClient.escapeString(id.toString()));
 
@@ -579,26 +580,26 @@ public class AgentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call agentsServiceDeleteKnowledgeDocumentValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call agentsServiceDeleteKnowledgeItemValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'agentId' is set
         if (agentId == null) {
-            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceDeleteKnowledgeDocument(Async)");
+            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceDeleteKnowledgeItem(Async)");
         }
 
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling agentsServiceDeleteKnowledgeDocument(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling agentsServiceDeleteKnowledgeItem(Async)");
         }
 
-        return agentsServiceDeleteKnowledgeDocumentCall(agentId, id, _callback);
+        return agentsServiceDeleteKnowledgeItemCall(agentId, id, _callback);
 
     }
 
     /**
-     * Delete a knowledge document
-     * Remove a document from an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
+     * Delete a knowledge item
+     * Remove an item from an agent&#39;s knowledge. A media file it read stays in the media library.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
      * @return Object
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -610,16 +611,16 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public Object agentsServiceDeleteKnowledgeDocument(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id) throws ApiException {
-        ApiResponse<Object> localVarResp = agentsServiceDeleteKnowledgeDocumentWithHttpInfo(agentId, id);
+    public Object agentsServiceDeleteKnowledgeItem(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id) throws ApiException {
+        ApiResponse<Object> localVarResp = agentsServiceDeleteKnowledgeItemWithHttpInfo(agentId, id);
         return localVarResp.getData();
     }
 
     /**
-     * Delete a knowledge document
-     * Remove a document from an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
+     * Delete a knowledge item
+     * Remove an item from an agent&#39;s knowledge. A media file it read stays in the media library.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
      * @return ApiResponse&lt;Object&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -631,17 +632,17 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<Object> agentsServiceDeleteKnowledgeDocumentWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id) throws ApiException {
-        okhttp3.Call localVarCall = agentsServiceDeleteKnowledgeDocumentValidateBeforeCall(agentId, id, null);
+    public ApiResponse<Object> agentsServiceDeleteKnowledgeItemWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id) throws ApiException {
+        okhttp3.Call localVarCall = agentsServiceDeleteKnowledgeItemValidateBeforeCall(agentId, id, null);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Delete a knowledge document (asynchronously)
-     * Remove a document from an agent&#39;s knowledge.  Requires the &#x60;agents:write&#x60; scope.
+     * Delete a knowledge item (asynchronously)
+     * Remove an item from an agent&#39;s knowledge. A media file it read stays in the media library.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -654,9 +655,9 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call agentsServiceDeleteKnowledgeDocumentAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call agentsServiceDeleteKnowledgeItemAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, final ApiCallback<Object> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = agentsServiceDeleteKnowledgeDocumentValidateBeforeCall(agentId, id, _callback);
+        okhttp3.Call localVarCall = agentsServiceDeleteKnowledgeItemValidateBeforeCall(agentId, id, _callback);
         Type localVarReturnType = new TypeToken<Object>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -734,7 +735,7 @@ public class AgentsApi {
 
     /**
      * Get an agent
-     * Retrieve an agent with its knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
+     * Retrieve an agent with its knowledge items.  Requires the &#x60;agents:read&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @return GetAgentResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -754,7 +755,7 @@ public class AgentsApi {
 
     /**
      * Get an agent
-     * Retrieve an agent with its knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
+     * Retrieve an agent with its knowledge items.  Requires the &#x60;agents:read&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @return ApiResponse&lt;GetAgentResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -775,7 +776,7 @@ public class AgentsApi {
 
     /**
      * Get an agent (asynchronously)
-     * Retrieve an agent with its knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
+     * Retrieve an agent with its knowledge items.  Requires the &#x60;agents:read&#x60; scope.
      * @param id The agent&#39;s ID (UUID). (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -877,7 +878,7 @@ public class AgentsApi {
 
     /**
      * List agents
-     * List the workspace&#39;s agents, without their knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
+     * List the workspace&#39;s agents, without their knowledge items.  Requires the &#x60;agents:read&#x60; scope.
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
      * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
@@ -899,7 +900,7 @@ public class AgentsApi {
 
     /**
      * List agents
-     * List the workspace&#39;s agents, without their knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
+     * List the workspace&#39;s agents, without their knowledge items.  Requires the &#x60;agents:read&#x60; scope.
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
      * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
@@ -922,7 +923,7 @@ public class AgentsApi {
 
     /**
      * List agents (asynchronously)
-     * List the workspace&#39;s agents, without their knowledge documents.  Requires the &#x60;agents:read&#x60; scope.
+     * List the workspace&#39;s agents, without their knowledge items.  Requires the &#x60;agents:read&#x60; scope.
      * @param pageSize Maximum number of agents to return. Defaults to 50. (optional)
      * @param pageToken Token from a previous response&#39;s nextPageToken. (optional)
      * @param cursor Opaque cursor from the previous page&#39;s nextPageToken. Same as pageToken; when both are sent, pageToken wins. (optional)
@@ -1067,6 +1068,170 @@ public class AgentsApi {
 
         okhttp3.Call localVarCall = agentsServiceListPresetsValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<ListAgentPresetsResponse>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for agentsServiceRefreshKnowledgeItem
+     * @param agentId The agent&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call agentsServiceRefreshKnowledgeItemCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (localCustomBaseUrl != null){
+            basePath = localCustomBaseUrl;
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[localHostIndex];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/v1/agents/{agentId}/knowledge-items/{id}:refresh"
+            .replace("{" + "agentId" + "}", localVarApiClient.escapeString(agentId.toString()))
+            .replace("{" + "id" + "}", localVarApiClient.escapeString(id.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        if (idempotencyKey != null) {
+            localVarHeaderParams.put("Idempotency-Key", localVarApiClient.parameterToString(idempotencyKey));
+        }
+
+
+        String[] localVarAuthNames = new String[] { "oauth2", "bearerAuth" };
+        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call agentsServiceRefreshKnowledgeItemValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+        // verify the required parameter 'agentId' is set
+        if (agentId == null) {
+            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceRefreshKnowledgeItem(Async)");
+        }
+
+        // verify the required parameter 'id' is set
+        if (id == null) {
+            throw new ApiException("Missing the required parameter 'id' when calling agentsServiceRefreshKnowledgeItem(Async)");
+        }
+
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling agentsServiceRefreshKnowledgeItem(Async)");
+        }
+
+        return agentsServiceRefreshKnowledgeItemCall(agentId, id, body, idempotencyKey, _callback);
+
+    }
+
+    /**
+     * Refresh a knowledge item
+     * Read a web page or media item again, in the background: after the page or file changed, or to retry an item that failed. The agent keeps the text read before until the new reading is ready. A Markdown item has nothing to read and is refused.  Requires the &#x60;agents:write&#x60; scope.
+     * @param agentId The agent&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return RefreshAgentKnowledgeItemResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public RefreshAgentKnowledgeItemResponse agentsServiceRefreshKnowledgeItem(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<RefreshAgentKnowledgeItemResponse> localVarResp = agentsServiceRefreshKnowledgeItemWithHttpInfo(agentId, id, body, idempotencyKey);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Refresh a knowledge item
+     * Read a web page or media item again, in the background: after the page or file changed, or to retry an item that failed. The agent keeps the text read before until the new reading is ready. A Markdown item has nothing to read and is refused.  Requires the &#x60;agents:write&#x60; scope.
+     * @param agentId The agent&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @return ApiResponse&lt;RefreshAgentKnowledgeItemResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<RefreshAgentKnowledgeItemResponse> agentsServiceRefreshKnowledgeItemWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = agentsServiceRefreshKnowledgeItemValidateBeforeCall(agentId, id, body, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<RefreshAgentKnowledgeItemResponse>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Refresh a knowledge item (asynchronously)
+     * Read a web page or media item again, in the background: after the page or file changed, or to retry an item that failed. The agent keeps the text read before until the new reading is ready. A Markdown item has nothing to read and is refused.  Requires the &#x60;agents:write&#x60; scope.
+     * @param agentId The agent&#39;s ID (UUID). (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param body  (required)
+     * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table border="1">
+       <caption>Response Details</caption>
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Everything worked as expected. </td><td>  * Idempotent-Replayed -  <br>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+        <tr><td> 429 </td><td> Too many requests. Wait the number of seconds in Retry-After, or until the RateLimit window resets, then retry. </td><td>  * RateLimit -  <br>  * RateLimit-Limit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  * RateLimit-Reset -  <br>  * Retry-After -  <br>  * X-RateLimit-Limit -  <br>  * X-RateLimit-Remaining -  <br>  * X-RateLimit-Reset -  <br>  </td></tr>
+        <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call agentsServiceRefreshKnowledgeItemAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull Object body, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<RefreshAgentKnowledgeItemResponse> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = agentsServiceRefreshKnowledgeItemValidateBeforeCall(agentId, id, body, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<RefreshAgentKnowledgeItemResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
@@ -1225,10 +1390,10 @@ public class AgentsApi {
         return localVarCall;
     }
     /**
-     * Build call for agentsServiceUpdateKnowledgeDocument
+     * Build call for agentsServiceUpdateKnowledgeItem
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
-     * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param agentsServiceUpdateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -1242,7 +1407,7 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call agentsServiceUpdateKnowledgeDocumentCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeDocumentBody agentsServiceUpdateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call agentsServiceUpdateKnowledgeItemCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeItemBody agentsServiceUpdateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -1256,10 +1421,10 @@ public class AgentsApi {
             basePath = null;
         }
 
-        Object localVarPostBody = agentsServiceUpdateKnowledgeDocumentBody;
+        Object localVarPostBody = agentsServiceUpdateKnowledgeItemBody;
 
         // create path and map variables
-        String localVarPath = "/v1/agents/{agentId}/knowledge-documents/{id}"
+        String localVarPath = "/v1/agents/{agentId}/knowledge-items/{id}"
             .replace("{" + "agentId" + "}", localVarApiClient.escapeString(agentId.toString()))
             .replace("{" + "id" + "}", localVarApiClient.escapeString(id.toString()));
 
@@ -1295,34 +1460,34 @@ public class AgentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call agentsServiceUpdateKnowledgeDocumentValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeDocumentBody agentsServiceUpdateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call agentsServiceUpdateKnowledgeItemValidateBeforeCall(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeItemBody agentsServiceUpdateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback _callback) throws ApiException {
         // verify the required parameter 'agentId' is set
         if (agentId == null) {
-            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceUpdateKnowledgeDocument(Async)");
+            throw new ApiException("Missing the required parameter 'agentId' when calling agentsServiceUpdateKnowledgeItem(Async)");
         }
 
         // verify the required parameter 'id' is set
         if (id == null) {
-            throw new ApiException("Missing the required parameter 'id' when calling agentsServiceUpdateKnowledgeDocument(Async)");
+            throw new ApiException("Missing the required parameter 'id' when calling agentsServiceUpdateKnowledgeItem(Async)");
         }
 
-        // verify the required parameter 'agentsServiceUpdateKnowledgeDocumentBody' is set
-        if (agentsServiceUpdateKnowledgeDocumentBody == null) {
-            throw new ApiException("Missing the required parameter 'agentsServiceUpdateKnowledgeDocumentBody' when calling agentsServiceUpdateKnowledgeDocument(Async)");
+        // verify the required parameter 'agentsServiceUpdateKnowledgeItemBody' is set
+        if (agentsServiceUpdateKnowledgeItemBody == null) {
+            throw new ApiException("Missing the required parameter 'agentsServiceUpdateKnowledgeItemBody' when calling agentsServiceUpdateKnowledgeItem(Async)");
         }
 
-        return agentsServiceUpdateKnowledgeDocumentCall(agentId, id, agentsServiceUpdateKnowledgeDocumentBody, idempotencyKey, _callback);
+        return agentsServiceUpdateKnowledgeItemCall(agentId, id, agentsServiceUpdateKnowledgeItemBody, idempotencyKey, _callback);
 
     }
 
     /**
-     * Update a knowledge document
-     * Change a knowledge document&#39;s title or content.  Requires the &#x60;agents:write&#x60; scope.
+     * Update a knowledge item
+     * Change a knowledge item&#39;s title, a Markdown item&#39;s content, a web page item&#39;s URL or a media item&#39;s file. A new URL or file is read again in the background. The kind of an item cannot change.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
-     * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param agentsServiceUpdateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
-     * @return UpdateAgentKnowledgeDocumentResponse
+     * @return UpdateAgentKnowledgeItemResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1333,19 +1498,19 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public UpdateAgentKnowledgeDocumentResponse agentsServiceUpdateKnowledgeDocument(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeDocumentBody agentsServiceUpdateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        ApiResponse<UpdateAgentKnowledgeDocumentResponse> localVarResp = agentsServiceUpdateKnowledgeDocumentWithHttpInfo(agentId, id, agentsServiceUpdateKnowledgeDocumentBody, idempotencyKey);
+    public UpdateAgentKnowledgeItemResponse agentsServiceUpdateKnowledgeItem(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeItemBody agentsServiceUpdateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        ApiResponse<UpdateAgentKnowledgeItemResponse> localVarResp = agentsServiceUpdateKnowledgeItemWithHttpInfo(agentId, id, agentsServiceUpdateKnowledgeItemBody, idempotencyKey);
         return localVarResp.getData();
     }
 
     /**
-     * Update a knowledge document
-     * Change a knowledge document&#39;s title or content.  Requires the &#x60;agents:write&#x60; scope.
+     * Update a knowledge item
+     * Change a knowledge item&#39;s title, a Markdown item&#39;s content, a web page item&#39;s URL or a media item&#39;s file. A new URL or file is read again in the background. The kind of an item cannot change.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
-     * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param agentsServiceUpdateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
-     * @return ApiResponse&lt;UpdateAgentKnowledgeDocumentResponse&gt;
+     * @return ApiResponse&lt;UpdateAgentKnowledgeItemResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -1356,18 +1521,18 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public ApiResponse<UpdateAgentKnowledgeDocumentResponse> agentsServiceUpdateKnowledgeDocumentWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeDocumentBody agentsServiceUpdateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
-        okhttp3.Call localVarCall = agentsServiceUpdateKnowledgeDocumentValidateBeforeCall(agentId, id, agentsServiceUpdateKnowledgeDocumentBody, idempotencyKey, null);
-        Type localVarReturnType = new TypeToken<UpdateAgentKnowledgeDocumentResponse>(){}.getType();
+    public ApiResponse<UpdateAgentKnowledgeItemResponse> agentsServiceUpdateKnowledgeItemWithHttpInfo(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeItemBody agentsServiceUpdateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+        okhttp3.Call localVarCall = agentsServiceUpdateKnowledgeItemValidateBeforeCall(agentId, id, agentsServiceUpdateKnowledgeItemBody, idempotencyKey, null);
+        Type localVarReturnType = new TypeToken<UpdateAgentKnowledgeItemResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Update a knowledge document (asynchronously)
-     * Change a knowledge document&#39;s title or content.  Requires the &#x60;agents:write&#x60; scope.
+     * Update a knowledge item (asynchronously)
+     * Change a knowledge item&#39;s title, a Markdown item&#39;s content, a web page item&#39;s URL or a media item&#39;s file. A new URL or file is read again in the background. The kind of an item cannot change.  Requires the &#x60;agents:write&#x60; scope.
      * @param agentId The agent&#39;s ID (UUID). (required)
-     * @param id The document&#39;s ID (UUID). (required)
-     * @param agentsServiceUpdateKnowledgeDocumentBody  (required)
+     * @param id The item&#39;s ID (UUID). (required)
+     * @param agentsServiceUpdateKnowledgeItemBody  (required)
      * @param idempotencyKey A unique value per request, such as a UUID, that makes retrying it safe: a retry with the same key and body returns the first response instead of acting twice. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -1381,10 +1546,10 @@ public class AgentsApi {
         <tr><td> 0 </td><td> Unexpected error </td><td>  * RateLimit -  <br>  * RateLimit-Policy -  <br>  * RateLimit-Remaining -  <br>  </td></tr>
      </table>
      */
-    public okhttp3.Call agentsServiceUpdateKnowledgeDocumentAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeDocumentBody agentsServiceUpdateKnowledgeDocumentBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateAgentKnowledgeDocumentResponse> _callback) throws ApiException {
+    public okhttp3.Call agentsServiceUpdateKnowledgeItemAsync(@javax.annotation.Nonnull String agentId, @javax.annotation.Nonnull String id, @javax.annotation.Nonnull AgentsServiceUpdateKnowledgeItemBody agentsServiceUpdateKnowledgeItemBody, @javax.annotation.Nullable String idempotencyKey, final ApiCallback<UpdateAgentKnowledgeItemResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = agentsServiceUpdateKnowledgeDocumentValidateBeforeCall(agentId, id, agentsServiceUpdateKnowledgeDocumentBody, idempotencyKey, _callback);
-        Type localVarReturnType = new TypeToken<UpdateAgentKnowledgeDocumentResponse>(){}.getType();
+        okhttp3.Call localVarCall = agentsServiceUpdateKnowledgeItemValidateBeforeCall(agentId, id, agentsServiceUpdateKnowledgeItemBody, idempotencyKey, _callback);
+        Type localVarReturnType = new TypeToken<UpdateAgentKnowledgeItemResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
